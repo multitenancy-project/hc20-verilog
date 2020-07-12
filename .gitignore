@@ -10,3 +10,7 @@ TProj.xpr
 *.jou
 *.pb
 *.wdb
+
+.root
+.project
+.Xil/
