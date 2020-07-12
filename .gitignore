@@ -1,0 +1,12 @@
+TProj.cache/
+TProj.hw/
+TProj.runs/
+TProj.srcs/
+TProj.src/xsim.dir
+TProj.xpr
+
+*.bit
+*.log
+*.jou
+*.pb
+*.wdb
