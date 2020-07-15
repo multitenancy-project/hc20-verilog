@@ -48,6 +48,7 @@ parser (
 
 	// input axis data
 	.s_axis_tdata							(s_axis_tdata),
+	.s_axis_tkeep							(s_axis_tkeep),
 	.s_axis_tvalid							(s_axis_tvalid & s_axis_tready),
 	.s_axis_tlast							(s_axis_tlast)
 );
