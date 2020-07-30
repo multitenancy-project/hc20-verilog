@@ -4,6 +4,8 @@ TProj.runs/
 TProj.srcs/
 TProj.src/xsim.dir
 TProj.xpr
+TProj.sim/
+TProj.ip_user_files/
 
 *.bit
 *.log

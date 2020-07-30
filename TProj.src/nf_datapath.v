@@ -308,18 +308,18 @@ output_queues_ip
 bram_output_queues_1 (
       .axis_aclk(axis_aclk), 
       .axis_resetn(axis_resetn),           // for bypass:
-      .s_axis_tdata   (s_axis_opl_tdata),
-      .s_axis_tkeep   (s_axis_opl_tkeep),
-      .s_axis_tuser   (s_axis_opl_tuser),
-      .s_axis_tvalid  (s_axis_opl_tvalid),
-      .s_axis_tready  (s_axis_opl_tready),
-      .s_axis_tlast   (s_axis_opl_tlast),
-      // .s_axis_tdata   (m_axis_opl_tdata),  //.s_axis_tdata   (s_axis_opl_tdata),
-      // .s_axis_tkeep   (m_axis_opl_tkeep),  //.s_axis_tkeep   (s_axis_opl_tkeep),
-      // .s_axis_tuser   (m_axis_opl_tuser),  //.s_axis_tuser   (s_axis_opl_tuser),
-      // .s_axis_tvalid  (m_axis_opl_tvalid), //.s_axis_tvalid  (s_axis_opl_tvalid) 
-      // .s_axis_tready  (m_axis_opl_tready), //.s_axis_tready  (s_axis_opl_tready) 
-      // .s_axis_tlast   (m_axis_opl_tlast),  //.s_axis_tlast   (s_axis_opl_tlast),
+      // .s_axis_tdata   (s_axis_opl_tdata),
+      // .s_axis_tkeep   (s_axis_opl_tkeep),
+      // .s_axis_tuser   (s_axis_opl_tuser),
+      // .s_axis_tvalid  (s_axis_opl_tvalid),
+      // .s_axis_tready  (s_axis_opl_tready),
+      // .s_axis_tlast   (s_axis_opl_tlast),
+      .s_axis_tdata   (m_axis_opl_tdata),  //.s_axis_tdata   (s_axis_opl_tdata),
+      .s_axis_tkeep   (m_axis_opl_tkeep),  //.s_axis_tkeep   (s_axis_opl_tkeep),
+      .s_axis_tuser   (m_axis_opl_tuser),  //.s_axis_tuser   (s_axis_opl_tuser),
+      .s_axis_tvalid  (m_axis_opl_tvalid), //.s_axis_tvalid  (s_axis_opl_tvalid) 
+      .s_axis_tready  (m_axis_opl_tready), //.s_axis_tready  (s_axis_opl_tready) 
+      .s_axis_tlast   (m_axis_opl_tlast),  //.s_axis_tlast   (s_axis_opl_tlast),
       .m_axis_0_tdata (m_axis_0_tdata), 
       .m_axis_0_tkeep (m_axis_0_tkeep), 
       .m_axis_0_tuser (m_axis_0_tuser), 

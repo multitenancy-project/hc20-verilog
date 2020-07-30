@@ -29,16 +29,113 @@ module t_process #(
 	input									s_axis_tlast,
 
 	// output Master AXI Stream
-	output [C_S_AXIS_DATA_WIDTH-1:0]		m_axis_tdata,
-	output [((C_S_AXIS_DATA_WIDTH/8))-1:0]	m_axis_tkeep,
-	output [C_S_AXIS_TUSER_WIDTH-1:0]		m_axis_tuser,
-	output									m_axis_tvalid,
-	input									m_axis_tready,
-	output									m_axis_tlast
+	output reg [C_S_AXIS_DATA_WIDTH-1:0]		m_axis_tdata,
+	output reg [((C_S_AXIS_DATA_WIDTH/8))-1:0]	m_axis_tkeep,
+	output reg [C_S_AXIS_TUSER_WIDTH-1:0]		m_axis_tuser,
+	output reg									m_axis_tvalid,
+	input										m_axis_tready,
+	output reg									m_axis_tlast
 
 	// for debug use
 	
 );
+
+/****** function definitions ******/
+integer idx;
+//
+function [255:0] pad_suffix_zeros (
+	input [6:0] pos
+);
+begin
+	pad_suffix_zeros = 0;
+	for (idx=0; idx<256; idx=idx+1)
+		if (idx >= pos)
+			pad_suffix_zeros[idx] = 1;
+end
+endfunction
+//
+function [255:0] pad_suffix_ones (
+	input [6:0] pos
+);
+begin
+	pad_suffix_ones = 0;
+	for (idx=0; idx<256; idx=idx+1)
+		if (idx < pos)
+			pad_suffix_ones[idx] = 1;
+end
+endfunction
+
+// count number of 1-bit
+function [6:0] count_ones (
+	input [256/8-1:0] data
+);
+begin
+	count_ones = 0;
+	for (idx=0; idx<256/8; idx=idx+1)
+		count_ones = count_ones + data[idx];
+end
+endfunction
+
+//
+
+/*=================================================*/
+localparam PKT_VEC_WIDTH = 1024+7+(17+33+65)*8+(8+8+8)*7;
+// pkt fifo
+reg									pkt_fifo_rd_en;
+wire								pkt_fifo_nearly_full;
+wire								pkt_fifo_empty;
+wire [C_S_AXIS_DATA_WIDTH-1:0]		tdata_fifo;
+wire [C_S_AXIS_TUSER_WIDTH-1:0]		tuser_fifo;
+wire [C_S_AXIS_DATA_WIDTH/8-1:0]	tkeep_fifo;
+wire								tlast_fifo;
+// phv fifo
+wire								phv_valid;
+wire [PKT_VEC_WIDTH-1:0]			phv_in;
+wire [PKT_VEC_WIDTH-1:0]			phv_fifo;
+reg									phv_rd_en;
+wire								phv_empty;
+// 
+
+/*=================================================*/
+assign s_axis_tready = !pkt_fifo_nearly_full;
+
+
+fallthrough_small_fifo #(
+	.WIDTH(C_S_AXIS_DATA_WIDTH + C_S_AXIS_TUSER_WIDTH + C_S_AXIS_DATA_WIDTH/8 + 1),
+	.MAX_DEPTH_BITS(6)
+)
+pkt_fifo
+(
+	.din									({s_axis_tdata, s_axis_tuser, s_axis_tkeep, s_axis_tlast}),
+	.wr_en									(s_axis_tvalid & ~pkt_fifo_nearly_full),
+	.rd_en									(pkt_fifo_rd_en),
+	.dout									({tdata_fifo, tuser_fifo, tkeep_fifo, tlast_fifo}),
+	.full									(),
+	.prog_full								(),
+	.nearly_full							(pkt_fifo_nearly_full),
+	.empty									(pkt_fifo_empty),
+	.reset									(~ARESETN_156),
+	.clk									(CLK_156)
+);
+
+fallthrough_small_fifo #(
+	.WIDTH(PKT_VEC_WIDTH),
+	.MAX_DEPTH_BITS(6)
+)
+paser_done_fifo
+(
+	.din									(phv_in),
+	.wr_en									(phv_valid),
+	.rd_en									(phv_rd_en),
+	.dout									(phv_fifo),
+	.full									(),
+	.prog_full								(),
+	.nearly_full							(),
+	.empty									(phv_empty),
+	.reset									(~ARESETN_156),
+	.clk									(CLK_156)
+);
+
 
 packet_header_parser
 parser (
@@ -50,125 +147,182 @@ parser (
 	.s_axis_tdata							(s_axis_tdata),
 	.s_axis_tkeep							(s_axis_tkeep),
 	.s_axis_tvalid							(s_axis_tvalid & s_axis_tready),
-	.s_axis_tlast							(s_axis_tlast)
+	.s_axis_tlast							(s_axis_tlast),
+	// output to phv fifo
+	.parser_valid							(phv_valid),
+	.pkt_hdr_vec							(phv_in)
 );
 
+// reassemble the packets
+//
 
+localparam TOT_LENGTH_POS = (17+33+65)*8+24*7;
+localparam PKT_START_POS = 7+TOT_LENGTH_POS;
+localparam WAIT_TILL_PARSE_DONE=0, PKT_1=1, PKT_2=2, PKT_3=3, FLUSH_PKT=4;
 
+reg [2:0] state, state_next;
+reg [6:0] bytes_cnt, bytes_cnt_next, last_bytes;
+wire [6:0] w_tot_length;
+wire [1023:0] w_pkt_hdr;
 
+assign w_tot_length = phv_fifo[TOT_LENGTH_POS+:7];
+assign w_pkt_hdr = phv_fifo[PKT_START_POS+:1024];
 
-// Some code snippet for self-defined AXI Lite Master and Slvae communication
-/*
-wire wr_en;
-wire rd_en;
-wire [3:0] addr;
-wire [31:0] wr_data;
-wire init_txn;
-wire txn_done;
-wire error;
+// for debug use
+wire [255:0] pkt_0;
+wire [255:0] pkt_1;
+wire [255:0] pkt_2;
+wire [255:0] pkt_3;
 
-wire [PHV_ADDR_WIDTH-1:0]				axi_awaddr;
-wire									axi_awvalid;
-wire [C_S_AXI_DATA_WIDTH-1:0]			axi_wdata;
-wire [C_S_AXI_DATA_WIDTH/8-1:0]			axi_wstrb;
-wire									axi_wvalid;
-wire									axi_bready;
-wire [PHV_ADDR_WIDTH-1:0]				axi_araddr;
-wire									axi_arvalid;
-wire									axi_rready;
-wire									axi_arready;
-wire [C_S_AXI_DATA_WIDTH-1:0]			axi_rdata;
-wire [1:0]								axi_rresp;
-wire									axi_rvalid;
-wire									axi_wready;
-wire [1:0]								axi_bresp;
-wire									axi_bvalid;
-wire									axi_awready;
-// not used signals
-wire [2:0]								axi_awprot;
-wire [2:0]								axi_arprot;
+assign pkt_0 = w_pkt_hdr[0+:256];
+assign pkt_1 = w_pkt_hdr[256+:256];
+assign pkt_2 = w_pkt_hdr[512+:256];
+assign pkt_3 = w_pkt_hdr[768+:256];
+// for debug use
 
-axi_lite_master 
-axilite_master0 (
-	.wr_en				(wr_en),
-	.rd_en				(rd_en),
-	.addr				(addr),
-	.wr_data			(wr_data),
-	.txn_done			(txn_done),
+always @(*) begin
+	m_axis_tdata = tdata_fifo;
+	m_axis_tuser = tuser_fifo;
+	m_axis_tkeep = tkeep_fifo;
+	m_axis_tlast = tlast_fifo;
+
+	// 
+	m_axis_tvalid = 0;
+	pkt_fifo_rd_en = 0;
+	phv_rd_en = 0;
+
 	//
-	.INIT_AXI_TXN		(init_txn),
-	.ERROR				(error),
-	.M_AXI_ACLK			(CLK_156),
-	.M_AXI_ARESETN		(ARESETN_156),
-	.M_AXI_AWADDR		(axi_awaddr),
-	.M_AXI_AWPROT		(axi_awprot),
-	.M_AXI_AWVALID		(axi_awvalid),
-	.M_AXI_AWREADY		(axi_awready),
-	.M_AXI_WDATA		(axi_wdata),
-	.M_AXI_WSTRB		(axi_wstrb),
-	.M_AXI_WVALID		(axi_wvalid),
-	.M_AXI_WREADY		(axi_wready),
-	.M_AXI_BRESP		(axi_bresp),
-	.M_AXI_BVALID		(axi_bvalid),
-	.M_AXI_ARADDR		(axi_araddr),
-	.M_AXI_ARPROT		(axi_arprot),
-	.M_AXI_ARVALID		(axi_arvalid),
-	.M_AXI_ARREADY		(axi_arready),
-	.M_AXI_RDATA		(axi_rdata),
-	.M_AXI_RRESP		(axi_rresp),
-	.M_AXI_RVALID		(axi_rvalid),
-	.M_AXI_RREADY		(axi_rready)
-);
+	state_next = state;
+	bytes_cnt_next = bytes_cnt;
+	last_bytes = 0;
 
-axi_lite_slave
-axilite_slave0 (
-	.S_AXI_ACLK			(CLK_156),
-	.S_AXI_ARESETN		(ARESETN_156),
-	.S_AXI_AWADDR		(axi_awaddr),
-	.S_AXI_AWPROT		(axi_awprot),
-	.S_AXI_AWVALID		(axi_awvalid),
-	.S_AXI_AWREADY		(axi_awready),
-	.S_AXI_WDATA		(axi_wdata),
-	.S_AXI_WSTRB		(axi_wstrb),
-	.S_AXI_WVALID		(axi_wvalid),
-	.S_AXI_WREADY		(axi_wready),
-	.S_AXI_BRESP		(axi_bresp),
-	.S_AXI_BVALID		(axi_bvalid),
-	.S_AXI_ARADDR		(axi_araddr),
-	.S_AXI_ARPROT		(axi_arprot),
-	.S_AXI_ARVALID		(axi_arvalid),
-	.S_AXI_ARREADY		(axi_arready),
-	.S_AXI_RDATA		(axi_rdata),
-	.S_AXI_RRESP		(axi_rresp),
-	.S_AXI_RVALID		(axi_rvalid),
-	.S_AXI_RREADY		(axi_rready)
-);
-*/
+	case (state)
+		WAIT_TILL_PARSE_DONE: begin
+			if (!pkt_fifo_empty && !phv_empty) begin // both pkt and phv fifo are not empty
+				if (m_axis_tready) begin // we can downstream pkt, the 1st packet
+					bytes_cnt_next = bytes_cnt+count_ones(tkeep_fifo);
 
+					m_axis_tdata = pkt_0;
+					m_axis_tvalid = 1;
+					pkt_fifo_rd_en = 1;
 
-// simulate
-//
-//
-/*
-reg reg_wr_en, reg_rd_en;
-reg [3:0] reg_addr;
-reg [31:0] reg_wr_data;
-reg reg_init_txn;
+					state_next = PKT_1;
+				end
+			end
+		end
+		PKT_1: begin
+			if (!pkt_fifo_empty && !phv_empty) begin
+				if (m_axis_tready) begin // the 2nd segment
+					bytes_cnt_next = bytes_cnt+count_ones(tkeep_fifo);
 
-assign wr_en = reg_wr_en;
-assign rd_en = reg_rd_en;
-assign addr = reg_addr;
-assign wr_data = reg_wr_data;
-assign init_txn = reg_init_txn;
+					if (tlast_fifo) begin
+						state_next = WAIT_TILL_PARSE_DONE;
+						bytes_cnt_next = 0;
+					end
+					else
+						state_next = PKT_2;
 
-initial
-begin
-#3000	reg_wr_en = 1; reg_init_txn = 1; reg_addr = 3; reg_wr_data = 3;
-#100 reg_wr_en = ~reg_wr_en; reg_init_txn = ~reg_init_txn; 
-#100 reg_rd_en = 1; reg_init_txn = 1; reg_addr = 3;
-#100 reg_rd_en = ~reg_rd_en; reg_init_txn = ~reg_init_txn;
+					if (bytes_cnt_next >= w_tot_length) begin
+						last_bytes = w_tot_length+count_ones(tkeep_fifo)-bytes_cnt_next;
+						m_axis_tdata = (tdata_fifo & pad_suffix_zeros(last_bytes*8)) | (pkt_1 & pad_suffix_ones(last_bytes*8));
+						state_next = FLUSH_PKT;
+						phv_rd_en = 1;
+					end
+					else begin
+						m_axis_tdata = pkt_1;
+					end
 
+					m_axis_tvalid= 1;
+					pkt_fifo_rd_en = 1;
+
+				end
+			end
+		end
+		PKT_2: begin
+			if (!pkt_fifo_empty && !phv_empty) begin
+				if (m_axis_tready) begin // the 2nd segment
+					bytes_cnt_next = bytes_cnt+count_ones(tkeep_fifo);
+
+					if (tlast_fifo) begin
+						state_next = WAIT_TILL_PARSE_DONE;
+						bytes_cnt_next = 0;
+					end
+					else
+						state_next = PKT_3;
+
+					if (bytes_cnt_next >= w_tot_length) begin
+						last_bytes = w_tot_length+count_ones(tkeep_fifo)-bytes_cnt_next;
+						m_axis_tdata = (tdata_fifo & pad_suffix_zeros(last_bytes*8)) | (pkt_2 & pad_suffix_ones(last_bytes*8));
+						state_next = FLUSH_PKT;
+						phv_rd_en = 1;
+					end
+					else begin
+						m_axis_tdata = pkt_2;
+					end
+
+					m_axis_tvalid= 1;
+					pkt_fifo_rd_en = 1;
+
+				end
+			end
+		end
+		PKT_3: begin
+			if (!pkt_fifo_empty && !phv_empty) begin
+				if (m_axis_tready) begin // the 2nd segment
+					bytes_cnt_next = bytes_cnt+count_ones(tkeep_fifo);
+
+					if (tlast_fifo) begin
+						state_next = WAIT_TILL_PARSE_DONE;
+						bytes_cnt_next = 0;
+					end
+					else
+						state_next = FLUSH_PKT;
+
+					if (bytes_cnt_next >= w_tot_length) begin
+						last_bytes = w_tot_length+count_ones(tkeep_fifo)-bytes_cnt_next;
+						m_axis_tdata = (tdata_fifo & pad_suffix_zeros(last_bytes*8)) | (pkt_3 & pad_suffix_ones(last_bytes*8));
+						state_next = FLUSH_PKT;
+						phv_rd_en = 1;
+					end
+					else begin
+						m_axis_tdata = pkt_3;
+					end
+
+					m_axis_tvalid= 1;
+					pkt_fifo_rd_en = 1;
+
+				end
+			end
+		end
+		FLUSH_PKT: begin
+			state_next = FLUSH_PKT;
+			m_axis_tvalid = 1;
+			pkt_fifo_rd_en = 1;
+			if (tlast_fifo) begin
+				state_next = WAIT_TILL_PARSE_DONE;
+				bytes_cnt_next = 0;
+			end
+		end
+	endcase
 end
-*/
+
+
+// always @(*) begin
+// 	bytes_cnt_next = 0;
+// 	if (m_axis_tready) begin
+// 		bytes_cnt_next = bytes_cnt+1;
+// 	end
+// end
+
+always @(posedge CLK_156) begin
+	if (~ARESETN_156) begin
+		state <= WAIT_TILL_PARSE_DONE;
+		bytes_cnt <= 0;
+	end
+	else begin
+		state <= state_next;
+		bytes_cnt <= bytes_cnt_next;
+	end
+end
 
 endmodule
