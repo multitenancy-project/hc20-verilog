@@ -15,7 +15,7 @@ module packet_header_parser #(
 	parameter C_S_AXIS_DATA_WIDTH = 256,
 	parameter C_S_AXIS_TUSER_WIDTH = 128,
 	parameter C_VALID_NUM_HDR_PKTS = 4,			// 4*32B = 128B = 1024b
-	parameter PKT_HDR_LEN = 1024+7+17*8+33*8+65*8+24*7,
+	parameter PKT_HDR_LEN = 1024+7+24*8+512, // 1024 at-most 4 segments, 7 total length in byte, 24*(1+7) phv, 512 bits
 	parameter PARSE_ACT_RAM_WIDTH = 167
 )
 (
@@ -36,18 +36,6 @@ module packet_header_parser #(
 integer idx;
 
 /*==== definitions of functions ====*/
-// extract field
-function [31:0] pad_ones (
-	input [3:0] data
-);
-begin
-	pad_ones = 0;
-	for (idx=0; idx<32; idx=idx+1)
-		if (idx<(data+1)*8 && idx<32)
-			pad_ones[idx] = 1;
-end
-endfunction
-
 // count number of 1-bit
 function [6:0] count_ones (
 	input [256/8-1:0] data
@@ -59,8 +47,6 @@ begin
 end
 endfunction
 //
-
-
 
 localparam TOT_HDR_LEN = 1024; // assume at-most 128B (46B+82B) header
 wire [TOT_HDR_LEN-1:0] w_pkts;
@@ -179,58 +165,31 @@ wire [3:0] match_addr;
 
 
 // PHV containers
-reg [16:0] r_2B;
-reg [32:0] r_4B;
-reg [64:0] r_8B;
-reg [6:0] r_off_con_2B_0;
-reg [6:0] r_off_con_2B_1;
-reg [6:0] r_off_con_2B_2;
-reg [6:0] r_off_con_2B_3;
-reg [6:0] r_off_con_2B_4;
-reg [6:0] r_off_con_2B_5;
-reg [6:0] r_off_con_2B_6;
-reg [6:0] r_off_con_2B_7;
-reg [6:0] r_off_con_4B_0;
-reg [6:0] r_off_con_4B_1;
-reg [6:0] r_off_con_4B_2;
-reg [6:0] r_off_con_4B_3;
-reg [6:0] r_off_con_4B_4;
-reg [6:0] r_off_con_4B_5;
-reg [6:0] r_off_con_4B_6;
-reg [6:0] r_off_con_4B_7;
-reg [6:0] r_off_con_8B_0;
-reg [6:0] r_off_con_8B_1;
-reg [6:0] r_off_con_8B_2;
-reg [6:0] r_off_con_8B_3;
-reg [6:0] r_off_con_8B_4;
-reg [6:0] r_off_con_8B_5;
-reg [6:0] r_off_con_8B_6;
-reg [6:0] r_off_con_8B_7;
-reg [16:0] r_pkt_con_2B_0;
-reg [16:0] r_pkt_con_2B_1;
-reg [16:0] r_pkt_con_2B_2;
-reg [16:0] r_pkt_con_2B_3;
-reg [16:0] r_pkt_con_2B_4;
-reg [16:0] r_pkt_con_2B_5;
-reg [16:0] r_pkt_con_2B_6;
-reg [16:0] r_pkt_con_2B_7;
-reg [32:0] r_pkt_con_4B_0;
-reg [32:0] r_pkt_con_4B_1;
-reg [32:0] r_pkt_con_4B_2;
-reg [32:0] r_pkt_con_4B_3;
-reg [32:0] r_pkt_con_4B_4;
-reg [32:0] r_pkt_con_4B_5;
-reg [32:0] r_pkt_con_4B_6;
-reg [32:0] r_pkt_con_4B_7;
-reg [64:0] r_pkt_con_8B_0;
-reg [64:0] r_pkt_con_8B_1;
-reg [64:0] r_pkt_con_8B_2;
-reg [64:0] r_pkt_con_8B_3;
-reg [64:0] r_pkt_con_8B_4;
-reg [64:0] r_pkt_con_8B_5;
-reg [64:0] r_pkt_con_8B_6;
-reg [64:0] r_pkt_con_8B_7;
-reg [6:0] r_tot_length;
+reg [7:0] r_off_con_2B_0;
+reg [7:0] r_off_con_2B_1;
+reg [7:0] r_off_con_2B_2;
+reg [7:0] r_off_con_2B_3;
+reg [7:0] r_off_con_2B_4;
+reg [7:0] r_off_con_2B_5;
+reg [7:0] r_off_con_2B_6;
+reg [7:0] r_off_con_2B_7;
+reg [7:0] r_off_con_4B_0;
+reg [7:0] r_off_con_4B_1;
+reg [7:0] r_off_con_4B_2;
+reg [7:0] r_off_con_4B_3;
+reg [7:0] r_off_con_4B_4;
+reg [7:0] r_off_con_4B_5;
+reg [7:0] r_off_con_4B_6;
+reg [7:0] r_off_con_4B_7;
+reg [7:0] r_off_con_8B_0;
+reg [7:0] r_off_con_8B_1;
+reg [7:0] r_off_con_8B_2;
+reg [7:0] r_off_con_8B_3;
+reg [7:0] r_off_con_8B_4;
+reg [7:0] r_off_con_8B_5;
+reg [7:0] r_off_con_8B_6;
+reg [7:0] r_off_con_8B_7;
+reg [7:0] r_tot_length;
 // parse act unit
 wire [15:0] w_parse_act_unit_0;
 wire [15:0] w_parse_act_unit_1;
@@ -257,31 +216,7 @@ assign w_tot_length = parse_act_data_out[160+:7];
 //
 //
 always @(*) begin
-	r_pkt_con_2B_0 = 0;
-	r_pkt_con_2B_1 = 0;
-	r_pkt_con_2B_2 = 0;
-	r_pkt_con_2B_3 = 0;
-	r_pkt_con_2B_4 = 0;
-	r_pkt_con_2B_5 = 0;
-	r_pkt_con_2B_6 = 0;
-	r_pkt_con_2B_7 = 0;
-	r_pkt_con_4B_0 = 0;
-	r_pkt_con_4B_1 = 0;
-	r_pkt_con_4B_2 = 0;
-	r_pkt_con_4B_3 = 0;
-	r_pkt_con_4B_4 = 0;
-	r_pkt_con_4B_5 = 0;
-	r_pkt_con_4B_6 = 0;
-	r_pkt_con_4B_7 = 0;
-	r_pkt_con_8B_0 = 0;
-	r_pkt_con_8B_1 = 0;
-	r_pkt_con_8B_2 = 0;
-	r_pkt_con_8B_3 = 0;
-	r_pkt_con_8B_4 = 0;
-	r_pkt_con_8B_5 = 0;
-	r_pkt_con_8B_6 = 0;
-	r_pkt_con_8B_7 = 0;
-
+	// we only log down the offset info
 	r_off_con_2B_0 = 0;
 	r_off_con_2B_1 = 0;
 	r_off_con_2B_2 = 0;
@@ -309,120 +244,113 @@ always @(*) begin
 
 	r_tot_length = w_tot_length;
 
-
 	if (w_parse_act_unit_0[0] == 1'b1) begin // valid
 		case (w_parse_act_unit_0[5:4])
 			0 : begin
-				r_2B[16] = 1;
-				r_2B[15:0] = (w_pkts >> (w_parse_act_unit_0[12:6]*8));
 				case (w_parse_act_unit_0[3:1])
 					0: begin
-						r_pkt_con_2B_0 = r_2B;
-						r_off_con_2B_0 = w_parse_act_unit_0[12:6];
+						r_off_con_2B_0[7] = 1'b1;
+						r_off_con_2B_0[6:0] = w_parse_act_unit_0[12:6];
 					end
 					1: begin
-						r_pkt_con_2B_1 = r_2B;
-						r_off_con_2B_1 = w_parse_act_unit_0[12:6];
+						r_off_con_2B_1[7] = 1'b1;
+						r_off_con_2B_1[6:0] = w_parse_act_unit_0[12:6];
 					end
 					2: begin
-						r_pkt_con_2B_2 = r_2B;
-						r_off_con_2B_2 = w_parse_act_unit_0[12:6];
+						r_off_con_2B_2[7] = 1'b1;
+						r_off_con_2B_2[6:0] = w_parse_act_unit_0[12:6];
 					end
 					3: begin
-						r_pkt_con_2B_3 = r_2B;
-						r_off_con_2B_3 = w_parse_act_unit_0[12:6];
+						r_off_con_2B_3[7] = 1'b1;
+						r_off_con_2B_3[6:0] = w_parse_act_unit_0[12:6];
 					end
 					4: begin
-						r_pkt_con_2B_4 = r_2B;
-						r_off_con_2B_4 = w_parse_act_unit_0[12:6];
+						r_off_con_2B_4[7] = 1'b1;
+						r_off_con_2B_4[6:0] = w_parse_act_unit_0[12:6];
 					end
 					5: begin
-						r_pkt_con_2B_5 = r_2B;
-						r_off_con_2B_5 = w_parse_act_unit_0[12:6];
+						r_off_con_2B_5[7] = 1'b1;
+						r_off_con_2B_5[6:0] = w_parse_act_unit_0[12:6];
 					end
 					6: begin
-						r_pkt_con_2B_6 = r_2B;
-						r_off_con_2B_6 = w_parse_act_unit_0[12:6];
+						r_off_con_2B_6[7] = 1'b1;
+						r_off_con_2B_6[6:0] = w_parse_act_unit_0[12:6];
 					end
 					7: begin
-						r_pkt_con_2B_7 = r_2B;
-						r_off_con_2B_7 = w_parse_act_unit_0[12:6];
+						r_off_con_2B_7[7] = 1'b1;
+						r_off_con_2B_7[6:0] = w_parse_act_unit_0[12:6];
 					end
 				endcase
 			end
 			1 : begin
-				r_4B[32] = 1;
-				r_4B[31:0] = (w_pkts >> (w_parse_act_unit_0[12:6]*8));
 				case (w_parse_act_unit_0[3:1])
 					0: begin
-						r_pkt_con_4B_0 = r_4B;
-						r_off_con_4B_0 = w_parse_act_unit_0[12:6];
+						r_off_con_4B_0[7] = 1'b1;
+						r_off_con_4B_0[6:0] = w_parse_act_unit_0[12:6];
 					end
 					1: begin
-						r_pkt_con_4B_1 = r_4B;
-						r_off_con_4B_1 = w_parse_act_unit_0[12:6];
+						r_off_con_4B_1[7] = 1'b1;
+						r_off_con_4B_1[6:0] = w_parse_act_unit_0[12:6];
 					end
 					2: begin
-						r_pkt_con_4B_2 = r_4B;
-						r_off_con_4B_2 = w_parse_act_unit_0[12:6];
+						r_off_con_4B_2[7] = 1'b1;
+						r_off_con_4B_2[6:0] = w_parse_act_unit_0[12:6];
 					end
 					3: begin
-						r_pkt_con_4B_3 = r_4B;
-						r_off_con_4B_3 = w_parse_act_unit_0[12:6];
+						r_off_con_4B_3[7] = 1'b1;
+						r_off_con_4B_3[6:0] = w_parse_act_unit_0[12:6];
 					end
 					4: begin
-						r_pkt_con_4B_4 = r_4B;
-						r_off_con_4B_4 = w_parse_act_unit_0[12:6];
+						r_off_con_4B_4[7] = 1'b1;
+						r_off_con_4B_4[6:0] = w_parse_act_unit_0[12:6];
 					end
 					5: begin
-						r_pkt_con_4B_5 = r_4B;
-						r_off_con_4B_5 = w_parse_act_unit_0[12:6];
+						r_off_con_4B_5[7] = 1'b1;
+						r_off_con_4B_5[6:0] = w_parse_act_unit_0[12:6];
 					end
 					6: begin
-						r_pkt_con_4B_6 = r_4B;
-						r_off_con_4B_6 = w_parse_act_unit_0[12:6];
+						r_off_con_4B_6[7] = 1'b1;
+						r_off_con_4B_6[6:0] = w_parse_act_unit_0[12:6];
 					end
 					7: begin
-						r_pkt_con_4B_7 = r_4B;
-						r_off_con_4B_7 = w_parse_act_unit_0[12:6];
+						r_off_con_4B_7[7] = 1'b1;
+						r_off_con_4B_7[6:0] = w_parse_act_unit_0[12:6];
 					end
 				endcase
 			end
 			2 : begin
-				r_8B[64] = 1;
-				r_8B[63:0] = (w_pkts >> (w_parse_act_unit_0[12:6]*8));
 				case (w_parse_act_unit_0[3:1])
 					0: begin
-						r_pkt_con_8B_0 = r_8B;
-						r_off_con_8B_0 = w_parse_act_unit_0[12:6];
+						r_off_con_8B_0[7] = 1'b1;
+						r_off_con_8B_0[6:0] = w_parse_act_unit_0[12:6];
 					end
 					1: begin
-						r_pkt_con_8B_1 = r_8B;
-						r_off_con_8B_1 = w_parse_act_unit_0[12:6];
+						r_off_con_8B_1[7] = 1'b1;
+						r_off_con_8B_1[6:0] = w_parse_act_unit_0[12:6];
 					end
 					2: begin
-						r_pkt_con_8B_2 = r_8B;
-						r_off_con_8B_2 = w_parse_act_unit_0[12:6];
+						r_off_con_8B_2[7] = 1'b1;
+						r_off_con_8B_2[6:0] = w_parse_act_unit_0[12:6];
 					end
 					3: begin
-						r_pkt_con_8B_3 = r_8B;
-						r_off_con_8B_3 = w_parse_act_unit_0[12:6];
+						r_off_con_8B_3[7] = 1'b1;
+						r_off_con_8B_3[6:0] = w_parse_act_unit_0[12:6];
 					end
 					4: begin
-						r_pkt_con_8B_4 = r_8B;
-						r_off_con_8B_4 = w_parse_act_unit_0[12:6];
+						r_off_con_8B_4[7] = 1'b1;
+						r_off_con_8B_4[6:0] = w_parse_act_unit_0[12:6];
 					end
 					5: begin
-						r_pkt_con_8B_5 = r_8B;
-						r_off_con_8B_5 = w_parse_act_unit_0[12:6];
+						r_off_con_8B_5[7] = 1'b1;
+						r_off_con_8B_5[6:0] = w_parse_act_unit_0[12:6];
 					end
 					6: begin
-						r_pkt_con_8B_6 = r_8B;
-						r_off_con_8B_6 = w_parse_act_unit_0[12:6];
+						r_off_con_8B_6[7] = 1'b1;
+						r_off_con_8B_6[6:0] = w_parse_act_unit_0[12:6];
 					end
 					7: begin
-						r_pkt_con_8B_7 = r_8B;
-						r_off_con_8B_7 = w_parse_act_unit_0[12:6];
+						r_off_con_8B_7[7] = 1'b1;
+						r_off_con_8B_7[6:0] = w_parse_act_unit_0[12:6];
 					end
 				endcase
 			end
@@ -431,116 +359,110 @@ always @(*) begin
 	if (w_parse_act_unit_1[0] == 1'b1) begin // valid
 		case (w_parse_act_unit_1[5:4])
 			0 : begin
-				r_2B[16] = 1;
-				r_2B[15:0] = (w_pkts >> (w_parse_act_unit_1[12:6]*8));
 				case (w_parse_act_unit_1[3:1])
 					0: begin
-						r_pkt_con_2B_0 = r_2B;
-						r_off_con_2B_0 = w_parse_act_unit_1[12:6];
+						r_off_con_2B_0[7] = 1'b1;
+						r_off_con_2B_0[6:0] = w_parse_act_unit_1[12:6];
 					end
 					1: begin
-						r_pkt_con_2B_1 = r_2B;
-						r_off_con_2B_1 = w_parse_act_unit_1[12:6];
+						r_off_con_2B_1[7] = 1'b1;
+						r_off_con_2B_1[6:0] = w_parse_act_unit_1[12:6];
 					end
 					2: begin
-						r_pkt_con_2B_2 = r_2B;
-						r_off_con_2B_2 = w_parse_act_unit_1[12:6];
+						r_off_con_2B_2[7] = 1'b1;
+						r_off_con_2B_2[6:0] = w_parse_act_unit_1[12:6];
 					end
 					3: begin
-						r_pkt_con_2B_3 = r_2B;
-						r_off_con_2B_3 = w_parse_act_unit_1[12:6];
+						r_off_con_2B_3[7] = 1'b1;
+						r_off_con_2B_3[6:0] = w_parse_act_unit_1[12:6];
 					end
 					4: begin
-						r_pkt_con_2B_4 = r_2B;
-						r_off_con_2B_4 = w_parse_act_unit_1[12:6];
+						r_off_con_2B_4[7] = 1'b1;
+						r_off_con_2B_4[6:0] = w_parse_act_unit_1[12:6];
 					end
 					5: begin
-						r_pkt_con_2B_5 = r_2B;
-						r_off_con_2B_5 = w_parse_act_unit_1[12:6];
+						r_off_con_2B_5[7] = 1'b1;
+						r_off_con_2B_5[6:0] = w_parse_act_unit_1[12:6];
 					end
 					6: begin
-						r_pkt_con_2B_6 = r_2B;
-						r_off_con_2B_6 = w_parse_act_unit_1[12:6];
+						r_off_con_2B_6[7] = 1'b1;
+						r_off_con_2B_6[6:0] = w_parse_act_unit_1[12:6];
 					end
 					7: begin
-						r_pkt_con_2B_7 = r_2B;
-						r_off_con_2B_7 = w_parse_act_unit_1[12:6];
+						r_off_con_2B_7[7] = 1'b1;
+						r_off_con_2B_7[6:0] = w_parse_act_unit_1[12:6];
 					end
 				endcase
 			end
 			1 : begin
-				r_4B[32] = 1;
-				r_4B[31:0] = (w_pkts >> (w_parse_act_unit_1[12:6]*8));
 				case (w_parse_act_unit_1[3:1])
 					0: begin
-						r_pkt_con_4B_0 = r_4B;
-						r_off_con_4B_0 = w_parse_act_unit_1[12:6];
+						r_off_con_4B_0[7] = 1'b1;
+						r_off_con_4B_0[6:0] = w_parse_act_unit_1[12:6];
 					end
 					1: begin
-						r_pkt_con_4B_1 = r_4B;
-						r_off_con_4B_1 = w_parse_act_unit_1[12:6];
+						r_off_con_4B_1[7] = 1'b1;
+						r_off_con_4B_1[6:0] = w_parse_act_unit_1[12:6];
 					end
 					2: begin
-						r_pkt_con_4B_2 = r_4B;
-						r_off_con_4B_2 = w_parse_act_unit_1[12:6];
+						r_off_con_4B_2[7] = 1'b1;
+						r_off_con_4B_2[6:0] = w_parse_act_unit_1[12:6];
 					end
 					3: begin
-						r_pkt_con_4B_3 = r_4B;
-						r_off_con_4B_3 = w_parse_act_unit_1[12:6];
+						r_off_con_4B_3[7] = 1'b1;
+						r_off_con_4B_3[6:0] = w_parse_act_unit_1[12:6];
 					end
 					4: begin
-						r_pkt_con_4B_4 = r_4B;
-						r_off_con_4B_4 = w_parse_act_unit_1[12:6];
+						r_off_con_4B_4[7] = 1'b1;
+						r_off_con_4B_4[6:0] = w_parse_act_unit_1[12:6];
 					end
 					5: begin
-						r_pkt_con_4B_5 = r_4B;
-						r_off_con_4B_5 = w_parse_act_unit_1[12:6];
+						r_off_con_4B_5[7] = 1'b1;
+						r_off_con_4B_5[6:0] = w_parse_act_unit_1[12:6];
 					end
 					6: begin
-						r_pkt_con_4B_6 = r_4B;
-						r_off_con_4B_6 = w_parse_act_unit_1[12:6];
+						r_off_con_4B_6[7] = 1'b1;
+						r_off_con_4B_6[6:0] = w_parse_act_unit_1[12:6];
 					end
 					7: begin
-						r_pkt_con_4B_7 = r_4B;
-						r_off_con_4B_7 = w_parse_act_unit_1[12:6];
+						r_off_con_4B_7[7] = 1'b1;
+						r_off_con_4B_7[6:0] = w_parse_act_unit_1[12:6];
 					end
 				endcase
 			end
 			2 : begin
-				r_8B[64] = 1;
-				r_8B[63:0] = (w_pkts >> (w_parse_act_unit_1[12:6]*8));
 				case (w_parse_act_unit_1[3:1])
 					0: begin
-						r_pkt_con_8B_0 = r_8B;
-						r_off_con_8B_0 = w_parse_act_unit_1[12:6];
+						r_off_con_8B_0[7] = 1'b1;
+						r_off_con_8B_0[6:0] = w_parse_act_unit_1[12:6];
 					end
 					1: begin
-						r_pkt_con_8B_1 = r_8B;
-						r_off_con_8B_1 = w_parse_act_unit_1[12:6];
+						r_off_con_8B_1[7] = 1'b1;
+						r_off_con_8B_1[6:0] = w_parse_act_unit_1[12:6];
 					end
 					2: begin
-						r_pkt_con_8B_2 = r_8B;
-						r_off_con_8B_2 = w_parse_act_unit_1[12:6];
+						r_off_con_8B_2[7] = 1'b1;
+						r_off_con_8B_2[6:0] = w_parse_act_unit_1[12:6];
 					end
 					3: begin
-						r_pkt_con_8B_3 = r_8B;
-						r_off_con_8B_3 = w_parse_act_unit_1[12:6];
+						r_off_con_8B_3[7] = 1'b1;
+						r_off_con_8B_3[6:0] = w_parse_act_unit_1[12:6];
 					end
 					4: begin
-						r_pkt_con_8B_4 = r_8B;
-						r_off_con_8B_4 = w_parse_act_unit_1[12:6];
+						r_off_con_8B_4[7] = 1'b1;
+						r_off_con_8B_4[6:0] = w_parse_act_unit_1[12:6];
 					end
 					5: begin
-						r_pkt_con_8B_5 = r_8B;
-						r_off_con_8B_5 = w_parse_act_unit_1[12:6];
+						r_off_con_8B_5[7] = 1'b1;
+						r_off_con_8B_5[6:0] = w_parse_act_unit_1[12:6];
 					end
 					6: begin
-						r_pkt_con_8B_6 = r_8B;
-						r_off_con_8B_6 = w_parse_act_unit_1[12:6];
+						r_off_con_8B_6[7] = 1'b1;
+						r_off_con_8B_6[6:0] = w_parse_act_unit_1[12:6];
 					end
 					7: begin
-						r_pkt_con_8B_7 = r_8B;
-						r_off_con_8B_7 = w_parse_act_unit_1[12:6];
+						r_off_con_8B_7[7] = 1'b1;
+						r_off_con_8B_7[6:0] = w_parse_act_unit_1[12:6];
 					end
 				endcase
 			end
@@ -549,116 +471,110 @@ always @(*) begin
 	if (w_parse_act_unit_2[0] == 1'b1) begin // valid
 		case (w_parse_act_unit_2[5:4])
 			0 : begin
-				r_2B[16] = 1;
-				r_2B[15:0] = (w_pkts >> (w_parse_act_unit_2[12:6]*8));
 				case (w_parse_act_unit_2[3:1])
 					0: begin
-						r_pkt_con_2B_0 = r_2B;
-						r_off_con_2B_0 = w_parse_act_unit_2[12:6];
+						r_off_con_2B_0[7] = 1'b1;
+						r_off_con_2B_0[6:0] = w_parse_act_unit_2[12:6];
 					end
 					1: begin
-						r_pkt_con_2B_1 = r_2B;
-						r_off_con_2B_1 = w_parse_act_unit_2[12:6];
+						r_off_con_2B_1[7] = 1'b1;
+						r_off_con_2B_1[6:0] = w_parse_act_unit_2[12:6];
 					end
 					2: begin
-						r_pkt_con_2B_2 = r_2B;
-						r_off_con_2B_2 = w_parse_act_unit_2[12:6];
+						r_off_con_2B_2[7] = 1'b1;
+						r_off_con_2B_2[6:0] = w_parse_act_unit_2[12:6];
 					end
 					3: begin
-						r_pkt_con_2B_3 = r_2B;
-						r_off_con_2B_3 = w_parse_act_unit_2[12:6];
+						r_off_con_2B_3[7] = 1'b1;
+						r_off_con_2B_3[6:0] = w_parse_act_unit_2[12:6];
 					end
 					4: begin
-						r_pkt_con_2B_4 = r_2B;
-						r_off_con_2B_4 = w_parse_act_unit_2[12:6];
+						r_off_con_2B_4[7] = 1'b1;
+						r_off_con_2B_4[6:0] = w_parse_act_unit_2[12:6];
 					end
 					5: begin
-						r_pkt_con_2B_5 = r_2B;
-						r_off_con_2B_5 = w_parse_act_unit_2[12:6];
+						r_off_con_2B_5[7] = 1'b1;
+						r_off_con_2B_5[6:0] = w_parse_act_unit_2[12:6];
 					end
 					6: begin
-						r_pkt_con_2B_6 = r_2B;
-						r_off_con_2B_6 = w_parse_act_unit_2[12:6];
+						r_off_con_2B_6[7] = 1'b1;
+						r_off_con_2B_6[6:0] = w_parse_act_unit_2[12:6];
 					end
 					7: begin
-						r_pkt_con_2B_7 = r_2B;
-						r_off_con_2B_7 = w_parse_act_unit_2[12:6];
+						r_off_con_2B_7[7] = 1'b1;
+						r_off_con_2B_7[6:0] = w_parse_act_unit_2[12:6];
 					end
 				endcase
 			end
 			1 : begin
-				r_4B[32] = 1;
-				r_4B[31:0] = (w_pkts >> (w_parse_act_unit_2[12:6]*8));
 				case (w_parse_act_unit_2[3:1])
 					0: begin
-						r_pkt_con_4B_0 = r_4B;
-						r_off_con_4B_0 = w_parse_act_unit_2[12:6];
+						r_off_con_4B_0[7] = 1'b1;
+						r_off_con_4B_0[6:0] = w_parse_act_unit_2[12:6];
 					end
 					1: begin
-						r_pkt_con_4B_1 = r_4B;
-						r_off_con_4B_1 = w_parse_act_unit_2[12:6];
+						r_off_con_4B_1[7] = 1'b1;
+						r_off_con_4B_1[6:0] = w_parse_act_unit_2[12:6];
 					end
 					2: begin
-						r_pkt_con_4B_2 = r_4B;
-						r_off_con_4B_2 = w_parse_act_unit_2[12:6];
+						r_off_con_4B_2[7] = 1'b1;
+						r_off_con_4B_2[6:0] = w_parse_act_unit_2[12:6];
 					end
 					3: begin
-						r_pkt_con_4B_3 = r_4B;
-						r_off_con_4B_3 = w_parse_act_unit_2[12:6];
+						r_off_con_4B_3[7] = 1'b1;
+						r_off_con_4B_3[6:0] = w_parse_act_unit_2[12:6];
 					end
 					4: begin
-						r_pkt_con_4B_4 = r_4B;
-						r_off_con_4B_4 = w_parse_act_unit_2[12:6];
+						r_off_con_4B_4[7] = 1'b1;
+						r_off_con_4B_4[6:0] = w_parse_act_unit_2[12:6];
 					end
 					5: begin
-						r_pkt_con_4B_5 = r_4B;
-						r_off_con_4B_5 = w_parse_act_unit_2[12:6];
+						r_off_con_4B_5[7] = 1'b1;
+						r_off_con_4B_5[6:0] = w_parse_act_unit_2[12:6];
 					end
 					6: begin
-						r_pkt_con_4B_6 = r_4B;
-						r_off_con_4B_6 = w_parse_act_unit_2[12:6];
+						r_off_con_4B_6[7] = 1'b1;
+						r_off_con_4B_6[6:0] = w_parse_act_unit_2[12:6];
 					end
 					7: begin
-						r_pkt_con_4B_7 = r_4B;
-						r_off_con_4B_7 = w_parse_act_unit_2[12:6];
+						r_off_con_4B_7[7] = 1'b1;
+						r_off_con_4B_7[6:0] = w_parse_act_unit_2[12:6];
 					end
 				endcase
 			end
 			2 : begin
-				r_8B[64] = 1;
-				r_8B[63:0] = (w_pkts >> (w_parse_act_unit_2[12:6]*8));
 				case (w_parse_act_unit_2[3:1])
 					0: begin
-						r_pkt_con_8B_0 = r_8B;
-						r_off_con_8B_0 = w_parse_act_unit_2[12:6];
+						r_off_con_8B_0[7] = 1'b1;
+						r_off_con_8B_0[6:0] = w_parse_act_unit_2[12:6];
 					end
 					1: begin
-						r_pkt_con_8B_1 = r_8B;
-						r_off_con_8B_1 = w_parse_act_unit_2[12:6];
+						r_off_con_8B_1[7] = 1'b1;
+						r_off_con_8B_1[6:0] = w_parse_act_unit_2[12:6];
 					end
 					2: begin
-						r_pkt_con_8B_2 = r_8B;
-						r_off_con_8B_2 = w_parse_act_unit_2[12:6];
+						r_off_con_8B_2[7] = 1'b1;
+						r_off_con_8B_2[6:0] = w_parse_act_unit_2[12:6];
 					end
 					3: begin
-						r_pkt_con_8B_3 = r_8B;
-						r_off_con_8B_3 = w_parse_act_unit_2[12:6];
+						r_off_con_8B_3[7] = 1'b1;
+						r_off_con_8B_3[6:0] = w_parse_act_unit_2[12:6];
 					end
 					4: begin
-						r_pkt_con_8B_4 = r_8B;
-						r_off_con_8B_4 = w_parse_act_unit_2[12:6];
+						r_off_con_8B_4[7] = 1'b1;
+						r_off_con_8B_4[6:0] = w_parse_act_unit_2[12:6];
 					end
 					5: begin
-						r_pkt_con_8B_5 = r_8B;
-						r_off_con_8B_5 = w_parse_act_unit_2[12:6];
+						r_off_con_8B_5[7] = 1'b1;
+						r_off_con_8B_5[6:0] = w_parse_act_unit_2[12:6];
 					end
 					6: begin
-						r_pkt_con_8B_6 = r_8B;
-						r_off_con_8B_6 = w_parse_act_unit_2[12:6];
+						r_off_con_8B_6[7] = 1'b1;
+						r_off_con_8B_6[6:0] = w_parse_act_unit_2[12:6];
 					end
 					7: begin
-						r_pkt_con_8B_7 = r_8B;
-						r_off_con_8B_7 = w_parse_act_unit_2[12:6];
+						r_off_con_8B_7[7] = 1'b1;
+						r_off_con_8B_7[6:0] = w_parse_act_unit_2[12:6];
 					end
 				endcase
 			end
@@ -667,116 +583,110 @@ always @(*) begin
 	if (w_parse_act_unit_3[0] == 1'b1) begin // valid
 		case (w_parse_act_unit_3[5:4])
 			0 : begin
-				r_2B[16] = 1;
-				r_2B[15:0] = (w_pkts >> (w_parse_act_unit_3[12:6]*8));
 				case (w_parse_act_unit_3[3:1])
 					0: begin
-						r_pkt_con_2B_0 = r_2B;
-						r_off_con_2B_0 = w_parse_act_unit_3[12:6];
+						r_off_con_2B_0[7] = 1'b1;
+						r_off_con_2B_0[6:0] = w_parse_act_unit_3[12:6];
 					end
 					1: begin
-						r_pkt_con_2B_1 = r_2B;
-						r_off_con_2B_1 = w_parse_act_unit_3[12:6];
+						r_off_con_2B_1[7] = 1'b1;
+						r_off_con_2B_1[6:0] = w_parse_act_unit_3[12:6];
 					end
 					2: begin
-						r_pkt_con_2B_2 = r_2B;
-						r_off_con_2B_2 = w_parse_act_unit_3[12:6];
+						r_off_con_2B_2[7] = 1'b1;
+						r_off_con_2B_2[6:0] = w_parse_act_unit_3[12:6];
 					end
 					3: begin
-						r_pkt_con_2B_3 = r_2B;
-						r_off_con_2B_3 = w_parse_act_unit_3[12:6];
+						r_off_con_2B_3[7] = 1'b1;
+						r_off_con_2B_3[6:0] = w_parse_act_unit_3[12:6];
 					end
 					4: begin
-						r_pkt_con_2B_4 = r_2B;
-						r_off_con_2B_4 = w_parse_act_unit_3[12:6];
+						r_off_con_2B_4[7] = 1'b1;
+						r_off_con_2B_4[6:0] = w_parse_act_unit_3[12:6];
 					end
 					5: begin
-						r_pkt_con_2B_5 = r_2B;
-						r_off_con_2B_5 = w_parse_act_unit_3[12:6];
+						r_off_con_2B_5[7] = 1'b1;
+						r_off_con_2B_5[6:0] = w_parse_act_unit_3[12:6];
 					end
 					6: begin
-						r_pkt_con_2B_6 = r_2B;
-						r_off_con_2B_6 = w_parse_act_unit_3[12:6];
+						r_off_con_2B_6[7] = 1'b1;
+						r_off_con_2B_6[6:0] = w_parse_act_unit_3[12:6];
 					end
 					7: begin
-						r_pkt_con_2B_7 = r_2B;
-						r_off_con_2B_7 = w_parse_act_unit_3[12:6];
+						r_off_con_2B_7[7] = 1'b1;
+						r_off_con_2B_7[6:0] = w_parse_act_unit_3[12:6];
 					end
 				endcase
 			end
 			1 : begin
-				r_4B[32] = 1;
-				r_4B[31:0] = (w_pkts >> (w_parse_act_unit_3[12:6]*8));
 				case (w_parse_act_unit_3[3:1])
 					0: begin
-						r_pkt_con_4B_0 = r_4B;
-						r_off_con_4B_0 = w_parse_act_unit_3[12:6];
+						r_off_con_4B_0[7] = 1'b1;
+						r_off_con_4B_0[6:0] = w_parse_act_unit_3[12:6];
 					end
 					1: begin
-						r_pkt_con_4B_1 = r_4B;
-						r_off_con_4B_1 = w_parse_act_unit_3[12:6];
+						r_off_con_4B_1[7] = 1'b1;
+						r_off_con_4B_1[6:0] = w_parse_act_unit_3[12:6];
 					end
 					2: begin
-						r_pkt_con_4B_2 = r_4B;
-						r_off_con_4B_2 = w_parse_act_unit_3[12:6];
+						r_off_con_4B_2[7] = 1'b1;
+						r_off_con_4B_2[6:0] = w_parse_act_unit_3[12:6];
 					end
 					3: begin
-						r_pkt_con_4B_3 = r_4B;
-						r_off_con_4B_3 = w_parse_act_unit_3[12:6];
+						r_off_con_4B_3[7] = 1'b1;
+						r_off_con_4B_3[6:0] = w_parse_act_unit_3[12:6];
 					end
 					4: begin
-						r_pkt_con_4B_4 = r_4B;
-						r_off_con_4B_4 = w_parse_act_unit_3[12:6];
+						r_off_con_4B_4[7] = 1'b1;
+						r_off_con_4B_4[6:0] = w_parse_act_unit_3[12:6];
 					end
 					5: begin
-						r_pkt_con_4B_5 = r_4B;
-						r_off_con_4B_5 = w_parse_act_unit_3[12:6];
+						r_off_con_4B_5[7] = 1'b1;
+						r_off_con_4B_5[6:0] = w_parse_act_unit_3[12:6];
 					end
 					6: begin
-						r_pkt_con_4B_6 = r_4B;
-						r_off_con_4B_6 = w_parse_act_unit_3[12:6];
+						r_off_con_4B_6[7] = 1'b1;
+						r_off_con_4B_6[6:0] = w_parse_act_unit_3[12:6];
 					end
 					7: begin
-						r_pkt_con_4B_7 = r_4B;
-						r_off_con_4B_7 = w_parse_act_unit_3[12:6];
+						r_off_con_4B_7[7] = 1'b1;
+						r_off_con_4B_7[6:0] = w_parse_act_unit_3[12:6];
 					end
 				endcase
 			end
 			2 : begin
-				r_8B[64] = 1;
-				r_8B[63:0] = (w_pkts >> (w_parse_act_unit_3[12:6]*8));
 				case (w_parse_act_unit_3[3:1])
 					0: begin
-						r_pkt_con_8B_0 = r_8B;
-						r_off_con_8B_0 = w_parse_act_unit_3[12:6];
+						r_off_con_8B_0[7] = 1'b1;
+						r_off_con_8B_0[6:0] = w_parse_act_unit_3[12:6];
 					end
 					1: begin
-						r_pkt_con_8B_1 = r_8B;
-						r_off_con_8B_1 = w_parse_act_unit_3[12:6];
+						r_off_con_8B_1[7] = 1'b1;
+						r_off_con_8B_1[6:0] = w_parse_act_unit_3[12:6];
 					end
 					2: begin
-						r_pkt_con_8B_2 = r_8B;
-						r_off_con_8B_2 = w_parse_act_unit_3[12:6];
+						r_off_con_8B_2[7] = 1'b1;
+						r_off_con_8B_2[6:0] = w_parse_act_unit_3[12:6];
 					end
 					3: begin
-						r_pkt_con_8B_3 = r_8B;
-						r_off_con_8B_3 = w_parse_act_unit_3[12:6];
+						r_off_con_8B_3[7] = 1'b1;
+						r_off_con_8B_3[6:0] = w_parse_act_unit_3[12:6];
 					end
 					4: begin
-						r_pkt_con_8B_4 = r_8B;
-						r_off_con_8B_4 = w_parse_act_unit_3[12:6];
+						r_off_con_8B_4[7] = 1'b1;
+						r_off_con_8B_4[6:0] = w_parse_act_unit_3[12:6];
 					end
 					5: begin
-						r_pkt_con_8B_5 = r_8B;
-						r_off_con_8B_5 = w_parse_act_unit_3[12:6];
+						r_off_con_8B_5[7] = 1'b1;
+						r_off_con_8B_5[6:0] = w_parse_act_unit_3[12:6];
 					end
 					6: begin
-						r_pkt_con_8B_6 = r_8B;
-						r_off_con_8B_6 = w_parse_act_unit_3[12:6];
+						r_off_con_8B_6[7] = 1'b1;
+						r_off_con_8B_6[6:0] = w_parse_act_unit_3[12:6];
 					end
 					7: begin
-						r_pkt_con_8B_7 = r_8B;
-						r_off_con_8B_7 = w_parse_act_unit_3[12:6];
+						r_off_con_8B_7[7] = 1'b1;
+						r_off_con_8B_7[6:0] = w_parse_act_unit_3[12:6];
 					end
 				endcase
 			end
@@ -785,116 +695,110 @@ always @(*) begin
 	if (w_parse_act_unit_4[0] == 1'b1) begin // valid
 		case (w_parse_act_unit_4[5:4])
 			0 : begin
-				r_2B[16] = 1;
-				r_2B[15:0] = (w_pkts >> (w_parse_act_unit_4[12:6]*8));
 				case (w_parse_act_unit_4[3:1])
 					0: begin
-						r_pkt_con_2B_0 = r_2B;
-						r_off_con_2B_0 = w_parse_act_unit_4[12:6];
+						r_off_con_2B_0[7] = 1'b1;
+						r_off_con_2B_0[6:0] = w_parse_act_unit_4[12:6];
 					end
 					1: begin
-						r_pkt_con_2B_1 = r_2B;
-						r_off_con_2B_1 = w_parse_act_unit_4[12:6];
+						r_off_con_2B_1[7] = 1'b1;
+						r_off_con_2B_1[6:0] = w_parse_act_unit_4[12:6];
 					end
 					2: begin
-						r_pkt_con_2B_2 = r_2B;
-						r_off_con_2B_2 = w_parse_act_unit_4[12:6];
+						r_off_con_2B_2[7] = 1'b1;
+						r_off_con_2B_2[6:0] = w_parse_act_unit_4[12:6];
 					end
 					3: begin
-						r_pkt_con_2B_3 = r_2B;
-						r_off_con_2B_3 = w_parse_act_unit_4[12:6];
+						r_off_con_2B_3[7] = 1'b1;
+						r_off_con_2B_3[6:0] = w_parse_act_unit_4[12:6];
 					end
 					4: begin
-						r_pkt_con_2B_4 = r_2B;
-						r_off_con_2B_4 = w_parse_act_unit_4[12:6];
+						r_off_con_2B_4[7] = 1'b1;
+						r_off_con_2B_4[6:0] = w_parse_act_unit_4[12:6];
 					end
 					5: begin
-						r_pkt_con_2B_5 = r_2B;
-						r_off_con_2B_5 = w_parse_act_unit_4[12:6];
+						r_off_con_2B_5[7] = 1'b1;
+						r_off_con_2B_5[6:0] = w_parse_act_unit_4[12:6];
 					end
 					6: begin
-						r_pkt_con_2B_6 = r_2B;
-						r_off_con_2B_6 = w_parse_act_unit_4[12:6];
+						r_off_con_2B_6[7] = 1'b1;
+						r_off_con_2B_6[6:0] = w_parse_act_unit_4[12:6];
 					end
 					7: begin
-						r_pkt_con_2B_7 = r_2B;
-						r_off_con_2B_7 = w_parse_act_unit_4[12:6];
+						r_off_con_2B_7[7] = 1'b1;
+						r_off_con_2B_7[6:0] = w_parse_act_unit_4[12:6];
 					end
 				endcase
 			end
 			1 : begin
-				r_4B[32] = 1;
-				r_4B[31:0] = (w_pkts >> (w_parse_act_unit_4[12:6]*8));
 				case (w_parse_act_unit_4[3:1])
 					0: begin
-						r_pkt_con_4B_0 = r_4B;
-						r_off_con_4B_0 = w_parse_act_unit_4[12:6];
+						r_off_con_4B_0[7] = 1'b1;
+						r_off_con_4B_0[6:0] = w_parse_act_unit_4[12:6];
 					end
 					1: begin
-						r_pkt_con_4B_1 = r_4B;
-						r_off_con_4B_1 = w_parse_act_unit_4[12:6];
+						r_off_con_4B_1[7] = 1'b1;
+						r_off_con_4B_1[6:0] = w_parse_act_unit_4[12:6];
 					end
 					2: begin
-						r_pkt_con_4B_2 = r_4B;
-						r_off_con_4B_2 = w_parse_act_unit_4[12:6];
+						r_off_con_4B_2[7] = 1'b1;
+						r_off_con_4B_2[6:0] = w_parse_act_unit_4[12:6];
 					end
 					3: begin
-						r_pkt_con_4B_3 = r_4B;
-						r_off_con_4B_3 = w_parse_act_unit_4[12:6];
+						r_off_con_4B_3[7] = 1'b1;
+						r_off_con_4B_3[6:0] = w_parse_act_unit_4[12:6];
 					end
 					4: begin
-						r_pkt_con_4B_4 = r_4B;
-						r_off_con_4B_4 = w_parse_act_unit_4[12:6];
+						r_off_con_4B_4[7] = 1'b1;
+						r_off_con_4B_4[6:0] = w_parse_act_unit_4[12:6];
 					end
 					5: begin
-						r_pkt_con_4B_5 = r_4B;
-						r_off_con_4B_5 = w_parse_act_unit_4[12:6];
+						r_off_con_4B_5[7] = 1'b1;
+						r_off_con_4B_5[6:0] = w_parse_act_unit_4[12:6];
 					end
 					6: begin
-						r_pkt_con_4B_6 = r_4B;
-						r_off_con_4B_6 = w_parse_act_unit_4[12:6];
+						r_off_con_4B_6[7] = 1'b1;
+						r_off_con_4B_6[6:0] = w_parse_act_unit_4[12:6];
 					end
 					7: begin
-						r_pkt_con_4B_7 = r_4B;
-						r_off_con_4B_7 = w_parse_act_unit_4[12:6];
+						r_off_con_4B_7[7] = 1'b1;
+						r_off_con_4B_7[6:0] = w_parse_act_unit_4[12:6];
 					end
 				endcase
 			end
 			2 : begin
-				r_8B[64] = 1;
-				r_8B[63:0] = (w_pkts >> (w_parse_act_unit_4[12:6]*8));
 				case (w_parse_act_unit_4[3:1])
 					0: begin
-						r_pkt_con_8B_0 = r_8B;
-						r_off_con_8B_0 = w_parse_act_unit_4[12:6];
+						r_off_con_8B_0[7] = 1'b1;
+						r_off_con_8B_0[6:0] = w_parse_act_unit_4[12:6];
 					end
 					1: begin
-						r_pkt_con_8B_1 = r_8B;
-						r_off_con_8B_1 = w_parse_act_unit_4[12:6];
+						r_off_con_8B_1[7] = 1'b1;
+						r_off_con_8B_1[6:0] = w_parse_act_unit_4[12:6];
 					end
 					2: begin
-						r_pkt_con_8B_2 = r_8B;
-						r_off_con_8B_2 = w_parse_act_unit_4[12:6];
+						r_off_con_8B_2[7] = 1'b1;
+						r_off_con_8B_2[6:0] = w_parse_act_unit_4[12:6];
 					end
 					3: begin
-						r_pkt_con_8B_3 = r_8B;
-						r_off_con_8B_3 = w_parse_act_unit_4[12:6];
+						r_off_con_8B_3[7] = 1'b1;
+						r_off_con_8B_3[6:0] = w_parse_act_unit_4[12:6];
 					end
 					4: begin
-						r_pkt_con_8B_4 = r_8B;
-						r_off_con_8B_4 = w_parse_act_unit_4[12:6];
+						r_off_con_8B_4[7] = 1'b1;
+						r_off_con_8B_4[6:0] = w_parse_act_unit_4[12:6];
 					end
 					5: begin
-						r_pkt_con_8B_5 = r_8B;
-						r_off_con_8B_5 = w_parse_act_unit_4[12:6];
+						r_off_con_8B_5[7] = 1'b1;
+						r_off_con_8B_5[6:0] = w_parse_act_unit_4[12:6];
 					end
 					6: begin
-						r_pkt_con_8B_6 = r_8B;
-						r_off_con_8B_6 = w_parse_act_unit_4[12:6];
+						r_off_con_8B_6[7] = 1'b1;
+						r_off_con_8B_6[6:0] = w_parse_act_unit_4[12:6];
 					end
 					7: begin
-						r_pkt_con_8B_7 = r_8B;
-						r_off_con_8B_7 = w_parse_act_unit_4[12:6];
+						r_off_con_8B_7[7] = 1'b1;
+						r_off_con_8B_7[6:0] = w_parse_act_unit_4[12:6];
 					end
 				endcase
 			end
@@ -903,116 +807,110 @@ always @(*) begin
 	if (w_parse_act_unit_5[0] == 1'b1) begin // valid
 		case (w_parse_act_unit_5[5:4])
 			0 : begin
-				r_2B[16] = 1;
-				r_2B[15:0] = (w_pkts >> (w_parse_act_unit_5[12:6]*8));
 				case (w_parse_act_unit_5[3:1])
 					0: begin
-						r_pkt_con_2B_0 = r_2B;
-						r_off_con_2B_0 = w_parse_act_unit_5[12:6];
+						r_off_con_2B_0[7] = 1'b1;
+						r_off_con_2B_0[6:0] = w_parse_act_unit_5[12:6];
 					end
 					1: begin
-						r_pkt_con_2B_1 = r_2B;
-						r_off_con_2B_1 = w_parse_act_unit_5[12:6];
+						r_off_con_2B_1[7] = 1'b1;
+						r_off_con_2B_1[6:0] = w_parse_act_unit_5[12:6];
 					end
 					2: begin
-						r_pkt_con_2B_2 = r_2B;
-						r_off_con_2B_2 = w_parse_act_unit_5[12:6];
+						r_off_con_2B_2[7] = 1'b1;
+						r_off_con_2B_2[6:0] = w_parse_act_unit_5[12:6];
 					end
 					3: begin
-						r_pkt_con_2B_3 = r_2B;
-						r_off_con_2B_3 = w_parse_act_unit_5[12:6];
+						r_off_con_2B_3[7] = 1'b1;
+						r_off_con_2B_3[6:0] = w_parse_act_unit_5[12:6];
 					end
 					4: begin
-						r_pkt_con_2B_4 = r_2B;
-						r_off_con_2B_4 = w_parse_act_unit_5[12:6];
+						r_off_con_2B_4[7] = 1'b1;
+						r_off_con_2B_4[6:0] = w_parse_act_unit_5[12:6];
 					end
 					5: begin
-						r_pkt_con_2B_5 = r_2B;
-						r_off_con_2B_5 = w_parse_act_unit_5[12:6];
+						r_off_con_2B_5[7] = 1'b1;
+						r_off_con_2B_5[6:0] = w_parse_act_unit_5[12:6];
 					end
 					6: begin
-						r_pkt_con_2B_6 = r_2B;
-						r_off_con_2B_6 = w_parse_act_unit_5[12:6];
+						r_off_con_2B_6[7] = 1'b1;
+						r_off_con_2B_6[6:0] = w_parse_act_unit_5[12:6];
 					end
 					7: begin
-						r_pkt_con_2B_7 = r_2B;
-						r_off_con_2B_7 = w_parse_act_unit_5[12:6];
+						r_off_con_2B_7[7] = 1'b1;
+						r_off_con_2B_7[6:0] = w_parse_act_unit_5[12:6];
 					end
 				endcase
 			end
 			1 : begin
-				r_4B[32] = 1;
-				r_4B[31:0] = (w_pkts >> (w_parse_act_unit_5[12:6]*8));
 				case (w_parse_act_unit_5[3:1])
 					0: begin
-						r_pkt_con_4B_0 = r_4B;
-						r_off_con_4B_0 = w_parse_act_unit_5[12:6];
+						r_off_con_4B_0[7] = 1'b1;
+						r_off_con_4B_0[6:0] = w_parse_act_unit_5[12:6];
 					end
 					1: begin
-						r_pkt_con_4B_1 = r_4B;
-						r_off_con_4B_1 = w_parse_act_unit_5[12:6];
+						r_off_con_4B_1[7] = 1'b1;
+						r_off_con_4B_1[6:0] = w_parse_act_unit_5[12:6];
 					end
 					2: begin
-						r_pkt_con_4B_2 = r_4B;
-						r_off_con_4B_2 = w_parse_act_unit_5[12:6];
+						r_off_con_4B_2[7] = 1'b1;
+						r_off_con_4B_2[6:0] = w_parse_act_unit_5[12:6];
 					end
 					3: begin
-						r_pkt_con_4B_3 = r_4B;
-						r_off_con_4B_3 = w_parse_act_unit_5[12:6];
+						r_off_con_4B_3[7] = 1'b1;
+						r_off_con_4B_3[6:0] = w_parse_act_unit_5[12:6];
 					end
 					4: begin
-						r_pkt_con_4B_4 = r_4B;
-						r_off_con_4B_4 = w_parse_act_unit_5[12:6];
+						r_off_con_4B_4[7] = 1'b1;
+						r_off_con_4B_4[6:0] = w_parse_act_unit_5[12:6];
 					end
 					5: begin
-						r_pkt_con_4B_5 = r_4B;
-						r_off_con_4B_5 = w_parse_act_unit_5[12:6];
+						r_off_con_4B_5[7] = 1'b1;
+						r_off_con_4B_5[6:0] = w_parse_act_unit_5[12:6];
 					end
 					6: begin
-						r_pkt_con_4B_6 = r_4B;
-						r_off_con_4B_6 = w_parse_act_unit_5[12:6];
+						r_off_con_4B_6[7] = 1'b1;
+						r_off_con_4B_6[6:0] = w_parse_act_unit_5[12:6];
 					end
 					7: begin
-						r_pkt_con_4B_7 = r_4B;
-						r_off_con_4B_7 = w_parse_act_unit_5[12:6];
+						r_off_con_4B_7[7] = 1'b1;
+						r_off_con_4B_7[6:0] = w_parse_act_unit_5[12:6];
 					end
 				endcase
 			end
 			2 : begin
-				r_8B[64] = 1;
-				r_8B[63:0] = (w_pkts >> (w_parse_act_unit_5[12:6]*8));
 				case (w_parse_act_unit_5[3:1])
 					0: begin
-						r_pkt_con_8B_0 = r_8B;
-						r_off_con_8B_0 = w_parse_act_unit_5[12:6];
+						r_off_con_8B_0[7] = 1'b1;
+						r_off_con_8B_0[6:0] = w_parse_act_unit_5[12:6];
 					end
 					1: begin
-						r_pkt_con_8B_1 = r_8B;
-						r_off_con_8B_1 = w_parse_act_unit_5[12:6];
+						r_off_con_8B_1[7] = 1'b1;
+						r_off_con_8B_1[6:0] = w_parse_act_unit_5[12:6];
 					end
 					2: begin
-						r_pkt_con_8B_2 = r_8B;
-						r_off_con_8B_2 = w_parse_act_unit_5[12:6];
+						r_off_con_8B_2[7] = 1'b1;
+						r_off_con_8B_2[6:0] = w_parse_act_unit_5[12:6];
 					end
 					3: begin
-						r_pkt_con_8B_3 = r_8B;
-						r_off_con_8B_3 = w_parse_act_unit_5[12:6];
+						r_off_con_8B_3[7] = 1'b1;
+						r_off_con_8B_3[6:0] = w_parse_act_unit_5[12:6];
 					end
 					4: begin
-						r_pkt_con_8B_4 = r_8B;
-						r_off_con_8B_4 = w_parse_act_unit_5[12:6];
+						r_off_con_8B_4[7] = 1'b1;
+						r_off_con_8B_4[6:0] = w_parse_act_unit_5[12:6];
 					end
 					5: begin
-						r_pkt_con_8B_5 = r_8B;
-						r_off_con_8B_5 = w_parse_act_unit_5[12:6];
+						r_off_con_8B_5[7] = 1'b1;
+						r_off_con_8B_5[6:0] = w_parse_act_unit_5[12:6];
 					end
 					6: begin
-						r_pkt_con_8B_6 = r_8B;
-						r_off_con_8B_6 = w_parse_act_unit_5[12:6];
+						r_off_con_8B_6[7] = 1'b1;
+						r_off_con_8B_6[6:0] = w_parse_act_unit_5[12:6];
 					end
 					7: begin
-						r_pkt_con_8B_7 = r_8B;
-						r_off_con_8B_7 = w_parse_act_unit_5[12:6];
+						r_off_con_8B_7[7] = 1'b1;
+						r_off_con_8B_7[6:0] = w_parse_act_unit_5[12:6];
 					end
 				endcase
 			end
@@ -1021,116 +919,110 @@ always @(*) begin
 	if (w_parse_act_unit_6[0] == 1'b1) begin // valid
 		case (w_parse_act_unit_6[5:4])
 			0 : begin
-				r_2B[16] = 1;
-				r_2B[15:0] = (w_pkts >> (w_parse_act_unit_6[12:6]*8));
 				case (w_parse_act_unit_6[3:1])
 					0: begin
-						r_pkt_con_2B_0 = r_2B;
-						r_off_con_2B_0 = w_parse_act_unit_6[12:6];
+						r_off_con_2B_0[7] = 1'b1;
+						r_off_con_2B_0[6:0] = w_parse_act_unit_6[12:6];
 					end
 					1: begin
-						r_pkt_con_2B_1 = r_2B;
-						r_off_con_2B_1 = w_parse_act_unit_6[12:6];
+						r_off_con_2B_1[7] = 1'b1;
+						r_off_con_2B_1[6:0] = w_parse_act_unit_6[12:6];
 					end
 					2: begin
-						r_pkt_con_2B_2 = r_2B;
-						r_off_con_2B_2 = w_parse_act_unit_6[12:6];
+						r_off_con_2B_2[7] = 1'b1;
+						r_off_con_2B_2[6:0] = w_parse_act_unit_6[12:6];
 					end
 					3: begin
-						r_pkt_con_2B_3 = r_2B;
-						r_off_con_2B_3 = w_parse_act_unit_6[12:6];
+						r_off_con_2B_3[7] = 1'b1;
+						r_off_con_2B_3[6:0] = w_parse_act_unit_6[12:6];
 					end
 					4: begin
-						r_pkt_con_2B_4 = r_2B;
-						r_off_con_2B_4 = w_parse_act_unit_6[12:6];
+						r_off_con_2B_4[7] = 1'b1;
+						r_off_con_2B_4[6:0] = w_parse_act_unit_6[12:6];
 					end
 					5: begin
-						r_pkt_con_2B_5 = r_2B;
-						r_off_con_2B_5 = w_parse_act_unit_6[12:6];
+						r_off_con_2B_5[7] = 1'b1;
+						r_off_con_2B_5[6:0] = w_parse_act_unit_6[12:6];
 					end
 					6: begin
-						r_pkt_con_2B_6 = r_2B;
-						r_off_con_2B_6 = w_parse_act_unit_6[12:6];
+						r_off_con_2B_6[7] = 1'b1;
+						r_off_con_2B_6[6:0] = w_parse_act_unit_6[12:6];
 					end
 					7: begin
-						r_pkt_con_2B_7 = r_2B;
-						r_off_con_2B_7 = w_parse_act_unit_6[12:6];
+						r_off_con_2B_7[7] = 1'b1;
+						r_off_con_2B_7[6:0] = w_parse_act_unit_6[12:6];
 					end
 				endcase
 			end
 			1 : begin
-				r_4B[32] = 1;
-				r_4B[31:0] = (w_pkts >> (w_parse_act_unit_6[12:6]*8));
 				case (w_parse_act_unit_6[3:1])
 					0: begin
-						r_pkt_con_4B_0 = r_4B;
-						r_off_con_4B_0 = w_parse_act_unit_6[12:6];
+						r_off_con_4B_0[7] = 1'b1;
+						r_off_con_4B_0[6:0] = w_parse_act_unit_6[12:6];
 					end
 					1: begin
-						r_pkt_con_4B_1 = r_4B;
-						r_off_con_4B_1 = w_parse_act_unit_6[12:6];
+						r_off_con_4B_1[7] = 1'b1;
+						r_off_con_4B_1[6:0] = w_parse_act_unit_6[12:6];
 					end
 					2: begin
-						r_pkt_con_4B_2 = r_4B;
-						r_off_con_4B_2 = w_parse_act_unit_6[12:6];
+						r_off_con_4B_2[7] = 1'b1;
+						r_off_con_4B_2[6:0] = w_parse_act_unit_6[12:6];
 					end
 					3: begin
-						r_pkt_con_4B_3 = r_4B;
-						r_off_con_4B_3 = w_parse_act_unit_6[12:6];
+						r_off_con_4B_3[7] = 1'b1;
+						r_off_con_4B_3[6:0] = w_parse_act_unit_6[12:6];
 					end
 					4: begin
-						r_pkt_con_4B_4 = r_4B;
-						r_off_con_4B_4 = w_parse_act_unit_6[12:6];
+						r_off_con_4B_4[7] = 1'b1;
+						r_off_con_4B_4[6:0] = w_parse_act_unit_6[12:6];
 					end
 					5: begin
-						r_pkt_con_4B_5 = r_4B;
-						r_off_con_4B_5 = w_parse_act_unit_6[12:6];
+						r_off_con_4B_5[7] = 1'b1;
+						r_off_con_4B_5[6:0] = w_parse_act_unit_6[12:6];
 					end
 					6: begin
-						r_pkt_con_4B_6 = r_4B;
-						r_off_con_4B_6 = w_parse_act_unit_6[12:6];
+						r_off_con_4B_6[7] = 1'b1;
+						r_off_con_4B_6[6:0] = w_parse_act_unit_6[12:6];
 					end
 					7: begin
-						r_pkt_con_4B_7 = r_4B;
-						r_off_con_4B_7 = w_parse_act_unit_6[12:6];
+						r_off_con_4B_7[7] = 1'b1;
+						r_off_con_4B_7[6:0] = w_parse_act_unit_6[12:6];
 					end
 				endcase
 			end
 			2 : begin
-				r_8B[64] = 1;
-				r_8B[63:0] = (w_pkts >> (w_parse_act_unit_6[12:6]*8));
 				case (w_parse_act_unit_6[3:1])
 					0: begin
-						r_pkt_con_8B_0 = r_8B;
-						r_off_con_8B_0 = w_parse_act_unit_6[12:6];
+						r_off_con_8B_0[7] = 1'b1;
+						r_off_con_8B_0[6:0] = w_parse_act_unit_6[12:6];
 					end
 					1: begin
-						r_pkt_con_8B_1 = r_8B;
-						r_off_con_8B_1 = w_parse_act_unit_6[12:6];
+						r_off_con_8B_1[7] = 1'b1;
+						r_off_con_8B_1[6:0] = w_parse_act_unit_6[12:6];
 					end
 					2: begin
-						r_pkt_con_8B_2 = r_8B;
-						r_off_con_8B_2 = w_parse_act_unit_6[12:6];
+						r_off_con_8B_2[7] = 1'b1;
+						r_off_con_8B_2[6:0] = w_parse_act_unit_6[12:6];
 					end
 					3: begin
-						r_pkt_con_8B_3 = r_8B;
-						r_off_con_8B_3 = w_parse_act_unit_6[12:6];
+						r_off_con_8B_3[7] = 1'b1;
+						r_off_con_8B_3[6:0] = w_parse_act_unit_6[12:6];
 					end
 					4: begin
-						r_pkt_con_8B_4 = r_8B;
-						r_off_con_8B_4 = w_parse_act_unit_6[12:6];
+						r_off_con_8B_4[7] = 1'b1;
+						r_off_con_8B_4[6:0] = w_parse_act_unit_6[12:6];
 					end
 					5: begin
-						r_pkt_con_8B_5 = r_8B;
-						r_off_con_8B_5 = w_parse_act_unit_6[12:6];
+						r_off_con_8B_5[7] = 1'b1;
+						r_off_con_8B_5[6:0] = w_parse_act_unit_6[12:6];
 					end
 					6: begin
-						r_pkt_con_8B_6 = r_8B;
-						r_off_con_8B_6 = w_parse_act_unit_6[12:6];
+						r_off_con_8B_6[7] = 1'b1;
+						r_off_con_8B_6[6:0] = w_parse_act_unit_6[12:6];
 					end
 					7: begin
-						r_pkt_con_8B_7 = r_8B;
-						r_off_con_8B_7 = w_parse_act_unit_6[12:6];
+						r_off_con_8B_7[7] = 1'b1;
+						r_off_con_8B_7[6:0] = w_parse_act_unit_6[12:6];
 					end
 				endcase
 			end
@@ -1139,116 +1031,110 @@ always @(*) begin
 	if (w_parse_act_unit_7[0] == 1'b1) begin // valid
 		case (w_parse_act_unit_7[5:4])
 			0 : begin
-				r_2B[16] = 1;
-				r_2B[15:0] = (w_pkts >> (w_parse_act_unit_7[12:6]*8));
 				case (w_parse_act_unit_7[3:1])
 					0: begin
-						r_pkt_con_2B_0 = r_2B;
-						r_off_con_2B_0 = w_parse_act_unit_7[12:6];
+						r_off_con_2B_0[7] = 1'b1;
+						r_off_con_2B_0[6:0] = w_parse_act_unit_7[12:6];
 					end
 					1: begin
-						r_pkt_con_2B_1 = r_2B;
-						r_off_con_2B_1 = w_parse_act_unit_7[12:6];
+						r_off_con_2B_1[7] = 1'b1;
+						r_off_con_2B_1[6:0] = w_parse_act_unit_7[12:6];
 					end
 					2: begin
-						r_pkt_con_2B_2 = r_2B;
-						r_off_con_2B_2 = w_parse_act_unit_7[12:6];
+						r_off_con_2B_2[7] = 1'b1;
+						r_off_con_2B_2[6:0] = w_parse_act_unit_7[12:6];
 					end
 					3: begin
-						r_pkt_con_2B_3 = r_2B;
-						r_off_con_2B_3 = w_parse_act_unit_7[12:6];
+						r_off_con_2B_3[7] = 1'b1;
+						r_off_con_2B_3[6:0] = w_parse_act_unit_7[12:6];
 					end
 					4: begin
-						r_pkt_con_2B_4 = r_2B;
-						r_off_con_2B_4 = w_parse_act_unit_7[12:6];
+						r_off_con_2B_4[7] = 1'b1;
+						r_off_con_2B_4[6:0] = w_parse_act_unit_7[12:6];
 					end
 					5: begin
-						r_pkt_con_2B_5 = r_2B;
-						r_off_con_2B_5 = w_parse_act_unit_7[12:6];
+						r_off_con_2B_5[7] = 1'b1;
+						r_off_con_2B_5[6:0] = w_parse_act_unit_7[12:6];
 					end
 					6: begin
-						r_pkt_con_2B_6 = r_2B;
-						r_off_con_2B_6 = w_parse_act_unit_7[12:6];
+						r_off_con_2B_6[7] = 1'b1;
+						r_off_con_2B_6[6:0] = w_parse_act_unit_7[12:6];
 					end
 					7: begin
-						r_pkt_con_2B_7 = r_2B;
-						r_off_con_2B_7 = w_parse_act_unit_7[12:6];
+						r_off_con_2B_7[7] = 1'b1;
+						r_off_con_2B_7[6:0] = w_parse_act_unit_7[12:6];
 					end
 				endcase
 			end
 			1 : begin
-				r_4B[32] = 1;
-				r_4B[31:0] = (w_pkts >> (w_parse_act_unit_7[12:6]*8));
 				case (w_parse_act_unit_7[3:1])
 					0: begin
-						r_pkt_con_4B_0 = r_4B;
-						r_off_con_4B_0 = w_parse_act_unit_7[12:6];
+						r_off_con_4B_0[7] = 1'b1;
+						r_off_con_4B_0[6:0] = w_parse_act_unit_7[12:6];
 					end
 					1: begin
-						r_pkt_con_4B_1 = r_4B;
-						r_off_con_4B_1 = w_parse_act_unit_7[12:6];
+						r_off_con_4B_1[7] = 1'b1;
+						r_off_con_4B_1[6:0] = w_parse_act_unit_7[12:6];
 					end
 					2: begin
-						r_pkt_con_4B_2 = r_4B;
-						r_off_con_4B_2 = w_parse_act_unit_7[12:6];
+						r_off_con_4B_2[7] = 1'b1;
+						r_off_con_4B_2[6:0] = w_parse_act_unit_7[12:6];
 					end
 					3: begin
-						r_pkt_con_4B_3 = r_4B;
-						r_off_con_4B_3 = w_parse_act_unit_7[12:6];
+						r_off_con_4B_3[7] = 1'b1;
+						r_off_con_4B_3[6:0] = w_parse_act_unit_7[12:6];
 					end
 					4: begin
-						r_pkt_con_4B_4 = r_4B;
-						r_off_con_4B_4 = w_parse_act_unit_7[12:6];
+						r_off_con_4B_4[7] = 1'b1;
+						r_off_con_4B_4[6:0] = w_parse_act_unit_7[12:6];
 					end
 					5: begin
-						r_pkt_con_4B_5 = r_4B;
-						r_off_con_4B_5 = w_parse_act_unit_7[12:6];
+						r_off_con_4B_5[7] = 1'b1;
+						r_off_con_4B_5[6:0] = w_parse_act_unit_7[12:6];
 					end
 					6: begin
-						r_pkt_con_4B_6 = r_4B;
-						r_off_con_4B_6 = w_parse_act_unit_7[12:6];
+						r_off_con_4B_6[7] = 1'b1;
+						r_off_con_4B_6[6:0] = w_parse_act_unit_7[12:6];
 					end
 					7: begin
-						r_pkt_con_4B_7 = r_4B;
-						r_off_con_4B_7 = w_parse_act_unit_7[12:6];
+						r_off_con_4B_7[7] = 1'b1;
+						r_off_con_4B_7[6:0] = w_parse_act_unit_7[12:6];
 					end
 				endcase
 			end
 			2 : begin
-				r_8B[64] = 1;
-				r_8B[63:0] = (w_pkts >> (w_parse_act_unit_7[12:6]*8));
 				case (w_parse_act_unit_7[3:1])
 					0: begin
-						r_pkt_con_8B_0 = r_8B;
-						r_off_con_8B_0 = w_parse_act_unit_7[12:6];
+						r_off_con_8B_0[7] = 1'b1;
+						r_off_con_8B_0[6:0] = w_parse_act_unit_7[12:6];
 					end
 					1: begin
-						r_pkt_con_8B_1 = r_8B;
-						r_off_con_8B_1 = w_parse_act_unit_7[12:6];
+						r_off_con_8B_1[7] = 1'b1;
+						r_off_con_8B_1[6:0] = w_parse_act_unit_7[12:6];
 					end
 					2: begin
-						r_pkt_con_8B_2 = r_8B;
-						r_off_con_8B_2 = w_parse_act_unit_7[12:6];
+						r_off_con_8B_2[7] = 1'b1;
+						r_off_con_8B_2[6:0] = w_parse_act_unit_7[12:6];
 					end
 					3: begin
-						r_pkt_con_8B_3 = r_8B;
-						r_off_con_8B_3 = w_parse_act_unit_7[12:6];
+						r_off_con_8B_3[7] = 1'b1;
+						r_off_con_8B_3[6:0] = w_parse_act_unit_7[12:6];
 					end
 					4: begin
-						r_pkt_con_8B_4 = r_8B;
-						r_off_con_8B_4 = w_parse_act_unit_7[12:6];
+						r_off_con_8B_4[7] = 1'b1;
+						r_off_con_8B_4[6:0] = w_parse_act_unit_7[12:6];
 					end
 					5: begin
-						r_pkt_con_8B_5 = r_8B;
-						r_off_con_8B_5 = w_parse_act_unit_7[12:6];
+						r_off_con_8B_5[7] = 1'b1;
+						r_off_con_8B_5[6:0] = w_parse_act_unit_7[12:6];
 					end
 					6: begin
-						r_pkt_con_8B_6 = r_8B;
-						r_off_con_8B_6 = w_parse_act_unit_7[12:6];
+						r_off_con_8B_6[7] = 1'b1;
+						r_off_con_8B_6[6:0] = w_parse_act_unit_7[12:6];
 					end
 					7: begin
-						r_pkt_con_8B_7 = r_8B;
-						r_off_con_8B_7 = w_parse_act_unit_7[12:6];
+						r_off_con_8B_7[7] = 1'b1;
+						r_off_con_8B_7[6:0] = w_parse_act_unit_7[12:6];
 					end
 				endcase
 			end
@@ -1257,116 +1143,110 @@ always @(*) begin
 	if (w_parse_act_unit_8[0] == 1'b1) begin // valid
 		case (w_parse_act_unit_8[5:4])
 			0 : begin
-				r_2B[16] = 1;
-				r_2B[15:0] = (w_pkts >> (w_parse_act_unit_8[12:6]*8));
 				case (w_parse_act_unit_8[3:1])
 					0: begin
-						r_pkt_con_2B_0 = r_2B;
-						r_off_con_2B_0 = w_parse_act_unit_8[12:6];
+						r_off_con_2B_0[7] = 1'b1;
+						r_off_con_2B_0[6:0] = w_parse_act_unit_8[12:6];
 					end
 					1: begin
-						r_pkt_con_2B_1 = r_2B;
-						r_off_con_2B_1 = w_parse_act_unit_8[12:6];
+						r_off_con_2B_1[7] = 1'b1;
+						r_off_con_2B_1[6:0] = w_parse_act_unit_8[12:6];
 					end
 					2: begin
-						r_pkt_con_2B_2 = r_2B;
-						r_off_con_2B_2 = w_parse_act_unit_8[12:6];
+						r_off_con_2B_2[7] = 1'b1;
+						r_off_con_2B_2[6:0] = w_parse_act_unit_8[12:6];
 					end
 					3: begin
-						r_pkt_con_2B_3 = r_2B;
-						r_off_con_2B_3 = w_parse_act_unit_8[12:6];
+						r_off_con_2B_3[7] = 1'b1;
+						r_off_con_2B_3[6:0] = w_parse_act_unit_8[12:6];
 					end
 					4: begin
-						r_pkt_con_2B_4 = r_2B;
-						r_off_con_2B_4 = w_parse_act_unit_8[12:6];
+						r_off_con_2B_4[7] = 1'b1;
+						r_off_con_2B_4[6:0] = w_parse_act_unit_8[12:6];
 					end
 					5: begin
-						r_pkt_con_2B_5 = r_2B;
-						r_off_con_2B_5 = w_parse_act_unit_8[12:6];
+						r_off_con_2B_5[7] = 1'b1;
+						r_off_con_2B_5[6:0] = w_parse_act_unit_8[12:6];
 					end
 					6: begin
-						r_pkt_con_2B_6 = r_2B;
-						r_off_con_2B_6 = w_parse_act_unit_8[12:6];
+						r_off_con_2B_6[7] = 1'b1;
+						r_off_con_2B_6[6:0] = w_parse_act_unit_8[12:6];
 					end
 					7: begin
-						r_pkt_con_2B_7 = r_2B;
-						r_off_con_2B_7 = w_parse_act_unit_8[12:6];
+						r_off_con_2B_7[7] = 1'b1;
+						r_off_con_2B_7[6:0] = w_parse_act_unit_8[12:6];
 					end
 				endcase
 			end
 			1 : begin
-				r_4B[32] = 1;
-				r_4B[31:0] = (w_pkts >> (w_parse_act_unit_8[12:6]*8));
 				case (w_parse_act_unit_8[3:1])
 					0: begin
-						r_pkt_con_4B_0 = r_4B;
-						r_off_con_4B_0 = w_parse_act_unit_8[12:6];
+						r_off_con_4B_0[7] = 1'b1;
+						r_off_con_4B_0[6:0] = w_parse_act_unit_8[12:6];
 					end
 					1: begin
-						r_pkt_con_4B_1 = r_4B;
-						r_off_con_4B_1 = w_parse_act_unit_8[12:6];
+						r_off_con_4B_1[7] = 1'b1;
+						r_off_con_4B_1[6:0] = w_parse_act_unit_8[12:6];
 					end
 					2: begin
-						r_pkt_con_4B_2 = r_4B;
-						r_off_con_4B_2 = w_parse_act_unit_8[12:6];
+						r_off_con_4B_2[7] = 1'b1;
+						r_off_con_4B_2[6:0] = w_parse_act_unit_8[12:6];
 					end
 					3: begin
-						r_pkt_con_4B_3 = r_4B;
-						r_off_con_4B_3 = w_parse_act_unit_8[12:6];
+						r_off_con_4B_3[7] = 1'b1;
+						r_off_con_4B_3[6:0] = w_parse_act_unit_8[12:6];
 					end
 					4: begin
-						r_pkt_con_4B_4 = r_4B;
-						r_off_con_4B_4 = w_parse_act_unit_8[12:6];
+						r_off_con_4B_4[7] = 1'b1;
+						r_off_con_4B_4[6:0] = w_parse_act_unit_8[12:6];
 					end
 					5: begin
-						r_pkt_con_4B_5 = r_4B;
-						r_off_con_4B_5 = w_parse_act_unit_8[12:6];
+						r_off_con_4B_5[7] = 1'b1;
+						r_off_con_4B_5[6:0] = w_parse_act_unit_8[12:6];
 					end
 					6: begin
-						r_pkt_con_4B_6 = r_4B;
-						r_off_con_4B_6 = w_parse_act_unit_8[12:6];
+						r_off_con_4B_6[7] = 1'b1;
+						r_off_con_4B_6[6:0] = w_parse_act_unit_8[12:6];
 					end
 					7: begin
-						r_pkt_con_4B_7 = r_4B;
-						r_off_con_4B_7 = w_parse_act_unit_8[12:6];
+						r_off_con_4B_7[7] = 1'b1;
+						r_off_con_4B_7[6:0] = w_parse_act_unit_8[12:6];
 					end
 				endcase
 			end
 			2 : begin
-				r_8B[64] = 1;
-				r_8B[63:0] = (w_pkts >> (w_parse_act_unit_8[12:6]*8));
 				case (w_parse_act_unit_8[3:1])
 					0: begin
-						r_pkt_con_8B_0 = r_8B;
-						r_off_con_8B_0 = w_parse_act_unit_8[12:6];
+						r_off_con_8B_0[7] = 1'b1;
+						r_off_con_8B_0[6:0] = w_parse_act_unit_8[12:6];
 					end
 					1: begin
-						r_pkt_con_8B_1 = r_8B;
-						r_off_con_8B_1 = w_parse_act_unit_8[12:6];
+						r_off_con_8B_1[7] = 1'b1;
+						r_off_con_8B_1[6:0] = w_parse_act_unit_8[12:6];
 					end
 					2: begin
-						r_pkt_con_8B_2 = r_8B;
-						r_off_con_8B_2 = w_parse_act_unit_8[12:6];
+						r_off_con_8B_2[7] = 1'b1;
+						r_off_con_8B_2[6:0] = w_parse_act_unit_8[12:6];
 					end
 					3: begin
-						r_pkt_con_8B_3 = r_8B;
-						r_off_con_8B_3 = w_parse_act_unit_8[12:6];
+						r_off_con_8B_3[7] = 1'b1;
+						r_off_con_8B_3[6:0] = w_parse_act_unit_8[12:6];
 					end
 					4: begin
-						r_pkt_con_8B_4 = r_8B;
-						r_off_con_8B_4 = w_parse_act_unit_8[12:6];
+						r_off_con_8B_4[7] = 1'b1;
+						r_off_con_8B_4[6:0] = w_parse_act_unit_8[12:6];
 					end
 					5: begin
-						r_pkt_con_8B_5 = r_8B;
-						r_off_con_8B_5 = w_parse_act_unit_8[12:6];
+						r_off_con_8B_5[7] = 1'b1;
+						r_off_con_8B_5[6:0] = w_parse_act_unit_8[12:6];
 					end
 					6: begin
-						r_pkt_con_8B_6 = r_8B;
-						r_off_con_8B_6 = w_parse_act_unit_8[12:6];
+						r_off_con_8B_6[7] = 1'b1;
+						r_off_con_8B_6[6:0] = w_parse_act_unit_8[12:6];
 					end
 					7: begin
-						r_pkt_con_8B_7 = r_8B;
-						r_off_con_8B_7 = w_parse_act_unit_8[12:6];
+						r_off_con_8B_7[7] = 1'b1;
+						r_off_con_8B_7[6:0] = w_parse_act_unit_8[12:6];
 					end
 				endcase
 			end
@@ -1375,116 +1255,110 @@ always @(*) begin
 	if (w_parse_act_unit_9[0] == 1'b1) begin // valid
 		case (w_parse_act_unit_9[5:4])
 			0 : begin
-				r_2B[16] = 1;
-				r_2B[15:0] = (w_pkts >> (w_parse_act_unit_9[12:6]*8));
 				case (w_parse_act_unit_9[3:1])
 					0: begin
-						r_pkt_con_2B_0 = r_2B;
-						r_off_con_2B_0 = w_parse_act_unit_9[12:6];
+						r_off_con_2B_0[7] = 1'b1;
+						r_off_con_2B_0[6:0] = w_parse_act_unit_9[12:6];
 					end
 					1: begin
-						r_pkt_con_2B_1 = r_2B;
-						r_off_con_2B_1 = w_parse_act_unit_9[12:6];
+						r_off_con_2B_1[7] = 1'b1;
+						r_off_con_2B_1[6:0] = w_parse_act_unit_9[12:6];
 					end
 					2: begin
-						r_pkt_con_2B_2 = r_2B;
-						r_off_con_2B_2 = w_parse_act_unit_9[12:6];
+						r_off_con_2B_2[7] = 1'b1;
+						r_off_con_2B_2[6:0] = w_parse_act_unit_9[12:6];
 					end
 					3: begin
-						r_pkt_con_2B_3 = r_2B;
-						r_off_con_2B_3 = w_parse_act_unit_9[12:6];
+						r_off_con_2B_3[7] = 1'b1;
+						r_off_con_2B_3[6:0] = w_parse_act_unit_9[12:6];
 					end
 					4: begin
-						r_pkt_con_2B_4 = r_2B;
-						r_off_con_2B_4 = w_parse_act_unit_9[12:6];
+						r_off_con_2B_4[7] = 1'b1;
+						r_off_con_2B_4[6:0] = w_parse_act_unit_9[12:6];
 					end
 					5: begin
-						r_pkt_con_2B_5 = r_2B;
-						r_off_con_2B_5 = w_parse_act_unit_9[12:6];
+						r_off_con_2B_5[7] = 1'b1;
+						r_off_con_2B_5[6:0] = w_parse_act_unit_9[12:6];
 					end
 					6: begin
-						r_pkt_con_2B_6 = r_2B;
-						r_off_con_2B_6 = w_parse_act_unit_9[12:6];
+						r_off_con_2B_6[7] = 1'b1;
+						r_off_con_2B_6[6:0] = w_parse_act_unit_9[12:6];
 					end
 					7: begin
-						r_pkt_con_2B_7 = r_2B;
-						r_off_con_2B_7 = w_parse_act_unit_9[12:6];
+						r_off_con_2B_7[7] = 1'b1;
+						r_off_con_2B_7[6:0] = w_parse_act_unit_9[12:6];
 					end
 				endcase
 			end
 			1 : begin
-				r_4B[32] = 1;
-				r_4B[31:0] = (w_pkts >> (w_parse_act_unit_9[12:6]*8));
 				case (w_parse_act_unit_9[3:1])
 					0: begin
-						r_pkt_con_4B_0 = r_4B;
-						r_off_con_4B_0 = w_parse_act_unit_9[12:6];
+						r_off_con_4B_0[7] = 1'b1;
+						r_off_con_4B_0[6:0] = w_parse_act_unit_9[12:6];
 					end
 					1: begin
-						r_pkt_con_4B_1 = r_4B;
-						r_off_con_4B_1 = w_parse_act_unit_9[12:6];
+						r_off_con_4B_1[7] = 1'b1;
+						r_off_con_4B_1[6:0] = w_parse_act_unit_9[12:6];
 					end
 					2: begin
-						r_pkt_con_4B_2 = r_4B;
-						r_off_con_4B_2 = w_parse_act_unit_9[12:6];
+						r_off_con_4B_2[7] = 1'b1;
+						r_off_con_4B_2[6:0] = w_parse_act_unit_9[12:6];
 					end
 					3: begin
-						r_pkt_con_4B_3 = r_4B;
-						r_off_con_4B_3 = w_parse_act_unit_9[12:6];
+						r_off_con_4B_3[7] = 1'b1;
+						r_off_con_4B_3[6:0] = w_parse_act_unit_9[12:6];
 					end
 					4: begin
-						r_pkt_con_4B_4 = r_4B;
-						r_off_con_4B_4 = w_parse_act_unit_9[12:6];
+						r_off_con_4B_4[7] = 1'b1;
+						r_off_con_4B_4[6:0] = w_parse_act_unit_9[12:6];
 					end
 					5: begin
-						r_pkt_con_4B_5 = r_4B;
-						r_off_con_4B_5 = w_parse_act_unit_9[12:6];
+						r_off_con_4B_5[7] = 1'b1;
+						r_off_con_4B_5[6:0] = w_parse_act_unit_9[12:6];
 					end
 					6: begin
-						r_pkt_con_4B_6 = r_4B;
-						r_off_con_4B_6 = w_parse_act_unit_9[12:6];
+						r_off_con_4B_6[7] = 1'b1;
+						r_off_con_4B_6[6:0] = w_parse_act_unit_9[12:6];
 					end
 					7: begin
-						r_pkt_con_4B_7 = r_4B;
-						r_off_con_4B_7 = w_parse_act_unit_9[12:6];
+						r_off_con_4B_7[7] = 1'b1;
+						r_off_con_4B_7[6:0] = w_parse_act_unit_9[12:6];
 					end
 				endcase
 			end
 			2 : begin
-				r_8B[64] = 1;
-				r_8B[63:0] = (w_pkts >> (w_parse_act_unit_9[12:6]*8));
 				case (w_parse_act_unit_9[3:1])
 					0: begin
-						r_pkt_con_8B_0 = r_8B;
-						r_off_con_8B_0 = w_parse_act_unit_9[12:6];
+						r_off_con_8B_0[7] = 1'b1;
+						r_off_con_8B_0[6:0] = w_parse_act_unit_9[12:6];
 					end
 					1: begin
-						r_pkt_con_8B_1 = r_8B;
-						r_off_con_8B_1 = w_parse_act_unit_9[12:6];
+						r_off_con_8B_1[7] = 1'b1;
+						r_off_con_8B_1[6:0] = w_parse_act_unit_9[12:6];
 					end
 					2: begin
-						r_pkt_con_8B_2 = r_8B;
-						r_off_con_8B_2 = w_parse_act_unit_9[12:6];
+						r_off_con_8B_2[7] = 1'b1;
+						r_off_con_8B_2[6:0] = w_parse_act_unit_9[12:6];
 					end
 					3: begin
-						r_pkt_con_8B_3 = r_8B;
-						r_off_con_8B_3 = w_parse_act_unit_9[12:6];
+						r_off_con_8B_3[7] = 1'b1;
+						r_off_con_8B_3[6:0] = w_parse_act_unit_9[12:6];
 					end
 					4: begin
-						r_pkt_con_8B_4 = r_8B;
-						r_off_con_8B_4 = w_parse_act_unit_9[12:6];
+						r_off_con_8B_4[7] = 1'b1;
+						r_off_con_8B_4[6:0] = w_parse_act_unit_9[12:6];
 					end
 					5: begin
-						r_pkt_con_8B_5 = r_8B;
-						r_off_con_8B_5 = w_parse_act_unit_9[12:6];
+						r_off_con_8B_5[7] = 1'b1;
+						r_off_con_8B_5[6:0] = w_parse_act_unit_9[12:6];
 					end
 					6: begin
-						r_pkt_con_8B_6 = r_8B;
-						r_off_con_8B_6 = w_parse_act_unit_9[12:6];
+						r_off_con_8B_6[7] = 1'b1;
+						r_off_con_8B_6[6:0] = w_parse_act_unit_9[12:6];
 					end
 					7: begin
-						r_pkt_con_8B_7 = r_8B;
-						r_off_con_8B_7 = w_parse_act_unit_9[12:6];
+						r_off_con_8B_7[7] = 1'b1;
+						r_off_con_8B_7[6:0] = w_parse_act_unit_9[12:6];
 					end
 				endcase
 			end
@@ -1530,32 +1404,9 @@ always @(posedge axis_clk) begin
 	end
 end
 
+// 1024, 7, 24*8, 512
 assign pkt_hdr_vec = {w_pkts,
 					r_tot_length,
-					r_pkt_con_2B_0, 
-					r_pkt_con_2B_1, 
-					r_pkt_con_2B_2,
-					r_pkt_con_2B_3,
-					r_pkt_con_2B_4,
-					r_pkt_con_2B_5,
-					r_pkt_con_2B_6,
-					r_pkt_con_2B_7,
-					r_pkt_con_4B_0, 
-					r_pkt_con_4B_1, 
-					r_pkt_con_4B_2,
-					r_pkt_con_4B_3,
-					r_pkt_con_4B_4,
-					r_pkt_con_4B_5,
-					r_pkt_con_4B_6,
-					r_pkt_con_4B_7,
-					r_pkt_con_8B_0, 
-					r_pkt_con_8B_1, 
-					r_pkt_con_8B_2,
-					r_pkt_con_8B_3,
-					r_pkt_con_8B_4,
-					r_pkt_con_8B_5,
-					r_pkt_con_8B_6,
-					r_pkt_con_8B_7,
 					r_off_con_2B_0,
 					r_off_con_2B_1,
 					r_off_con_2B_2,
@@ -1579,15 +1430,8 @@ assign pkt_hdr_vec = {w_pkts,
 					r_off_con_8B_4,
 					r_off_con_8B_5,
 					r_off_con_8B_6,
-					r_off_con_8B_7};
-
-/****** for debug use ******/
-wire [16:0] b2_v;
-wire [32:0] b4_v;
-
-assign b2_v = pkt_hdr_vec[24*7+65*8+33*8+17*6+:17];
-assign b4_v = pkt_hdr_vec[24*7+65*8+33*5+:33];
-/****** for debug use ******/
+					r_off_con_8B_7,
+					{512{1'b0}}};
 
 // update TCAM match signal
 always @(posedge axis_clk) begin

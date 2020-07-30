@@ -79,7 +79,7 @@ endfunction
 //
 
 /*=================================================*/
-localparam PKT_VEC_WIDTH = 1024+7+(17+33+65)*8+(8+8+8)*7;
+localparam PKT_VEC_WIDTH = 1024+7+24*8+512;
 // pkt fifo
 reg									pkt_fifo_rd_en;
 wire								pkt_fifo_nearly_full;
@@ -156,7 +156,7 @@ parser (
 // reassemble the packets
 //
 
-localparam TOT_LENGTH_POS = (17+33+65)*8+24*7;
+localparam TOT_LENGTH_POS = 24*8+512;
 localparam PKT_START_POS = 7+TOT_LENGTH_POS;
 localparam WAIT_TILL_PARSE_DONE=0, PKT_1=1, PKT_2=2, PKT_3=3, FLUSH_PKT=4;
 
@@ -305,14 +305,6 @@ always @(*) begin
 		end
 	endcase
 end
-
-
-// always @(*) begin
-// 	bytes_cnt_next = 0;
-// 	if (m_axis_tready) begin
-// 		bytes_cnt_next = bytes_cnt+1;
-// 	end
-// end
 
 always @(posedge CLK_156) begin
 	if (~ARESETN_156) begin
