@@ -46,42 +46,34 @@ module axi_clocking
    // Inputs
    input clk_in_p,
    input clk_in_n,
-   input reset,
+   input resetn,
    // Status outputs
    
    // IBUFDS 200MHz  
-   output locked, 
-   //output clk_100, 
-   output clk_200, 
-   output clk_100,
-   output clk_1XX 
+   output locked,  
+   output clk_200 
    
    );
 
   // Signal declarations
   wire s_axi_dcm_aclk0;
   wire clkfbout;
-  wire resetn;
-  
-assign resetn= ~reset;  
 
-// 200MHz differencial into single-rail     
+  // 200MHz differencial into single-rail     
   IBUFDS clkin1_buf
    (.O  (clkin1),
     .I  (clk_in_p),
     .IB (clk_in_n)
     );
 
-clk_wiz_ip clk_wiz_i
-       (
-       // Clock in ports
-        .clk_in1(clkin1),      // input clk_in1
-        // Clock out ports
-        .clk_out1(clk_200),     // output clk_out1
-        .clk_out2(clk_1XX),     // output clk_out1
-        .clk_out3(clk_100),     // output clk_out1
-        // Status and control signals
-        .resetn(resetn), // input resetn
-        .locked(locked));
 
+clk_wiz_ip clk_wiz_i
+   (
+   // Clock in ports
+    .clk_in1(clkin1),      // input clk_in1
+    // Clock out ports
+    .clk_out1(clk_200),     // output clk_out1
+    // Status and control signals
+    .resetn(resetn), // input resetn
+    .locked(locked));
 endmodule

@@ -502,10 +502,7 @@ wire[C_DATA_WIDTH-1:0]      axis_o_nf_1_tdata;
 axi_clocking axi_clocking_i (
       .clk_in_p               (fpga_sysclk_p),
       .clk_in_n               (fpga_sysclk_n),
-      .clk_200                (clk_200),       // generates 200MHz clk
-      .clk_1XX                (clk_1XX)
-  //    .tx_mmcm_reset          (reset),
-  //    .tx_mmcm_locked         (tx_dcm_locked)
+      .clk_200                (clk_200)       // generates 200MHz clk
     );
 
   

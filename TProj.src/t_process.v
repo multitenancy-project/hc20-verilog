@@ -15,10 +15,8 @@ module t_process #(
 	parameter PHV_ADDR_WIDTH = 4
 )
 (
-	input									CLK_156,		// axis clk
-	input									ARESETN_156,	
-	input									CLK_1XX,
-	input									ARESETN_1XX,
+	input									clk,		// axis clk
+	input									aresetn,	
 
 	// input Slave AXI Stream
 	input [C_S_AXIS_DATA_WIDTH-1:0]			s_axis_tdata,
@@ -114,8 +112,8 @@ pkt_fifo
 	.prog_full								(),
 	.nearly_full							(pkt_fifo_nearly_full),
 	.empty									(pkt_fifo_empty),
-	.reset									(~ARESETN_156),
-	.clk									(CLK_156)
+	.reset									(~aresetn),
+	.clk									(clk)
 );
 
 fallthrough_small_fifo #(
@@ -132,16 +130,16 @@ paser_done_fifo
 	.prog_full								(),
 	.nearly_full							(),
 	.empty									(phv_empty),
-	.reset									(~ARESETN_156),
-	.clk									(CLK_156)
+	.reset									(~aresetn),
+	.clk									(clk)
 );
 
 
 packet_header_parser
 parser (
 	// clk
-	.axis_clk								(CLK_156),
-	.aresetn								(ARESETN_156),
+	.axis_clk								(clk),
+	.aresetn								(aresetn),
 
 	// input axis data
 	.s_axis_tdata							(s_axis_tdata),
@@ -306,8 +304,8 @@ always @(*) begin
 	endcase
 end
 
-always @(posedge CLK_156) begin
-	if (~ARESETN_156) begin
+always @(posedge clk) begin
+	if (~aresetn) begin
 		state <= WAIT_TILL_PARSE_DONE;
 		bytes_cnt <= 0;
 	end

@@ -1,4 +1,4 @@
-//
+//-
 // Copyright (c) 2015 Noa Zilberman
 // All rights reserved.
 //
@@ -42,7 +42,7 @@
 
  module top # (  
   parameter          C_DATA_WIDTH                        = 256,         // RX/TX interface data width
-  parameter          C_TUSER_WIDTH                       = 128        // RX/TX interface data width    
+  parameter          C_TUSER_WIDTH                       = 128         // RX/TX interface data width    
 ) (
 
 //PCI Express
@@ -93,7 +93,7 @@
   //  200MHz FPGA Clock
   input       fpga_sysclk_p,
   input       fpga_sysclk_n,
-  input       fpga_reset,
+  
   
   
   // 156.25MHz Si5324 clock 
@@ -132,10 +132,8 @@
   //    System(SYS) Interface                                                                                       //
   //----------------------------------------------------------------------------------------------------------------//
 
-  wire                                       pci_sys_clk;
+  wire                                       sys_clk;
   wire                                       clk_200;
-  wire                                       clk_1XX;
-  wire                                       aresetn_clk_1XX;
   wire                                       sys_rst_n_c;
   wire                                       clk_200_locked;
 
@@ -219,11 +217,11 @@ wire            axis_o_0_tvalid;
  //----------------------------------------------------------------------------------------------------------------//
  // AXI Lite interface                                                                                                 //
  //----------------------------------------------------------------------------------------------------------------//
-  wire [31:0]   M00_AXI_araddr;
+  wire [11:0]   M00_AXI_araddr;
   wire [2:0]    M00_AXI_arprot;
   wire [0:0]    M00_AXI_arready;
   wire [0:0]    M00_AXI_arvalid;
-  wire [31:0]   M00_AXI_awaddr;
+  wire [11:0]   M00_AXI_awaddr;
   wire [2:0]    M00_AXI_awprot;
   wire [0:0]    M00_AXI_awready;
   wire [0:0]    M00_AXI_awvalid;
@@ -259,11 +257,11 @@ wire            axis_o_0_tvalid;
   wire [3:0]    M01_AXI_wstrb;
   wire [0:0]    M01_AXI_wvalid;
 
-  wire [31:0]   M02_AXI_araddr;
+  wire [11:0]   M02_AXI_araddr;
   wire [2:0]    M02_AXI_arprot;
   wire [0:0]    M02_AXI_arready;
   wire [0:0]    M02_AXI_arvalid;
-  wire [31:0]   M02_AXI_awaddr;
+  wire [11:0]   M02_AXI_awaddr;
   wire [2:0]    M02_AXI_awprot;
   wire [0:0]    M02_AXI_awready;
   wire [0:0]    M02_AXI_awvalid;
@@ -430,7 +428,6 @@ wire            axis_o_0_tvalid;
   wire axi_clk;
   wire axi_aresetn;
   wire sys_reset;
-  wire fpga_reset_n;
   
  (* ASYNC_REG = "TRUE" *) reg [3:0] core200_reset_sync_n;
   wire axis_resetn;
@@ -462,27 +459,27 @@ wire            axis_o_0_tvalid;
 OBUF led_0_obuf (
     .O                       (leds[0]), 
     .I                       (led[0])
-);
+   );
 
 // 100MHz clk heartbeat ~ every 1.5 seconds  
 OBUF led_1_obuf (
     .O                       (leds[1]), 
     .I                       (led[1])
-);
+   );
 
 ////////////////////////////////////////
 // clock generation and buffers  
 IBUF sys_reset_n_ibuf(  
    .O                        (sys_rst_n_c),   
    .I                        (sys_reset_n)
-);
+  );
 
 IBUFDS_GTE2 #(
     .CLKCM_CFG               ("TRUE"),   
     .CLKRCV_TRST             ("TRUE"), 
     .CLKSWING_CFG            (2'b11)            // Refer to Transceiver User Guide
 ) IBUFDS_GTE2_inst (
-    .O                       (pci_sys_clk),     // 1-bit output: Refer to Transceiver User Guide
+    .O                       (sys_clk),         // 1-bit output: Refer to Transceiver User Guide
     .ODIV2                   (),                // 1-bit output: Refer to Transceiver User Guide
     .CEB                     (1'b0),            // 1-bit input: Refer to Transceiver User Guide
     .I                       (sys_clkp),        // 1-bit input: Refer to Transceiver User Guide
@@ -507,52 +504,22 @@ axi_clocking axi_clocking_i (
     .clk_in_p               (fpga_sysclk_p),
     .clk_in_n               (fpga_sysclk_n),
     .clk_200                (clk_200),       // generates 200MHz clk
-    .clk_1XX                (clk_1XX),
-    .clk_100                (axi_clk),
     .locked                 (clk_200_locked),
-    .reset                  (fpga_reset)
+    .resetn                 (sys_rst_n_c)
   );
   
-//assign axi_clk=sys_clk;
 // axi_clk - 100MHz - assign through buffer
-//BUFG axi_lite_bufg0 (
-//  .I                        (sys_clk),
-//  .O                        (axi_clk)
-//);   
+BUFG axi_lite_bufg0 (
+  .I                        (sys_clk),
+  .O                        (axi_clk)
+);   
   
 
 ////////////////////////////////////////  
 // main resets
 proc_sys_reset_ip proc_sys_reset_i (
   .slowest_sync_clk(clk_200),          // input wire slowest_sync_clk
-  .ext_reset_in(fpga_reset_n),                  // input wire ext_reset_in
-  .aux_reset_in(1'b1),                  // input wire aux_reset_in
-  .mb_debug_sys_rst(1'b0),          // input wire mb_debug_sys_rst
-  .dcm_locked(clk_200_locked),                      // input wire dcm_locked
-  .mb_reset(),                          // output wire mb_reset
-  .bus_struct_reset(),          // output wire [0 : 0] bus_struct_reset
-  .peripheral_reset(),          // output wire [0 : 3] peripheral_reset
-  .interconnect_aresetn(),  // output wire [0 : 0] interconnect_aresetn
-  .peripheral_aresetn(axis_resetn)      // output wire [0 : 7] peripheral_aresetn
-);
-
-
-proc_sys_reset_ip proc_sys_reset_i2 (
-  .slowest_sync_clk(clk_1XX),          // input wire slowest_sync_clk
-  .ext_reset_in(fpga_reset_n),                  // input wire ext_reset_in
-  .aux_reset_in(1'b1),                  // input wire aux_reset_in
-  .mb_debug_sys_rst(1'b0),          // input wire mb_debug_sys_rst
-  .dcm_locked(clk_200_locked),                      // input wire dcm_locked
-  .mb_reset(),                          // output wire mb_reset
-  .bus_struct_reset(),          // output wire [0 : 0] bus_struct_reset
-  .peripheral_reset(),          // output wire [0 : 3] peripheral_reset
-  .interconnect_aresetn(),  // output wire [0 : 0] interconnect_aresetn
-  .peripheral_aresetn(aresetn_clk_1XX)      // output wire [0 : 7] peripheral_aresetn
-);
-
-proc_sys_reset_ip proc_sys_reset_i3 (
-  .slowest_sync_clk(axi_clk),          // input wire slowest_sync_clk
-  .ext_reset_in(fpga_reset_n),                  // input wire ext_reset_in
+  .ext_reset_in(sys_rst_n_c),                  // input wire ext_reset_in
   .aux_reset_in(1'b1),                  // input wire aux_reset_in
   .mb_debug_sys_rst(1'b0),          // input wire mb_debug_sys_rst
   .dcm_locked(clk_200_locked),                      // input wire dcm_locked
@@ -560,21 +527,22 @@ proc_sys_reset_ip proc_sys_reset_i3 (
   .bus_struct_reset(),          // output wire [0 : 0] bus_struct_reset
   .peripheral_reset(peripheral_reset),          // output wire [0 : 3] peripheral_reset
   .interconnect_aresetn(),  // output wire [0 : 0] interconnect_aresetn
-  .peripheral_aresetn()      // output wire [0 : 7] peripheral_aresetn
+  .peripheral_aresetn(axis_resetn)      // output wire [0 : 7] peripheral_aresetn
 );
+
 
 assign sys_reset    = !sys_rst_n_c;
 //assign axi_aresetn  = sys_rst_n_c;
 
 always @ (posedge clk_200) begin
-    if (!fpga_reset_n)  
+    if (!sys_rst_n_c)  
         core200_reset_sync_n <= 4'h0; 
     else
         core200_reset_sync_n <= #1 {core200_reset_sync_n[2:0],sys_rst_n_c};
 end
 
-assign fpga_reset_n = !fpga_reset;  
-assign axi_aresetn  = !peripheral_reset;
+  
+assign axi_aresetn  = axis_resetn;
 assign axi_datapath_resetn = axis_resetn;
     
   
@@ -584,8 +552,7 @@ assign axi_datapath_resetn = axis_resetn;
 // Network modules                                                                               //
 //-----------------------------------------------------------------------------------------------//
 
-
-nf_datapath
+nf_datapath 
 #(
     // Master AXI Stream Data Width
     .C_M_AXIS_DATA_WIDTH (C_DATA_WIDTH),
@@ -597,16 +564,11 @@ nf_datapath
 )
 nf_datapath_0 
 (
-	// Datapath Clock
-    .axis_aclk                       (clk_200),
-    .axis_resetn                     (axis_resetn),
+    .axis_aclk                        (clk_200),
+    .axis_resetn                      (axis_resetn),
     .axi_aclk                        (clk_200),
-    .axi_resetn                      (axis_resetn),
-
-	// 
-	.clk_1XX						(clk_1XX),
-	.resetn_1XX						(aresetn_clk_1XX),
-                
+    .axi_resetn                      (axi_datapath_resetn),
+    
     // Slave Stream Ports (interface from Rx queues)
     .s_axis_0_tdata                 (axis_i_0_tdata),  
     .s_axis_0_tkeep                 (axis_i_0_tkeep),  
@@ -727,7 +689,8 @@ nf_datapath_0
      .S2_AXI_BRESP                     (M03_AXI_bresp),  
      .S2_AXI_BVALID                    (M03_AXI_bvalid), 
      .S2_AXI_AWREADY                   (M03_AXI_awready)
-);
+    
+    );
 
   
 // PCIe to {AXI_Lite, AXIS} bridge
@@ -913,10 +876,6 @@ control_sub control_sub_i
            // ref pipe clk
            .axis_datapath_aclk   (clk_200),
            .axis_datapath_aresetn (axis_resetn),
-           
-           // clk for nf_datapath
-           //.clk_100                         (clk_100),
-           //.aresetn_clk_100                 (aresetn_clk_100), 
       
            // axis dma tx data
            .m_axis_dma_tx_tdata  (axis_dma_i_tdata),
@@ -939,10 +898,8 @@ control_sub control_sub_i
            .pcie_7x_mgt_rxp (pcie_7x_mgt_rxp),
            .pcie_7x_mgt_txn (pcie_7x_mgt_txn),
            .pcie_7x_mgt_txp (pcie_7x_mgt_txp),
-           .pci_sys_clk         (pci_sys_clk),
-           .pci_sys_reset         (sys_reset),
-           .sys_clk         (axi_clk),
-           .sys_reset       (fpga_reset)
+           .sys_clk         (sys_clk),
+           .sys_reset       (sys_reset)
         );
         
  
@@ -1289,6 +1246,7 @@ identifier_ip identifier (
   .s_axi_rready (M00_AXI_rready)    
 );
 
+ 
 
 
 //////////////////////// DEBUG ONLY ////////////////////////////////

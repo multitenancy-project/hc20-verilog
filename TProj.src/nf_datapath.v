@@ -61,18 +61,15 @@ module nf_datapath #(
     //Registers clock
     input                                     axi_aclk,
     input                                     axi_resetn,
-	// Main component clock
-	input									clk_1XX,
-	input									resetn_1XX,
 
     // Slave AXI Ports
-    input      [11 : 0]                       S0_AXI_AWADDR,
+    input      [C_S_AXI_ADDR_WIDTH-1 : 0]     S0_AXI_AWADDR,
     input                                     S0_AXI_AWVALID,
     input      [C_S_AXI_DATA_WIDTH-1 : 0]     S0_AXI_WDATA,
     input      [C_S_AXI_DATA_WIDTH/8-1 : 0]   S0_AXI_WSTRB,
     input                                     S0_AXI_WVALID,
     input                                     S0_AXI_BREADY,
-    input      [11 : 0]                       S0_AXI_ARADDR,
+    input      [C_S_AXI_ADDR_WIDTH-1 : 0]     S0_AXI_ARADDR,
     input                                     S0_AXI_ARVALID,
     input                                     S0_AXI_RREADY,
     output                                    S0_AXI_ARREADY,
@@ -84,13 +81,13 @@ module nf_datapath #(
     output                                    S0_AXI_BVALID,
     output                                    S0_AXI_AWREADY,
     
-    input      [31 : 0]                       S1_AXI_AWADDR,
+    input      [C_S_AXI_ADDR_WIDTH-1 : 0]     S1_AXI_AWADDR,
     input                                     S1_AXI_AWVALID,
     input      [C_S_AXI_DATA_WIDTH-1 : 0]     S1_AXI_WDATA,
     input      [C_S_AXI_DATA_WIDTH/8-1 : 0]   S1_AXI_WSTRB,
     input                                     S1_AXI_WVALID,
     input                                     S1_AXI_BREADY,
-    input      [31 : 0]                       S1_AXI_ARADDR,
+    input      [C_S_AXI_ADDR_WIDTH-1 : 0]     S1_AXI_ARADDR,
     input                                     S1_AXI_ARVALID,
     input                                     S1_AXI_RREADY,
     output                                    S1_AXI_ARREADY,
@@ -102,13 +99,13 @@ module nf_datapath #(
     output                                    S1_AXI_BVALID,
     output                                    S1_AXI_AWREADY,
 
-    input      [11 : 0]                       S2_AXI_AWADDR,
+    input      [C_S_AXI_ADDR_WIDTH-1 : 0]     S2_AXI_AWADDR,
     input                                     S2_AXI_AWVALID,
     input      [C_S_AXI_DATA_WIDTH-1 : 0]     S2_AXI_WDATA,
     input      [C_S_AXI_DATA_WIDTH/8-1 : 0]   S2_AXI_WSTRB,
     input                                     S2_AXI_WVALID,
     input                                     S2_AXI_BREADY,
-    input      [11 : 0]                       S2_AXI_ARADDR,
+    input      [C_S_AXI_ADDR_WIDTH-1 : 0]     S2_AXI_ARADDR,
     input                                     S2_AXI_ARVALID,
     input                                     S2_AXI_RREADY,
     output                                    S2_AXI_ARREADY,
@@ -119,6 +116,7 @@ module nf_datapath #(
     output     [1 :0]                         S2_AXI_BRESP,
     output                                    S2_AXI_BVALID,
     output                                    S2_AXI_AWREADY,
+
     
     // Slave Stream Ports (interface from Rx queues)
     input [C_S_AXIS_DATA_WIDTH - 1:0]         s_axis_0_tdata,
@@ -188,14 +186,15 @@ module nf_datapath #(
 
     );
     
-    // internal connectivity
+    //internal connectivity
+  
     wire [C_M_AXIS_DATA_WIDTH - 1:0]         m_axis_opl_tdata;
     wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_opl_tkeep;
     wire [C_M_AXIS_TUSER_WIDTH-1:0]          m_axis_opl_tuser;
     wire                                     m_axis_opl_tvalid;
     wire                                     m_axis_opl_tready;
     wire                                     m_axis_opl_tlast;
-
+     
     wire [C_M_AXIS_DATA_WIDTH - 1:0]         s_axis_opl_tdata;
     wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_opl_tkeep;
     wire [C_M_AXIS_TUSER_WIDTH-1:0]          s_axis_opl_tuser;
@@ -203,20 +202,8 @@ module nf_datapath #(
     wire                                     s_axis_opl_tready;
     wire                                     s_axis_opl_tlast;
    
-   
-   
-    wire [C_M_AXIS_DATA_WIDTH - 1:0] m_axis_debug_tdata;        
-    wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_debug_tkeep;        
-    wire [C_M_AXIS_TUSER_WIDTH-1:0] m_axis_debug_tuser;        
-    wire m_axis_debug_tvalid;        
-    wire m_axis_debug_tlast;      
-    wire m_axis_debug_tready;       
-                    
-   
-   
-   
   //Input Arbiter
- input_arbiter_ip 
+  input_arbiter_ip 
  input_arbiter_v1_0 (
       .axis_aclk(axis_aclk), 
       .axis_resetn(axis_resetn), 
@@ -277,49 +264,39 @@ module nf_datapath #(
       .S_AXI_ARESETN(axi_resetn),
       .pkt_fwd() 
     );
-
-// Main components
+    
+    
+    
 t_process
 t_process_1 (
-	// clock
-	.CLK_156					(axis_aclk),
-	.ARESETN_156				(axis_resetn),
-	.CLK_1XX					(clk_1XX),
-	.ARESETN_1XX				(resetn_1XX),
-	// input to slave AXIS
-	.s_axis_tdata				(s_axis_opl_tdata),
-	.s_axis_tkeep				(s_axis_opl_tkeep),
- 	.s_axis_tuser   			(s_axis_opl_tuser),
- 	.s_axis_tvalid  			(s_axis_opl_tvalid),
- 	.s_axis_tready  			(s_axis_opl_tready),
- 	.s_axis_tlast   			(s_axis_opl_tlast),
-	// output from master AXIS
-	.m_axis_tdata				(m_axis_opl_tdata),
-	.m_axis_tkeep				(m_axis_opl_tkeep),
- 	.m_axis_tuser   			(m_axis_opl_tuser),
- 	.m_axis_tvalid  			(m_axis_opl_tvalid),
- 	.m_axis_tready  			(m_axis_opl_tready),
- 	.m_axis_tlast   			(m_axis_opl_tlast)
-	// debug use
+.clk						(axis_aclk),
+.aresetn					(axis_resetn),
+.s_axis_tdata                (s_axis_opl_tdata),
+.s_axis_tkeep                (s_axis_opl_tkeep),
+.s_axis_tuser               (s_axis_opl_tuser),
+.s_axis_tvalid              (s_axis_opl_tvalid),
+.s_axis_tready              (s_axis_opl_tready),
+.s_axis_tlast               (s_axis_opl_tlast),
+.m_axis_tdata                (m_axis_opl_tdata),
+.m_axis_tkeep                (m_axis_opl_tkeep),
+.m_axis_tuser               (m_axis_opl_tuser),
+.m_axis_tvalid              (m_axis_opl_tvalid),
+.m_axis_tready              (m_axis_opl_tready),
+.m_axis_tlast               (m_axis_opl_tlast)
 );
-
-// Output queues
-output_queues_ip  
-bram_output_queues_1 (
+    
+       
+      //Output queues
+       output_queues_ip  
+     bram_output_queues_1 (
       .axis_aclk(axis_aclk), 
-      .axis_resetn(axis_resetn),           // for bypass:
-      // .s_axis_tdata   (s_axis_opl_tdata),
-      // .s_axis_tkeep   (s_axis_opl_tkeep),
-      // .s_axis_tuser   (s_axis_opl_tuser),
-      // .s_axis_tvalid  (s_axis_opl_tvalid),
-      // .s_axis_tready  (s_axis_opl_tready),
-      // .s_axis_tlast   (s_axis_opl_tlast),
-      .s_axis_tdata   (m_axis_opl_tdata),  //.s_axis_tdata   (s_axis_opl_tdata),
-      .s_axis_tkeep   (m_axis_opl_tkeep),  //.s_axis_tkeep   (s_axis_opl_tkeep),
-      .s_axis_tuser   (m_axis_opl_tuser),  //.s_axis_tuser   (s_axis_opl_tuser),
-      .s_axis_tvalid  (m_axis_opl_tvalid), //.s_axis_tvalid  (s_axis_opl_tvalid) 
-      .s_axis_tready  (m_axis_opl_tready), //.s_axis_tready  (s_axis_opl_tready) 
-      .s_axis_tlast   (m_axis_opl_tlast),  //.s_axis_tlast   (s_axis_opl_tlast),
+      .axis_resetn(axis_resetn), 
+      .s_axis_tdata   (m_axis_opl_tdata), 
+      .s_axis_tkeep   (m_axis_opl_tkeep), 
+      .s_axis_tuser   (m_axis_opl_tuser), 
+      .s_axis_tvalid  (m_axis_opl_tvalid), 
+      .s_axis_tready  (m_axis_opl_tready), 
+      .s_axis_tlast   (m_axis_opl_tlast), 
       .m_axis_0_tdata (m_axis_0_tdata), 
       .m_axis_0_tkeep (m_axis_0_tkeep), 
       .m_axis_0_tuser (m_axis_0_tuser), 
@@ -344,12 +321,6 @@ bram_output_queues_1 (
       .m_axis_3_tvalid(m_axis_3_tvalid), 
       .m_axis_3_tready(m_axis_3_tready), 
       .m_axis_3_tlast (m_axis_3_tlast), 
-      // .m_axis_4_tdata  (),     //(m_axis_4_tdata), 
-      // .m_axis_4_tkeep  (),    //(m_axis_4_tkeep), 
-      // .m_axis_4_tuser  (),    //(m_axis_4_tuser), 
-      // .m_axis_4_tvalid (),    //(m_axis_4_tvalid), 
-      // .m_axis_4_tready (),     //(m_axis_4_tready), 
-      // .m_axis_4_tlast  (),     //(m_axis_4_tlast), 
       .m_axis_4_tdata (m_axis_4_tdata), 
       .m_axis_4_tkeep (m_axis_4_tkeep), 
       .m_axis_4_tuser (m_axis_4_tuser), 
@@ -392,6 +363,8 @@ bram_output_queues_1 (
       .S_AXI_ARESETN(axi_resetn)
     ); 
     
+    
+    
+    
 endmodule
-
 
