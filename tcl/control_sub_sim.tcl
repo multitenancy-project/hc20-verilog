@@ -1,11 +1,31 @@
-
-################################################################
-# This is a generated script based on design: control_sub_sim
 #
-# Though there are limitations about the generated script,
-# the main purpose of this utility is to make learning
-# IP Integrator Tcl commands easier.
-################################################################
+# Copyright (c) 2015 University of Cambridge
+# All rights reserved.
+#
+# This software was developed by Stanford University and the University of Cambridge Computer Laboratory 
+# under National Science Foundation under Grant No. CNS-0855268,
+# the University of Cambridge Computer Laboratory under EPSRC INTERNET Project EP/H040536/1 and
+# by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"), 
+# as part of the DARPA MRC research programme.
+#
+# @NETFPGA_LICENSE_HEADER_START@
+#
+# Licensed to NetFPGA C.I.C. (NetFPGA) under one or more contributor
+# license agreements.  See the NOTICE file distributed with this work for
+# additional information regarding copyright ownership.  NetFPGA licenses this
+# file to you under the NetFPGA Hardware-Software License, Version 1.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at:
+#
+#   http://www.netfpga-cic.org
+#
+# Unless required by applicable law or agreed to in writing, Work distributed
+# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations under the License.
+#
+# @NETFPGA_LICENSE_HEADER_END@
+#
 
 ################################################################
 # Check if script is running in correct Vivado version.
@@ -15,7 +35,7 @@ set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
    puts ""
-   puts "ERROR: This script was generated using Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado. Please run the script in Vivado <$scripts_vivado_version> then open the design in Vivado <$current_vivado_version>. Upgrade the design by running \"Tools => Report => Report IP Status...\", then run write_bd_tcl to create an updated script."
+   puts "ERROR: This script was created for Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado. Please run the script in Vivado <$scripts_vivado_version> then open the design in Vivado <$current_vivado_version>. Upgrade the design by running \"Tools => Report => Report IP Status...\", then run write_bd_tcl to create an updated script."
 
    return 1
 }
@@ -24,12 +44,10 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 # START
 ################################################################
 
-# To test this script, run the following commands from Vivado Tcl console:
-# source control_sub_sim_script.tcl
 
-# If you do not already have a project created,
-# you can create a project using the following command:
-#    create_project project_1 myproj -part xc7vx690tffg1761-3
+
+# CHANGE DESIGN NAME HERE
+set design_name control_sub_sim
 
 # CHECKING IF PROJECT EXISTS
 if { [get_projects -quiet] eq "" } {
@@ -37,14 +55,6 @@ if { [get_projects -quiet] eq "" } {
    return 1
 }
 
-
-
-# CHANGE DESIGN NAME HERE
-set design_name control_sub_sim
-
-# If you do not already have an existing IP Integrator design open,
-# you can create a design using the following command:
-#    create_bd_design $design_name
 
 # Creating design if needed
 set errMsg ""
@@ -76,22 +86,17 @@ if { ${design_name} eq "" } {
    # USE CASES:
    #    5) Current design opened AND has components AND same names.
 
-   #set errMsg "ERROR: Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
-   #set nRet 1
-   remove_files [get_files -quiet ${design_name}.bd] 
-   
+   set errMsg "ERROR: Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
+   set nRet 1
 } elseif { [get_files -quiet ${design_name}.bd] ne "" } {
    # USE CASES: 
    #    6) Current opened design, has components, but diff names, design_name exists in project.
    #    7) No opened design, design_name exists in project.
 
-   #set errMsg "ERROR: Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
-   #set nRet 2
-   remove_files [get_files -quiet ${design_name}.bd] 
+   set errMsg "ERROR: Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
+   set nRet 2
 
-} 
-
-#else {
+} else {
    # USE CASES:
    #    8) No opened design, design_name not in project.
    #    9) Current opened design, has components, but diff names, design_name not in project.
@@ -103,7 +108,7 @@ if { ${design_name} eq "" } {
    puts "INFO: Making design <$design_name> as current_bd_design."
    current_bd_design $design_name
 
-#}
+}
 
 puts "INFO: Currently the variable <design_name> is equal to \"$design_name\"."
 
@@ -149,127 +154,54 @@ proc create_root_design { parentCell } {
 
   # Create interface ports
   set M00_AXI [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M00_AXI ]
-  set_property -dict [ list \
-CONFIG.ADDR_WIDTH {32} \
-CONFIG.DATA_WIDTH {32} \
-CONFIG.FREQ_HZ {200000000} \
-CONFIG.PROTOCOL {AXI4LITE} \
- ] $M00_AXI
+  set_property -dict [ list CONFIG.ADDR_WIDTH {32} CONFIG.DATA_WIDTH {32} CONFIG.PROTOCOL {AXI4LITE}  ] $M00_AXI
   set M01_AXI [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M01_AXI ]
-  set_property -dict [ list \
-CONFIG.ADDR_WIDTH {32} \
-CONFIG.DATA_WIDTH {32} \
-CONFIG.FREQ_HZ {200000000} \
-CONFIG.PROTOCOL {AXI4LITE} \
- ] $M01_AXI
+  set_property -dict [ list CONFIG.ADDR_WIDTH {32} CONFIG.DATA_WIDTH {32} CONFIG.PROTOCOL {AXI4LITE}  ] $M01_AXI
   set M02_AXI [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M02_AXI ]
-  set_property -dict [ list \
-CONFIG.ADDR_WIDTH {32} \
-CONFIG.DATA_WIDTH {32} \
-CONFIG.FREQ_HZ {200000000} \
-CONFIG.PROTOCOL {AXI4LITE} \
- ] $M02_AXI
+  set_property -dict [ list CONFIG.ADDR_WIDTH {32} CONFIG.DATA_WIDTH {32} CONFIG.PROTOCOL {AXI4LITE}  ] $M02_AXI
   set M03_AXI [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M03_AXI ]
-  set_property -dict [ list \
-CONFIG.ADDR_WIDTH {32} \
-CONFIG.DATA_WIDTH {32} \
-CONFIG.FREQ_HZ {200000000} \
-CONFIG.PROTOCOL {AXI4LITE} \
- ] $M03_AXI
+  set_property -dict [ list CONFIG.ADDR_WIDTH {32} CONFIG.DATA_WIDTH {32} CONFIG.PROTOCOL {AXI4LITE}  ] $M03_AXI
   set M04_AXI [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M04_AXI ]
-  set_property -dict [ list \
-CONFIG.ADDR_WIDTH {32} \
-CONFIG.DATA_WIDTH {32} \
-CONFIG.FREQ_HZ {200000000} \
-CONFIG.PROTOCOL {AXI4LITE} \
- ] $M04_AXI
+  set_property -dict [ list CONFIG.ADDR_WIDTH {32} CONFIG.DATA_WIDTH {32} CONFIG.PROTOCOL {AXI4LITE}  ] $M04_AXI
   set M05_AXI [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M05_AXI ]
-  set_property -dict [ list \
-CONFIG.ADDR_WIDTH {32} \
-CONFIG.DATA_WIDTH {32} \
-CONFIG.FREQ_HZ {200000000} \
-CONFIG.PROTOCOL {AXI4LITE} \
- ] $M05_AXI
+  set_property -dict [ list CONFIG.ADDR_WIDTH {32} CONFIG.DATA_WIDTH {32} CONFIG.PROTOCOL {AXI4LITE}  ] $M05_AXI
   set M06_AXI [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M06_AXI ]
-  set_property -dict [ list \
-CONFIG.ADDR_WIDTH {32} \
-CONFIG.DATA_WIDTH {32} \
-CONFIG.FREQ_HZ {200000000} \
-CONFIG.PROTOCOL {AXI4LITE} \
- ] $M06_AXI
+  set_property -dict [ list CONFIG.ADDR_WIDTH {32} CONFIG.DATA_WIDTH {32} CONFIG.PROTOCOL {AXI4LITE}  ] $M06_AXI
   set M07_AXI [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 M07_AXI ]
-  set_property -dict [ list \
-CONFIG.ADDR_WIDTH {32} \
-CONFIG.DATA_WIDTH {32} \
-CONFIG.FREQ_HZ {200000000} \
-CONFIG.PROTOCOL {AXI4LITE} \
- ] $M07_AXI
+  set_property -dict [ list CONFIG.ADDR_WIDTH {32} CONFIG.DATA_WIDTH {32} CONFIG.PROTOCOL {AXI4LITE}  ] $M07_AXI
   set S00_AXI [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S00_AXI ]
-  set_property -dict [ list \
-CONFIG.ADDR_WIDTH {32} \
-CONFIG.ARUSER_WIDTH {0} \
-CONFIG.AWUSER_WIDTH {0} \
-CONFIG.BUSER_WIDTH {0} \
-CONFIG.DATA_WIDTH {32} \
-CONFIG.HAS_BRESP {1} \
-CONFIG.HAS_BURST {1} \
-CONFIG.HAS_CACHE {1} \
-CONFIG.HAS_LOCK {1} \
-CONFIG.HAS_PROT {1} \
-CONFIG.HAS_QOS {1} \
-CONFIG.HAS_REGION {1} \
-CONFIG.HAS_RRESP {1} \
-CONFIG.HAS_WSTRB {1} \
-CONFIG.ID_WIDTH {0} \
-CONFIG.MAX_BURST_LENGTH {256} \
-CONFIG.NUM_READ_OUTSTANDING {2} \
-CONFIG.NUM_WRITE_OUTSTANDING {2} \
-CONFIG.PROTOCOL {AXI4} \
-CONFIG.READ_WRITE_MODE {READ_WRITE} \
-CONFIG.RUSER_WIDTH {0} \
-CONFIG.SUPPORTS_NARROW_BURST {1} \
-CONFIG.WUSER_WIDTH {0} \
- ] $S00_AXI
+  set_property -dict [ list CONFIG.ADDR_WIDTH {32} CONFIG.ARUSER_WIDTH {0} CONFIG.AWUSER_WIDTH {0} CONFIG.BUSER_WIDTH {0} CONFIG.CLK_DOMAIN {} CONFIG.DATA_WIDTH {32} CONFIG.FREQ_HZ {100000000} CONFIG.ID_WIDTH {0} CONFIG.MAX_BURST_LENGTH {256} CONFIG.NUM_READ_OUTSTANDING {2} CONFIG.NUM_WRITE_OUTSTANDING {2} CONFIG.PHASE {0.000} CONFIG.PROTOCOL {AXI4} CONFIG.READ_WRITE_MODE {READ_WRITE} CONFIG.RUSER_WIDTH {0} CONFIG.SUPPORTS_NARROW_BURST {1} CONFIG.WUSER_WIDTH {0}  ] $S00_AXI
 
   # Create ports
   set axi_lite_aclk [ create_bd_port -dir I -type clk axi_lite_aclk ]
   set axi_lite_areset [ create_bd_port -dir I -type rst axi_lite_areset ]
   set core_clk [ create_bd_port -dir I -type clk core_clk ]
-  set_property -dict [ list \
-CONFIG.FREQ_HZ {200000000} \
- ] $core_clk
+  set_property -dict [ list CONFIG.FREQ_HZ {200000000}  ] $core_clk
   set core_resetn [ create_bd_port -dir I -type rst core_resetn ]
-
-  # Create instance: axi_clock_converter_0, and set properties
-  set axi_clock_converter_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_clock_converter:2.1 axi_clock_converter_0 ]
+  
+  
+    
 
   # Create instance: axi_interconnect_0, and set properties
   set axi_interconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_0 ]
-  set_property -dict [ list \
-CONFIG.M00_HAS_DATA_FIFO {1} \
-CONFIG.M00_HAS_REGSLICE {3} \
-CONFIG.M01_HAS_DATA_FIFO {1} \
-CONFIG.M01_HAS_REGSLICE {3} \
-CONFIG.M02_HAS_DATA_FIFO {1} \
-CONFIG.M02_HAS_REGSLICE {3} \
-CONFIG.M03_HAS_DATA_FIFO {1} \
-CONFIG.M03_HAS_REGSLICE {3} \
-CONFIG.M04_HAS_DATA_FIFO {1} \
-CONFIG.M04_HAS_REGSLICE {3} \
-CONFIG.M05_HAS_DATA_FIFO {1} \
-CONFIG.M05_HAS_REGSLICE {3} \
-CONFIG.M06_HAS_DATA_FIFO {1} \
-CONFIG.M06_HAS_REGSLICE {3} \
-CONFIG.M07_HAS_DATA_FIFO {1} \
-CONFIG.M07_HAS_REGSLICE {3} \
-CONFIG.NUM_MI {8} \
-CONFIG.S00_HAS_DATA_FIFO {1} \
-CONFIG.S00_HAS_REGSLICE {3} \
- ] $axi_interconnect_0
+  set_property -dict [ list CONFIG.NUM_MI {8} CONFIG.TRANSLATION_MODE {0} ] $axi_interconnect_0
+  set_property -dict [list CONFIG.M00_HAS_REGSLICE {3} CONFIG.M00_HAS_DATA_FIFO {1} ] $axi_interconnect_0
+  set_property -dict [list CONFIG.M01_HAS_REGSLICE {3} CONFIG.M01_HAS_DATA_FIFO {1} ] $axi_interconnect_0
+  set_property -dict [list CONFIG.M02_HAS_REGSLICE {3} CONFIG.M02_HAS_DATA_FIFO {1} ] $axi_interconnect_0
+  set_property -dict [list CONFIG.M03_HAS_REGSLICE {3} CONFIG.M03_HAS_DATA_FIFO {1} ] $axi_interconnect_0
+  set_property -dict [list CONFIG.M04_HAS_REGSLICE {3} CONFIG.M04_HAS_DATA_FIFO {1} ] $axi_interconnect_0
+  set_property -dict [list CONFIG.M05_HAS_REGSLICE {3} CONFIG.M05_HAS_DATA_FIFO {1} ] $axi_interconnect_0
+  set_property -dict [list CONFIG.M06_HAS_REGSLICE {3} CONFIG.M06_HAS_DATA_FIFO {1} ] $axi_interconnect_0
+  set_property -dict [list CONFIG.M07_HAS_REGSLICE {3} CONFIG.M07_HAS_DATA_FIFO {1} ] $axi_interconnect_0              
+  set_property -dict [list CONFIG.S00_HAS_REGSLICE {3} CONFIG.S00_HAS_DATA_FIFO {1} ] $axi_interconnect_0
+
+
+# Add AXI clock converter
+create_bd_cell -type ip -vlnv xilinx.com:ip:axi_clock_converter:2.1 axi_clock_converter_0
+connect_bd_intf_net [get_bd_intf_ports S00_AXI] [get_bd_intf_pins axi_clock_converter_0/S_AXI]
+connect_bd_intf_net [get_bd_intf_pins axi_clock_converter_0/M_AXI] -boundary_type upper [get_bd_intf_pins axi_interconnect_0/S00_AXI]
 
   # Create interface connections
-  connect_bd_intf_net -intf_net S00_AXI_1 [get_bd_intf_ports S00_AXI] [get_bd_intf_pins axi_clock_converter_0/S_AXI]
-  connect_bd_intf_net -intf_net axi_clock_converter_0_M_AXI [get_bd_intf_pins axi_clock_converter_0/M_AXI] [get_bd_intf_pins axi_interconnect_0/S00_AXI]
   connect_bd_intf_net -intf_net axi_interconnect_0_M00_AXI [get_bd_intf_ports M00_AXI] [get_bd_intf_pins axi_interconnect_0/M00_AXI]
   connect_bd_intf_net -intf_net axi_interconnect_0_M01_AXI [get_bd_intf_ports M01_AXI] [get_bd_intf_pins axi_interconnect_0/M01_AXI]
   connect_bd_intf_net -intf_net axi_interconnect_0_M02_AXI [get_bd_intf_ports M02_AXI] [get_bd_intf_pins axi_interconnect_0/M02_AXI]
@@ -280,58 +212,50 @@ CONFIG.S00_HAS_REGSLICE {3} \
   connect_bd_intf_net -intf_net axi_interconnect_0_M07_AXI [get_bd_intf_ports M07_AXI] [get_bd_intf_pins axi_interconnect_0/M07_AXI]
 
   # Create port connections
-  connect_bd_net -net axi_lite_aclk_1 [get_bd_ports axi_lite_aclk] [get_bd_pins axi_clock_converter_0/s_axi_aclk]
-  connect_bd_net -net axi_lite_areset_1 [get_bd_ports axi_lite_areset] [get_bd_pins axi_clock_converter_0/s_axi_aresetn]
-  connect_bd_net -net core_clk_1 [get_bd_ports core_clk] [get_bd_pins axi_clock_converter_0/m_axi_aclk] [get_bd_pins axi_interconnect_0/ACLK] [get_bd_pins axi_interconnect_0/M00_ACLK] [get_bd_pins axi_interconnect_0/M01_ACLK] [get_bd_pins axi_interconnect_0/M02_ACLK] [get_bd_pins axi_interconnect_0/M03_ACLK] [get_bd_pins axi_interconnect_0/M04_ACLK] [get_bd_pins axi_interconnect_0/M05_ACLK] [get_bd_pins axi_interconnect_0/M06_ACLK] [get_bd_pins axi_interconnect_0/M07_ACLK] [get_bd_pins axi_interconnect_0/S00_ACLK]
-  connect_bd_net -net core_resetn_1 [get_bd_ports core_resetn] [get_bd_pins axi_clock_converter_0/m_axi_aresetn] [get_bd_pins axi_interconnect_0/ARESETN] [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins axi_interconnect_0/M01_ARESETN] [get_bd_pins axi_interconnect_0/M02_ARESETN] [get_bd_pins axi_interconnect_0/M03_ARESETN] [get_bd_pins axi_interconnect_0/M04_ARESETN] [get_bd_pins axi_interconnect_0/M05_ARESETN] [get_bd_pins axi_interconnect_0/M06_ARESETN] [get_bd_pins axi_interconnect_0/M07_ARESETN] [get_bd_pins axi_interconnect_0/S00_ARESETN]
+  connect_bd_net -net axi_lite_aclk_1 [get_bd_ports axi_lite_aclk]  [get_bd_pins axi_clock_converter_0/s_axi_aclk] 
+connect_bd_net -net core_clk_1 [get_bd_ports core_clk]  [get_bd_pins axi_clock_converter_0/m_axi_aclk] [get_bd_pins axi_interconnect_0/ACLK] [get_bd_pins axi_interconnect_0/S00_ACLK] [get_bd_pins axi_interconnect_0/M00_ACLK] [get_bd_pins axi_interconnect_0/M01_ACLK] [get_bd_pins axi_interconnect_0/M02_ACLK] [get_bd_pins axi_interconnect_0/M03_ACLK] [get_bd_pins axi_interconnect_0/M04_ACLK] [get_bd_pins axi_interconnect_0/M05_ACLK] [get_bd_pins axi_interconnect_0/M06_ACLK] [get_bd_pins axi_interconnect_0/M07_ACLK] 
+connect_bd_net -net axi_lite_areset_1 [get_bd_ports axi_lite_areset] [get_bd_pins axi_clock_converter_0/s_axi_aresetn] 
+connect_bd_net -net core_resetn_1 [get_bd_ports core_resetn] [get_bd_pins axi_clock_converter_0/m_axi_aresetn] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins axi_interconnect_0/M01_ARESETN] [get_bd_pins axi_interconnect_0/ARESETN]  [get_bd_pins axi_interconnect_0/M02_ARESETN] [get_bd_pins axi_interconnect_0/M03_ARESETN] [get_bd_pins axi_interconnect_0/M04_ARESETN] [get_bd_pins axi_interconnect_0/M05_ARESETN] [get_bd_pins axi_interconnect_0/M06_ARESETN] [get_bd_pins axi_interconnect_0/M07_ARESETN] 
 
   # Create address segments
-  create_bd_addr_seg -range 0x1000 -offset 0x44000000 [get_bd_addr_spaces S00_AXI] [get_bd_addr_segs M00_AXI/Reg] SEG_M00_AXI_Reg
-  create_bd_addr_seg -range 0x1000 -offset 0x44010000 [get_bd_addr_spaces S00_AXI] [get_bd_addr_segs M01_AXI/Reg] SEG_M01_AXI_Reg
-  create_bd_addr_seg -range 0x1000 -offset 0x44020000 [get_bd_addr_spaces S00_AXI] [get_bd_addr_segs M02_AXI/Reg] SEG_M02_AXI_Reg
-  create_bd_addr_seg -range 0x1000 -offset 0x44030000 [get_bd_addr_spaces S00_AXI] [get_bd_addr_segs M03_AXI/Reg] SEG_M03_AXI_Reg
-  create_bd_addr_seg -range 0x10000 -offset 0x44A00000 [get_bd_addr_spaces S00_AXI] [get_bd_addr_segs M04_AXI/Reg] SEG_M04_AXI_Reg
-  create_bd_addr_seg -range 0x10000 -offset 0x44A10000 [get_bd_addr_spaces S00_AXI] [get_bd_addr_segs M05_AXI/Reg] SEG_M05_AXI_Reg
-  create_bd_addr_seg -range 0x10000 -offset 0x44A20000 [get_bd_addr_spaces S00_AXI] [get_bd_addr_segs M06_AXI/Reg] SEG_M06_AXI_Reg
-  create_bd_addr_seg -range 0x10000 -offset 0x44A30000 [get_bd_addr_spaces S00_AXI] [get_bd_addr_segs M07_AXI/Reg] SEG_M07_AXI_Reg
+source ./tcl/addr_defines.tcl
+  assign_bd_address [get_bd_addr_segs {M00_AXI/Reg }]  
+  set_property offset $M00_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M00_AXI_Reg}]
+  set_property range $M00_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M00_AXI_Reg}] 
 
-  # Perform GUI Layout
-  regenerate_bd_layout -layout_string {
-   guistr: "# # String gsaved with Nlview 6.5.5  2015-06-26 bk=1.3371 VDI=38 GEI=35 GUI=JA:1.8
-#  -string -flagsOSRD
-preplace port M07_AXI -pg 1 -y 280 -defaultsOSRD
-preplace port axi_lite_areset -pg 1 -y 180 -defaultsOSRD
-preplace port core_clk -pg 1 -y 200 -defaultsOSRD
-preplace port S00_AXI -pg 1 -y 140 -defaultsOSRD
-preplace port M06_AXI -pg 1 -y 260 -defaultsOSRD
-preplace port core_resetn -pg 1 -y 220 -defaultsOSRD
-preplace port M01_AXI -pg 1 -y 160 -defaultsOSRD
-preplace port M04_AXI -pg 1 -y 220 -defaultsOSRD
-preplace port M03_AXI -pg 1 -y 200 -defaultsOSRD
-preplace port M05_AXI -pg 1 -y 240 -defaultsOSRD
-preplace port M02_AXI -pg 1 -y 180 -defaultsOSRD
-preplace port axi_lite_aclk -pg 1 -y 160 -defaultsOSRD
-preplace port M00_AXI -pg 1 -y 140 -defaultsOSRD
-preplace inst axi_clock_converter_0 -pg 1 -lvl 1 -y 180 -defaultsOSRD
-preplace inst axi_interconnect_0 -pg 1 -lvl 1 -y 510 -defaultsOSRD
-preplace netloc axi_lite_areset_1 1 0 1 N
-preplace netloc axi_interconnect_0_M02_AXI 1 1 2 360 180 NJ
-preplace netloc core_clk_1 1 0 1 20
-preplace netloc axi_lite_aclk_1 1 0 1 N
-preplace netloc axi_interconnect_0_M07_AXI 1 1 2 410 280 NJ
-preplace netloc core_resetn_1 1 0 1 10
-preplace netloc axi_interconnect_0_M04_AXI 1 1 2 380 220 NJ
-preplace netloc S00_AXI_1 1 0 1 N
-preplace netloc axi_interconnect_0_M05_AXI 1 1 2 390 240 NJ
-preplace netloc axi_interconnect_0_M00_AXI 1 1 2 340 140 NJ
-preplace netloc axi_clock_converter_0_M_AXI 1 0 2 30 90 330
-preplace netloc axi_interconnect_0_M01_AXI 1 1 2 350 160 NJ
-preplace netloc axi_interconnect_0_M06_AXI 1 1 2 400 260 NJ
-preplace netloc axi_interconnect_0_M03_AXI 1 1 2 370 200 NJ
-levelinfo -pg 1 -10 180 430 470 -top 0 -bot 770
-",
-}
+ assign_bd_address [get_bd_addr_segs {M01_AXI/Reg }]  
+  set_property offset $M01_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M01_AXI_Reg}]
+  set_property range $M01_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M01_AXI_Reg}] 
 
+
+assign_bd_address [get_bd_addr_segs {M02_AXI/Reg }]  
+  set_property offset $M02_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M02_AXI_Reg}]
+  set_property range $M02_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M02_AXI_Reg}] 
+
+assign_bd_address [get_bd_addr_segs {M03_AXI/Reg }]  
+  set_property offset $M03_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M03_AXI_Reg}]
+  set_property range $M03_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M03_AXI_Reg}] 
+
+assign_bd_address [get_bd_addr_segs {M03_AXI/Reg }]  
+  set_property offset $M03_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M03_AXI_Reg}]
+  set_property range $M03_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M03_AXI_Reg}] 
+ 
+assign_bd_address [get_bd_addr_segs {M04_AXI/Reg }]  
+  set_property offset $M04_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M04_AXI_Reg}]
+  set_property range $M04_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M04_AXI_Reg}] 
+
+assign_bd_address [get_bd_addr_segs {M05_AXI/Reg }]  
+  set_property offset $M05_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M05_AXI_Reg}]
+  set_property range $M05_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M05_AXI_Reg}] 
+ 
+assign_bd_address [get_bd_addr_segs {M06_AXI/Reg }]  
+  set_property offset $M06_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M06_AXI_Reg}]
+  set_property range $M06_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M06_AXI_Reg}] 
+ 
+assign_bd_address [get_bd_addr_segs {M07_AXI/Reg }]  
+  set_property offset $M07_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M06_AXI_Reg}]
+  set_property range $M07_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M06_AXI_Reg}] 
+ 
   # Restore current instance
   current_bd_instance $oldCurInst
 
