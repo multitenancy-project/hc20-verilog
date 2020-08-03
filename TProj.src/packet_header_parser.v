@@ -36,24 +36,12 @@ module packet_header_parser #(
 integer idx;
 
 /*==== definitions of functions ====*/
-// count number of 1-bit
-function [6:0] count_ones (
-	input [256/8-1:0] data
-);
-begin
-	count_ones = 0;
-	for (idx=0; idx<256/8; idx=idx+1)
-		count_ones = count_ones + data[idx];
-end
-endfunction
-//
+/*==== [END] definitions of functions ====*/
 
 localparam TOT_HDR_LEN = 1024; // assume at-most 128B (46B+82B) header
 wire [TOT_HDR_LEN-1:0] w_pkts;
 reg [3:0] pkt_cnt;
 reg [C_S_AXIS_DATA_WIDTH-1:0] pkts[0:C_VALID_NUM_HDR_PKTS-1];
-reg [C_S_AXIS_DATA_WIDTH/8-1:0] pkts_len[0:C_VALID_NUM_HDR_PKTS-1];
-
 
 /****** store all or at-most 4 pkt segments ******/
 reg tlast_d1; // indicate whether the last valid packet 
@@ -92,20 +80,16 @@ always @(posedge axis_clk) begin
 	if (~aresetn) begin
 		for (idx=0; idx<8; idx=idx+1) begin
 			pkts[idx] <= 0;
-			pkts_len[idx] <= 0;
 		end
 	end
 	else if (hdr_window && pkt_cnt==0) begin
 		for (idx=1; idx<8; idx=idx+1) begin
 			pkts[idx] <= 0;
-			pkts_len[idx] <= 0;
 		end
 		pkts[pkt_cnt] <= s_axis_tdata;
-		pkts_len[pkt_cnt] <= count_ones(s_axis_tkeep)*8;
 	end
 	else if (hdr_window) begin
 		pkts[pkt_cnt] <= s_axis_tdata;
-		pkts_len[pkt_cnt] <= count_ones(s_axis_tkeep)*8;
 	end
 end
 /****** store all or at-most 4 pkt segments ******/
@@ -189,7 +173,7 @@ reg [7:0] r_off_con_8B_4;
 reg [7:0] r_off_con_8B_5;
 reg [7:0] r_off_con_8B_6;
 reg [7:0] r_off_con_8B_7;
-reg [7:0] r_tot_length;
+reg [6:0] r_tot_length;
 // parse act unit
 wire [15:0] w_parse_act_unit_0;
 wire [15:0] w_parse_act_unit_1;
@@ -1432,6 +1416,17 @@ assign pkt_hdr_vec = {w_pkts,
 					r_off_con_8B_6,
 					r_off_con_8B_7,
 					{512{1'b0}}};
+
+// debug use
+wire [255:0] pkt0;
+wire [255:0] pkt1;
+wire [255:0] pkt2;
+wire [255:0] pkt3;
+
+assign pkt0 = pkt_hdr_vec[(512+24*8+7)+:256];
+assign pkt1 = pkt_hdr_vec[(512+24*8+7+256)+:256];
+assign pkt2 = pkt_hdr_vec[(512+24*8+7+512)+:256];
+assign pkt3 = pkt_hdr_vec[(512+24*8+7+768)+:256];
 
 // update TCAM match signal
 always @(posedge axis_clk) begin

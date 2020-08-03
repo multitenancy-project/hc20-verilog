@@ -73,8 +73,7 @@ begin
 		count_ones = count_ones + data[idx];
 end
 endfunction
-
-//
+/*==== [END] definitions of functions ====*/
 
 /*=================================================*/
 localparam PKT_VEC_WIDTH = 1024+7+24*8+512;
@@ -156,27 +155,30 @@ parser (
 
 localparam TOT_LENGTH_POS = 24*8+512;
 localparam PKT_START_POS = 7+TOT_LENGTH_POS;
+localparam PKT_START_POS_PKT0 = PKT_START_POS;
+localparam PKT_START_POS_PKT1 = PKT_START_POS+256;
+localparam PKT_START_POS_PKT2 = PKT_START_POS+512;
+localparam PKT_START_POS_PKT3 = PKT_START_POS+768;
 localparam WAIT_TILL_PARSE_DONE=0, PKT_1=1, PKT_2=2, PKT_3=3, FLUSH_PKT=4;
 
 reg [2:0] state, state_next;
-reg [6:0] bytes_cnt, bytes_cnt_next, last_bytes;
-wire [6:0] w_tot_length;
-wire [1023:0] w_pkt_hdr;
 
-assign w_tot_length = phv_fifo[TOT_LENGTH_POS+:7];
-assign w_pkt_hdr = phv_fifo[PKT_START_POS+:1024];
+reg [255:0] pkt_0, pkt_0_next;
+reg [255:0] pkt_1, pkt_1_next;
+reg [255:0] pkt_2, pkt_2_next;
+reg [255:0] pkt_3, pkt_3_next;
+reg [6:0] tot_length, tot_length_next;
 
 // for debug use
-wire [255:0] pkt_0;
-wire [255:0] pkt_1;
-wire [255:0] pkt_2;
-wire [255:0] pkt_3;
+wire [255:0] pkt0;
+wire [255:0] pkt1;
+wire [255:0] pkt2;
+wire [255:0] pkt3;
+assign pkt0 = phv_fifo[PKT_START_POS_PKT0+:256];
+assign pkt1 = phv_fifo[PKT_START_POS_PKT1+:256];
+assign pkt2 = phv_fifo[PKT_START_POS_PKT2+:256];
+assign pkt3 = phv_fifo[PKT_START_POS_PKT3+:256];
 
-assign pkt_0 = w_pkt_hdr[0+:256];
-assign pkt_1 = w_pkt_hdr[256+:256];
-assign pkt_2 = w_pkt_hdr[512+:256];
-assign pkt_3 = w_pkt_hdr[768+:256];
-// for debug use
 
 always @(*) begin
 	m_axis_tdata = tdata_fifo;
@@ -191,14 +193,17 @@ always @(*) begin
 
 	//
 	state_next = state;
-	bytes_cnt_next = bytes_cnt;
-	last_bytes = 0;
+	//
+	pkt_0_next = phv_fifo[PKT_START_POS_PKT0+:256];
+	pkt_1_next = phv_fifo[PKT_START_POS_PKT1+:256];
+	pkt_2_next = phv_fifo[PKT_START_POS_PKT2+:256];
+	pkt_3_next = phv_fifo[PKT_START_POS_PKT3+:256];
+	tot_length_next = phv_fifo[TOT_LENGTH_POS+:7];
 
 	case (state)
 		WAIT_TILL_PARSE_DONE: begin
 			if (!pkt_fifo_empty && !phv_empty) begin // both pkt and phv fifo are not empty
 				if (m_axis_tready) begin // we can downstream pkt, the 1st packet
-					bytes_cnt_next = bytes_cnt+count_ones(tkeep_fifo);
 
 					m_axis_tdata = pkt_0;
 					m_axis_tvalid = 1;
@@ -211,84 +216,48 @@ always @(*) begin
 		PKT_1: begin
 			if (!pkt_fifo_empty && !phv_empty) begin
 				if (m_axis_tready) begin // the 2nd segment
-					bytes_cnt_next = bytes_cnt+count_ones(tkeep_fifo);
-
 					if (tlast_fifo) begin
 						state_next = WAIT_TILL_PARSE_DONE;
-						bytes_cnt_next = 0;
-					end
-					else
-						state_next = PKT_2;
-
-					if (bytes_cnt_next >= w_tot_length) begin
-						last_bytes = w_tot_length+count_ones(tkeep_fifo)-bytes_cnt_next;
-						m_axis_tdata = (tdata_fifo & pad_suffix_zeros(last_bytes*8)) | (pkt_1 & pad_suffix_ones(last_bytes*8));
-						state_next = FLUSH_PKT;
-						phv_rd_en = 1;
 					end
 					else begin
-						m_axis_tdata = pkt_1;
+						state_next = PKT_2;
 					end
 
+					m_axis_tdata = pkt_1;
 					m_axis_tvalid= 1;
 					pkt_fifo_rd_en = 1;
-
 				end
 			end
 		end
 		PKT_2: begin
 			if (!pkt_fifo_empty && !phv_empty) begin
 				if (m_axis_tready) begin // the 2nd segment
-					bytes_cnt_next = bytes_cnt+count_ones(tkeep_fifo);
-
 					if (tlast_fifo) begin
 						state_next = WAIT_TILL_PARSE_DONE;
-						bytes_cnt_next = 0;
-					end
-					else
-						state_next = PKT_3;
-
-					if (bytes_cnt_next >= w_tot_length) begin
-						last_bytes = w_tot_length+count_ones(tkeep_fifo)-bytes_cnt_next;
-						m_axis_tdata = (tdata_fifo & pad_suffix_zeros(last_bytes*8)) | (pkt_2 & pad_suffix_ones(last_bytes*8));
-						state_next = FLUSH_PKT;
-						phv_rd_en = 1;
 					end
 					else begin
-						m_axis_tdata = pkt_2;
+						state_next = PKT_3;
 					end
 
+					m_axis_tdata = pkt_2;
 					m_axis_tvalid= 1;
 					pkt_fifo_rd_en = 1;
-
 				end
 			end
 		end
 		PKT_3: begin
 			if (!pkt_fifo_empty && !phv_empty) begin
 				if (m_axis_tready) begin // the 2nd segment
-					bytes_cnt_next = bytes_cnt+count_ones(tkeep_fifo);
-
 					if (tlast_fifo) begin
 						state_next = WAIT_TILL_PARSE_DONE;
-						bytes_cnt_next = 0;
-					end
-					else
-						state_next = FLUSH_PKT;
-
-					if (bytes_cnt_next >= w_tot_length) begin
-						last_bytes = w_tot_length+count_ones(tkeep_fifo)-bytes_cnt_next;
-						m_axis_tdata = (tdata_fifo & pad_suffix_zeros(last_bytes*8)) | (pkt_3 & pad_suffix_ones(last_bytes*8));
-						state_next = FLUSH_PKT;
-						phv_rd_en = 1;
 					end
 					else begin
-						m_axis_tdata = pkt_3;
+						state_next = FLUSH_PKT;
 					end
 
+					m_axis_tdata = pkt_3;
 					m_axis_tvalid= 1;
 					pkt_fifo_rd_en = 1;
-
 				end
 			end
 		end
@@ -298,7 +267,6 @@ always @(*) begin
 			pkt_fifo_rd_en = 1;
 			if (tlast_fifo) begin
 				state_next = WAIT_TILL_PARSE_DONE;
-				bytes_cnt_next = 0;
 			end
 		end
 	endcase
@@ -307,11 +275,27 @@ end
 always @(posedge clk) begin
 	if (~aresetn) begin
 		state <= WAIT_TILL_PARSE_DONE;
-		bytes_cnt <= 0;
+		//
+		pkt_0 <= 0;
+		pkt_1 <= 0;
+		pkt_2 <= 0;
+		pkt_3 <= 0;
+		pkt_0_next <= 0;
+		pkt_1_next <= 0;
+		pkt_2_next <= 0;
+		pkt_3_next <= 0;
+
+		tot_length <= 0;
+		tot_length_next <= 0;
 	end
 	else begin
 		state <= state_next;
-		bytes_cnt <= bytes_cnt_next;
+		//
+		pkt_0 <= pkt_0_next;
+		pkt_1 <= pkt_1_next;
+		pkt_2 <= pkt_2_next;
+		pkt_3 <= pkt_3_next;
+		tot_length <= tot_length_next;
 	end
 end
 
