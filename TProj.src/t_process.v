@@ -39,40 +39,40 @@ module t_process #(
 );
 
 /****** function definitions ******/
-integer idx;
+//integer idx;
 //
-function [255:0] pad_suffix_zeros (
-	input [6:0] pos
-);
-begin
-	pad_suffix_zeros = 0;
-	for (idx=0; idx<256; idx=idx+1)
-		if (idx >= pos)
-			pad_suffix_zeros[idx] = 1;
-end
-endfunction
+//function [255:0] pad_suffix_zeros (
+//	input [6:0] pos
+//);
+//begin
+//	pad_suffix_zeros = 0;
+//	for (idx=0; idx<256; idx=idx+1)
+//		if (idx >= pos)
+//			pad_suffix_zeros[idx] = 1;
+//end
+//endfunction
+////
+//function [255:0] pad_suffix_ones (
+//	input [6:0] pos
+//);
+//begin
+//	pad_suffix_ones = 0;
+//	for (idx=0; idx<256; idx=idx+1)
+//		if (idx < pos)
+//			pad_suffix_ones[idx] = 1;
+//end
+//endfunction
 //
-function [255:0] pad_suffix_ones (
-	input [6:0] pos
-);
-begin
-	pad_suffix_ones = 0;
-	for (idx=0; idx<256; idx=idx+1)
-		if (idx < pos)
-			pad_suffix_ones[idx] = 1;
-end
-endfunction
-
-// count number of 1-bit
-function [6:0] count_ones (
-	input [256/8-1:0] data
-);
-begin
-	count_ones = 0;
-	for (idx=0; idx<256/8; idx=idx+1)
-		count_ones = count_ones + data[idx];
-end
-endfunction
+//// count number of 1-bit
+//function [6:0] count_ones (
+//	input [256/8-1:0] data
+//);
+//begin
+//	count_ones = 0;
+//	for (idx=0; idx<256/8; idx=idx+1)
+//		count_ones = count_ones + data[idx];
+//end
+//endfunction
 /*==== [END] definitions of functions ====*/
 
 /*=================================================*/
@@ -160,6 +160,8 @@ localparam PKT_START_POS_PKT1 = PKT_START_POS+256;
 localparam PKT_START_POS_PKT2 = PKT_START_POS+512;
 localparam PKT_START_POS_PKT3 = PKT_START_POS+768;
 localparam WAIT_TILL_PARSE_DONE=0, PKT_1=1, PKT_2=2, PKT_3=3, FLUSH_PKT=4;
+localparam TRIM_PKT0=0, TRIM_PKT1=1, TRIM_PKT2=2, TRIM_PKT3=3;
+localparam ALL_VALID=32'hffff_ffff;
 
 reg [2:0] state, state_next;
 
@@ -167,18 +169,31 @@ reg [255:0] pkt_0, pkt_0_next;
 reg [255:0] pkt_1, pkt_1_next;
 reg [255:0] pkt_2, pkt_2_next;
 reg [255:0] pkt_3, pkt_3_next;
+reg [31:0] pkt_keep;
 reg [6:0] tot_length, tot_length_next;
+//
+reg [1:0] trim_case_indicator;
 
-// for debug use
-wire [255:0] pkt0;
-wire [255:0] pkt1;
-wire [255:0] pkt2;
-wire [255:0] pkt3;
-assign pkt0 = phv_fifo[PKT_START_POS_PKT0+:256];
-assign pkt1 = phv_fifo[PKT_START_POS_PKT1+:256];
-assign pkt2 = phv_fifo[PKT_START_POS_PKT2+:256];
-assign pkt3 = phv_fifo[PKT_START_POS_PKT3+:256];
+always @(*) begin
+	// trim_case_indicator_next = trim_case_indicator;
+	if (tot_length>32 && tot_length<=32*2) begin
+		trim_case_indicator = TRIM_PKT1;
+		pkt_keep = ALL_VALID << (32*2-tot_length);
+	end
+	else if (tot_length>32*2 && tot_length<=32*3) begin
+		trim_case_indicator = TRIM_PKT2;
+		pkt_keep = ALL_VALID << (32*3-tot_length);
+	end
+	else if (tot_length>32*3 && tot_length<=32*4) begin
+		trim_case_indicator = TRIM_PKT3;
+		pkt_keep = ALL_VALID << (32*3-tot_length);
+	end
+	else begin
+		trim_case_indicator = TRIM_PKT0; // not valid, may never happen
+		pkt_keep = 0;
+	end
 
+end
 
 always @(*) begin
 	m_axis_tdata = tdata_fifo;
@@ -194,11 +209,13 @@ always @(*) begin
 	//
 	state_next = state;
 	//
-	pkt_0_next = phv_fifo[PKT_START_POS_PKT0+:256];
-	pkt_1_next = phv_fifo[PKT_START_POS_PKT1+:256];
-	pkt_2_next = phv_fifo[PKT_START_POS_PKT2+:256];
-	pkt_3_next = phv_fifo[PKT_START_POS_PKT3+:256];
+	pkt_0 = phv_fifo[PKT_START_POS_PKT0+:256];
+	pkt_1 = phv_fifo[PKT_START_POS_PKT1+:256];
+	pkt_2 = phv_fifo[PKT_START_POS_PKT2+:256];
+	pkt_3 = phv_fifo[PKT_START_POS_PKT3+:256];
 	tot_length_next = phv_fifo[TOT_LENGTH_POS+:7];
+	//
+	// trim_case_indicator_next = trim_case_indicator; // may never happen
 
 	case (state)
 		WAIT_TILL_PARSE_DONE: begin
@@ -206,16 +223,31 @@ always @(*) begin
 				if (m_axis_tready) begin // we can downstream pkt, the 1st packet
 
 					m_axis_tdata = pkt_0;
+					m_axis_tuser[15:0] = tot_length_next;
+					m_axis_tuser[31:24] = 8'h04; // for any packet, output to port 1
 					m_axis_tvalid = 1;
 					pkt_fifo_rd_en = 1;
 
 					state_next = PKT_1;
+					// if (w_tot_length>32 && w_tot_length<=32*2) begin
+					// 	trim_case_indicator_next = TRIM_PKT1;
+					// end
+					// else if (w_tot_length>32*2 && w_tot_length<=32*3) begin
+					// 	trim_case_indicator_next = TRIM_PKT2;
+					// end
+					// else if (w_tot_length>32*3 && w_tot_length<=32*4) begin
+					// 	trim_case_indicator_next = TRIM_PKT3;
+					// end
+					// else begin
+					// 	trim_case_indicator_next = TRIM_PKT0; // not valid, may never happen
+					// end
 				end
 			end
 		end
 		PKT_1: begin
 			if (!pkt_fifo_empty && !phv_empty) begin
 				if (m_axis_tready) begin // the 2nd segment
+					// update state machine
 					if (tlast_fifo) begin
 						state_next = WAIT_TILL_PARSE_DONE;
 					end
@@ -223,7 +255,24 @@ always @(*) begin
 						state_next = PKT_2;
 					end
 
-					m_axis_tdata = pkt_1;
+					if (trim_case_indicator == TRIM_PKT1) begin
+						// m_axis_tdata = pkt_1 & {{80{1'b0}},{176{1'b1}}};
+						m_axis_tdata = pkt_1;
+						m_axis_tkeep = {pkt_keep[0], pkt_keep[1], pkt_keep[2], pkt_keep[3], pkt_keep[4], pkt_keep[5],
+										pkt_keep[6], pkt_keep[7], pkt_keep[8], pkt_keep[9], pkt_keep[10], pkt_keep[11],
+										pkt_keep[12], pkt_keep[13], pkt_keep[14], pkt_keep[15], pkt_keep[16], pkt_keep[17],
+										pkt_keep[18], pkt_keep[19], pkt_keep[20], pkt_keep[21], pkt_keep[22], pkt_keep[23],
+										pkt_keep[24], pkt_keep[25], pkt_keep[26], pkt_keep[27], pkt_keep[28], pkt_keep[29],
+										pkt_keep[30], pkt_keep[31] };
+
+						state_next = FLUSH_PKT;
+						phv_rd_en = 1;
+						m_axis_tlast = 1;
+					end
+					else begin
+						m_axis_tdata = pkt_1;
+					end
+
 					m_axis_tvalid= 1;
 					pkt_fifo_rd_en = 1;
 				end
@@ -231,7 +280,8 @@ always @(*) begin
 		end
 		PKT_2: begin
 			if (!pkt_fifo_empty && !phv_empty) begin
-				if (m_axis_tready) begin // the 2nd segment
+				if (m_axis_tready) begin // the 3nd segment
+					// update state machine
 					if (tlast_fifo) begin
 						state_next = WAIT_TILL_PARSE_DONE;
 					end
@@ -239,7 +289,23 @@ always @(*) begin
 						state_next = PKT_3;
 					end
 
-					m_axis_tdata = pkt_2;
+					if (trim_case_indicator == TRIM_PKT2) begin
+						m_axis_tdata = pkt_2;
+						m_axis_tkeep = {pkt_keep[0], pkt_keep[1], pkt_keep[2], pkt_keep[3], pkt_keep[4], pkt_keep[5],
+										pkt_keep[6], pkt_keep[7], pkt_keep[8], pkt_keep[9], pkt_keep[10], pkt_keep[11],
+										pkt_keep[12], pkt_keep[13], pkt_keep[14], pkt_keep[15], pkt_keep[16], pkt_keep[17],
+										pkt_keep[18], pkt_keep[19], pkt_keep[20], pkt_keep[21], pkt_keep[22], pkt_keep[23],
+										pkt_keep[24], pkt_keep[25], pkt_keep[26], pkt_keep[27], pkt_keep[28], pkt_keep[29],
+										pkt_keep[30], pkt_keep[31] };
+
+						state_next = FLUSH_PKT;
+						phv_rd_en = 1;
+						m_axis_tlast = 1;
+					end
+					else begin
+						m_axis_tdata = pkt_2;
+					end
+
 					m_axis_tvalid= 1;
 					pkt_fifo_rd_en = 1;
 				end
@@ -247,7 +313,8 @@ always @(*) begin
 		end
 		PKT_3: begin
 			if (!pkt_fifo_empty && !phv_empty) begin
-				if (m_axis_tready) begin // the 2nd segment
+				if (m_axis_tready) begin // the 4th segment
+					// update state machine
 					if (tlast_fifo) begin
 						state_next = WAIT_TILL_PARSE_DONE;
 					end
@@ -255,7 +322,23 @@ always @(*) begin
 						state_next = FLUSH_PKT;
 					end
 
-					m_axis_tdata = pkt_3;
+					if (trim_case_indicator == TRIM_PKT3) begin
+						m_axis_tdata = pkt_3;
+						m_axis_tkeep = {pkt_keep[0], pkt_keep[1], pkt_keep[2], pkt_keep[3], pkt_keep[4], pkt_keep[5],
+										pkt_keep[6], pkt_keep[7], pkt_keep[8], pkt_keep[9], pkt_keep[10], pkt_keep[11],
+										pkt_keep[12], pkt_keep[13], pkt_keep[14], pkt_keep[15], pkt_keep[16], pkt_keep[17],
+										pkt_keep[18], pkt_keep[19], pkt_keep[20], pkt_keep[21], pkt_keep[22], pkt_keep[23],
+										pkt_keep[24], pkt_keep[25], pkt_keep[26], pkt_keep[27], pkt_keep[28], pkt_keep[29],
+										pkt_keep[30], pkt_keep[31] };
+
+						state_next = FLUSH_PKT;
+						phv_rd_en = 1;
+						m_axis_tlast = 1;
+					end
+					else begin
+						m_axis_tdata = pkt_3;
+					end
+
 					m_axis_tvalid= 1;
 					pkt_fifo_rd_en = 1;
 				end
@@ -263,7 +346,9 @@ always @(*) begin
 		end
 		FLUSH_PKT: begin
 			state_next = FLUSH_PKT;
-			m_axis_tvalid = 1;
+			// trim pkt for HW testing, remember to restore it
+			m_axis_tvalid = 0;
+			// m_axis_tvalid = 1;
 			pkt_fifo_rd_en = 1;
 			if (tlast_fifo) begin
 				state_next = WAIT_TILL_PARSE_DONE;
@@ -276,25 +361,12 @@ always @(posedge clk) begin
 	if (~aresetn) begin
 		state <= WAIT_TILL_PARSE_DONE;
 		//
-		pkt_0 <= 0;
-		pkt_1 <= 0;
-		pkt_2 <= 0;
-		pkt_3 <= 0;
-		pkt_0_next <= 0;
-		pkt_1_next <= 0;
-		pkt_2_next <= 0;
-		pkt_3_next <= 0;
-
 		tot_length <= 0;
-		tot_length_next <= 0;
+		// trim_case_indicator <= 0;
 	end
 	else begin
 		state <= state_next;
 		//
-		pkt_0 <= pkt_0_next;
-		pkt_1 <= pkt_1_next;
-		pkt_2 <= pkt_2_next;
-		pkt_3 <= pkt_3_next;
 		tot_length <= tot_length_next;
 	end
 end

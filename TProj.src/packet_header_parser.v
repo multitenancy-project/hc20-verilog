@@ -1417,17 +1417,6 @@ assign pkt_hdr_vec = {w_pkts,
 					r_off_con_8B_7,
 					{512{1'b0}}};
 
-// debug use
-wire [255:0] pkt0;
-wire [255:0] pkt1;
-wire [255:0] pkt2;
-wire [255:0] pkt3;
-
-assign pkt0 = pkt_hdr_vec[(512+24*8+7)+:256];
-assign pkt1 = pkt_hdr_vec[(512+24*8+7+256)+:256];
-assign pkt2 = pkt_hdr_vec[(512+24*8+7+512)+:256];
-assign pkt3 = pkt_hdr_vec[(512+24*8+7+768)+:256];
-
 // update TCAM match signal
 always @(posedge axis_clk) begin
 	if (~aresetn) begin
