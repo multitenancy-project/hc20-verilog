@@ -264,6 +264,10 @@ always @(*) begin
 						r_off_con_2B_7[7] = 1'b1;
 						r_off_con_2B_7[6:0] = w_parse_act_unit_0[12:6];
 					end
+					default: begin
+						r_off_con_2B_0 = 0; r_off_con_2B_1 = 0; r_off_con_2B_2 = 0; r_off_con_2B_3 = 0;
+						r_off_con_2B_4 = 0; r_off_con_2B_5 = 0; r_off_con_2B_6 = 0; r_off_con_2B_7 = 0;
+					end
 				endcase
 			end
 			1 : begin
@@ -300,6 +304,10 @@ always @(*) begin
 						r_off_con_4B_7[7] = 1'b1;
 						r_off_con_4B_7[6:0] = w_parse_act_unit_0[12:6];
 					end
+					default: begin
+						r_off_con_4B_0 = 0; r_off_con_4B_1 = 0; r_off_con_4B_2 = 0; r_off_con_4B_3 = 0;
+						r_off_con_4B_4 = 0; r_off_con_4B_5 = 0; r_off_con_4B_6 = 0; r_off_con_4B_7 = 0;
+					end
 				endcase
 			end
 			2 : begin
@@ -335,6 +343,10 @@ always @(*) begin
 					7: begin
 						r_off_con_8B_7[7] = 1'b1;
 						r_off_con_8B_7[6:0] = w_parse_act_unit_0[12:6];
+					end
+					default: begin
+						r_off_con_8B_0 = 0; r_off_con_8B_1 = 0; r_off_con_8B_2 = 0; r_off_con_8B_3 = 0;
+						r_off_con_8B_4 = 0; r_off_con_8B_5 = 0; r_off_con_8B_6 = 0; r_off_con_8B_7 = 0;
 					end
 				endcase
 			end
@@ -376,6 +388,10 @@ always @(*) begin
 						r_off_con_2B_7[7] = 1'b1;
 						r_off_con_2B_7[6:0] = w_parse_act_unit_1[12:6];
 					end
+					default: begin
+						r_off_con_2B_0 = 0; r_off_con_2B_1 = 0; r_off_con_2B_2 = 0; r_off_con_2B_3 = 0;
+						r_off_con_2B_4 = 0; r_off_con_2B_5 = 0; r_off_con_2B_6 = 0; r_off_con_2B_7 = 0;
+					end
 				endcase
 			end
 			1 : begin
@@ -412,6 +428,10 @@ always @(*) begin
 						r_off_con_4B_7[7] = 1'b1;
 						r_off_con_4B_7[6:0] = w_parse_act_unit_1[12:6];
 					end
+					default: begin
+						r_off_con_4B_0 = 0; r_off_con_4B_1 = 0; r_off_con_4B_2 = 0; r_off_con_4B_3 = 0;
+						r_off_con_4B_4 = 0; r_off_con_4B_5 = 0; r_off_con_4B_6 = 0; r_off_con_4B_7 = 0;
+					end
 				endcase
 			end
 			2 : begin
@@ -447,6 +467,10 @@ always @(*) begin
 					7: begin
 						r_off_con_8B_7[7] = 1'b1;
 						r_off_con_8B_7[6:0] = w_parse_act_unit_1[12:6];
+					end
+					default: begin
+						r_off_con_8B_0 = 0; r_off_con_8B_1 = 0; r_off_con_8B_2 = 0; r_off_con_8B_3 = 0;
+						r_off_con_8B_4 = 0; r_off_con_8B_5 = 0; r_off_con_8B_6 = 0; r_off_con_8B_7 = 0;
 					end
 				endcase
 			end
@@ -488,6 +512,10 @@ always @(*) begin
 						r_off_con_2B_7[7] = 1'b1;
 						r_off_con_2B_7[6:0] = w_parse_act_unit_2[12:6];
 					end
+					default: begin
+						r_off_con_2B_0 = 0; r_off_con_2B_1 = 0; r_off_con_2B_2 = 0; r_off_con_2B_3 = 0;
+						r_off_con_2B_4 = 0; r_off_con_2B_5 = 0; r_off_con_2B_6 = 0; r_off_con_2B_7 = 0;
+					end
 				endcase
 			end
 			1 : begin
@@ -524,6 +552,10 @@ always @(*) begin
 						r_off_con_4B_7[7] = 1'b1;
 						r_off_con_4B_7[6:0] = w_parse_act_unit_2[12:6];
 					end
+					default: begin
+						r_off_con_4B_0 = 0; r_off_con_4B_1 = 0; r_off_con_4B_2 = 0; r_off_con_4B_3 = 0;
+						r_off_con_4B_4 = 0; r_off_con_4B_5 = 0; r_off_con_4B_6 = 0; r_off_con_4B_7 = 0;
+					end
 				endcase
 			end
 			2 : begin
@@ -559,6 +591,10 @@ always @(*) begin
 					7: begin
 						r_off_con_8B_7[7] = 1'b1;
 						r_off_con_8B_7[6:0] = w_parse_act_unit_2[12:6];
+					end
+					default: begin
+						r_off_con_8B_0 = 0; r_off_con_8B_1 = 0; r_off_con_8B_2 = 0; r_off_con_8B_3 = 0;
+						r_off_con_8B_4 = 0; r_off_con_8B_5 = 0; r_off_con_8B_6 = 0; r_off_con_8B_7 = 0;
 					end
 				endcase
 			end
@@ -600,6 +636,10 @@ always @(*) begin
 						r_off_con_2B_7[7] = 1'b1;
 						r_off_con_2B_7[6:0] = w_parse_act_unit_3[12:6];
 					end
+					default: begin
+						r_off_con_2B_0 = 0; r_off_con_2B_1 = 0; r_off_con_2B_2 = 0; r_off_con_2B_3 = 0;
+						r_off_con_2B_4 = 0; r_off_con_2B_5 = 0; r_off_con_2B_6 = 0; r_off_con_2B_7 = 0;
+					end
 				endcase
 			end
 			1 : begin
@@ -636,6 +676,10 @@ always @(*) begin
 						r_off_con_4B_7[7] = 1'b1;
 						r_off_con_4B_7[6:0] = w_parse_act_unit_3[12:6];
 					end
+					default: begin
+						r_off_con_4B_0 = 0; r_off_con_4B_1 = 0; r_off_con_4B_2 = 0; r_off_con_4B_3 = 0;
+						r_off_con_4B_4 = 0; r_off_con_4B_5 = 0; r_off_con_4B_6 = 0; r_off_con_4B_7 = 0;
+					end
 				endcase
 			end
 			2 : begin
@@ -671,6 +715,10 @@ always @(*) begin
 					7: begin
 						r_off_con_8B_7[7] = 1'b1;
 						r_off_con_8B_7[6:0] = w_parse_act_unit_3[12:6];
+					end
+					default: begin
+						r_off_con_8B_0 = 0; r_off_con_8B_1 = 0; r_off_con_8B_2 = 0; r_off_con_8B_3 = 0;
+						r_off_con_8B_4 = 0; r_off_con_8B_5 = 0; r_off_con_8B_6 = 0; r_off_con_8B_7 = 0;
 					end
 				endcase
 			end
@@ -712,6 +760,10 @@ always @(*) begin
 						r_off_con_2B_7[7] = 1'b1;
 						r_off_con_2B_7[6:0] = w_parse_act_unit_4[12:6];
 					end
+					default: begin
+						r_off_con_2B_0 = 0; r_off_con_2B_1 = 0; r_off_con_2B_2 = 0; r_off_con_2B_3 = 0;
+						r_off_con_2B_4 = 0; r_off_con_2B_5 = 0; r_off_con_2B_6 = 0; r_off_con_2B_7 = 0;
+					end
 				endcase
 			end
 			1 : begin
@@ -748,6 +800,10 @@ always @(*) begin
 						r_off_con_4B_7[7] = 1'b1;
 						r_off_con_4B_7[6:0] = w_parse_act_unit_4[12:6];
 					end
+					default: begin
+						r_off_con_4B_0 = 0; r_off_con_4B_1 = 0; r_off_con_4B_2 = 0; r_off_con_4B_3 = 0;
+						r_off_con_4B_4 = 0; r_off_con_4B_5 = 0; r_off_con_4B_6 = 0; r_off_con_4B_7 = 0;
+					end
 				endcase
 			end
 			2 : begin
@@ -783,6 +839,10 @@ always @(*) begin
 					7: begin
 						r_off_con_8B_7[7] = 1'b1;
 						r_off_con_8B_7[6:0] = w_parse_act_unit_4[12:6];
+					end
+					default: begin
+						r_off_con_8B_0 = 0; r_off_con_8B_1 = 0; r_off_con_8B_2 = 0; r_off_con_8B_3 = 0;
+						r_off_con_8B_4 = 0; r_off_con_8B_5 = 0; r_off_con_8B_6 = 0; r_off_con_8B_7 = 0;
 					end
 				endcase
 			end
@@ -824,6 +884,10 @@ always @(*) begin
 						r_off_con_2B_7[7] = 1'b1;
 						r_off_con_2B_7[6:0] = w_parse_act_unit_5[12:6];
 					end
+					default: begin
+						r_off_con_2B_0 = 0; r_off_con_2B_1 = 0; r_off_con_2B_2 = 0; r_off_con_2B_3 = 0;
+						r_off_con_2B_4 = 0; r_off_con_2B_5 = 0; r_off_con_2B_6 = 0; r_off_con_2B_7 = 0;
+					end
 				endcase
 			end
 			1 : begin
@@ -860,6 +924,10 @@ always @(*) begin
 						r_off_con_4B_7[7] = 1'b1;
 						r_off_con_4B_7[6:0] = w_parse_act_unit_5[12:6];
 					end
+					default: begin
+						r_off_con_4B_0 = 0; r_off_con_4B_1 = 0; r_off_con_4B_2 = 0; r_off_con_4B_3 = 0;
+						r_off_con_4B_4 = 0; r_off_con_4B_5 = 0; r_off_con_4B_6 = 0; r_off_con_4B_7 = 0;
+					end
 				endcase
 			end
 			2 : begin
@@ -895,6 +963,10 @@ always @(*) begin
 					7: begin
 						r_off_con_8B_7[7] = 1'b1;
 						r_off_con_8B_7[6:0] = w_parse_act_unit_5[12:6];
+					end
+					default: begin
+						r_off_con_8B_0 = 0; r_off_con_8B_1 = 0; r_off_con_8B_2 = 0; r_off_con_8B_3 = 0;
+						r_off_con_8B_4 = 0; r_off_con_8B_5 = 0; r_off_con_8B_6 = 0; r_off_con_8B_7 = 0;
 					end
 				endcase
 			end
@@ -936,6 +1008,10 @@ always @(*) begin
 						r_off_con_2B_7[7] = 1'b1;
 						r_off_con_2B_7[6:0] = w_parse_act_unit_6[12:6];
 					end
+					default: begin
+						r_off_con_2B_0 = 0; r_off_con_2B_1 = 0; r_off_con_2B_2 = 0; r_off_con_2B_3 = 0;
+						r_off_con_2B_4 = 0; r_off_con_2B_5 = 0; r_off_con_2B_6 = 0; r_off_con_2B_7 = 0;
+					end
 				endcase
 			end
 			1 : begin
@@ -972,6 +1048,10 @@ always @(*) begin
 						r_off_con_4B_7[7] = 1'b1;
 						r_off_con_4B_7[6:0] = w_parse_act_unit_6[12:6];
 					end
+					default: begin
+						r_off_con_4B_0 = 0; r_off_con_4B_1 = 0; r_off_con_4B_2 = 0; r_off_con_4B_3 = 0;
+						r_off_con_4B_4 = 0; r_off_con_4B_5 = 0; r_off_con_4B_6 = 0; r_off_con_4B_7 = 0;
+					end
 				endcase
 			end
 			2 : begin
@@ -1007,6 +1087,10 @@ always @(*) begin
 					7: begin
 						r_off_con_8B_7[7] = 1'b1;
 						r_off_con_8B_7[6:0] = w_parse_act_unit_6[12:6];
+					end
+					default: begin
+						r_off_con_8B_0 = 0; r_off_con_8B_1 = 0; r_off_con_8B_2 = 0; r_off_con_8B_3 = 0;
+						r_off_con_8B_4 = 0; r_off_con_8B_5 = 0; r_off_con_8B_6 = 0; r_off_con_8B_7 = 0;
 					end
 				endcase
 			end
@@ -1048,6 +1132,10 @@ always @(*) begin
 						r_off_con_2B_7[7] = 1'b1;
 						r_off_con_2B_7[6:0] = w_parse_act_unit_7[12:6];
 					end
+					default: begin
+						r_off_con_2B_0 = 0; r_off_con_2B_1 = 0; r_off_con_2B_2 = 0; r_off_con_2B_3 = 0;
+						r_off_con_2B_4 = 0; r_off_con_2B_5 = 0; r_off_con_2B_6 = 0; r_off_con_2B_7 = 0;
+					end
 				endcase
 			end
 			1 : begin
@@ -1084,6 +1172,10 @@ always @(*) begin
 						r_off_con_4B_7[7] = 1'b1;
 						r_off_con_4B_7[6:0] = w_parse_act_unit_7[12:6];
 					end
+					default: begin
+						r_off_con_4B_0 = 0; r_off_con_4B_1 = 0; r_off_con_4B_2 = 0; r_off_con_4B_3 = 0;
+						r_off_con_4B_4 = 0; r_off_con_4B_5 = 0; r_off_con_4B_6 = 0; r_off_con_4B_7 = 0;
+					end
 				endcase
 			end
 			2 : begin
@@ -1119,6 +1211,10 @@ always @(*) begin
 					7: begin
 						r_off_con_8B_7[7] = 1'b1;
 						r_off_con_8B_7[6:0] = w_parse_act_unit_7[12:6];
+					end
+					default: begin
+						r_off_con_8B_0 = 0; r_off_con_8B_1 = 0; r_off_con_8B_2 = 0; r_off_con_8B_3 = 0;
+						r_off_con_8B_4 = 0; r_off_con_8B_5 = 0; r_off_con_8B_6 = 0; r_off_con_8B_7 = 0;
 					end
 				endcase
 			end
@@ -1160,6 +1256,10 @@ always @(*) begin
 						r_off_con_2B_7[7] = 1'b1;
 						r_off_con_2B_7[6:0] = w_parse_act_unit_8[12:6];
 					end
+					default: begin
+						r_off_con_2B_0 = 0; r_off_con_2B_1 = 0; r_off_con_2B_2 = 0; r_off_con_2B_3 = 0;
+						r_off_con_2B_4 = 0; r_off_con_2B_5 = 0; r_off_con_2B_6 = 0; r_off_con_2B_7 = 0;
+					end
 				endcase
 			end
 			1 : begin
@@ -1196,6 +1296,10 @@ always @(*) begin
 						r_off_con_4B_7[7] = 1'b1;
 						r_off_con_4B_7[6:0] = w_parse_act_unit_8[12:6];
 					end
+					default: begin
+						r_off_con_4B_0 = 0; r_off_con_4B_1 = 0; r_off_con_4B_2 = 0; r_off_con_4B_3 = 0;
+						r_off_con_4B_4 = 0; r_off_con_4B_5 = 0; r_off_con_4B_6 = 0; r_off_con_4B_7 = 0;
+					end
 				endcase
 			end
 			2 : begin
@@ -1231,6 +1335,10 @@ always @(*) begin
 					7: begin
 						r_off_con_8B_7[7] = 1'b1;
 						r_off_con_8B_7[6:0] = w_parse_act_unit_8[12:6];
+					end
+					default: begin
+						r_off_con_8B_0 = 0; r_off_con_8B_1 = 0; r_off_con_8B_2 = 0; r_off_con_8B_3 = 0;
+						r_off_con_8B_4 = 0; r_off_con_8B_5 = 0; r_off_con_8B_6 = 0; r_off_con_8B_7 = 0;
 					end
 				endcase
 			end
@@ -1272,6 +1380,10 @@ always @(*) begin
 						r_off_con_2B_7[7] = 1'b1;
 						r_off_con_2B_7[6:0] = w_parse_act_unit_9[12:6];
 					end
+					default: begin
+						r_off_con_2B_0 = 0; r_off_con_2B_1 = 0; r_off_con_2B_2 = 0; r_off_con_2B_3 = 0;
+						r_off_con_2B_4 = 0; r_off_con_2B_5 = 0; r_off_con_2B_6 = 0; r_off_con_2B_7 = 0;
+					end
 				endcase
 			end
 			1 : begin
@@ -1308,6 +1420,10 @@ always @(*) begin
 						r_off_con_4B_7[7] = 1'b1;
 						r_off_con_4B_7[6:0] = w_parse_act_unit_9[12:6];
 					end
+					default: begin
+						r_off_con_4B_0 = 0; r_off_con_4B_1 = 0; r_off_con_4B_2 = 0; r_off_con_4B_3 = 0;
+						r_off_con_4B_4 = 0; r_off_con_4B_5 = 0; r_off_con_4B_6 = 0; r_off_con_4B_7 = 0;
+					end
 				endcase
 			end
 			2 : begin
@@ -1343,6 +1459,10 @@ always @(*) begin
 					7: begin
 						r_off_con_8B_7[7] = 1'b1;
 						r_off_con_8B_7[6:0] = w_parse_act_unit_9[12:6];
+					end
+					default: begin
+						r_off_con_8B_0 = 0; r_off_con_8B_1 = 0; r_off_con_8B_2 = 0; r_off_con_8B_3 = 0;
+						r_off_con_8B_4 = 0; r_off_con_8B_5 = 0; r_off_con_8B_6 = 0; r_off_con_8B_7 = 0;
 					end
 				endcase
 			end

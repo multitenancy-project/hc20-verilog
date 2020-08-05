@@ -160,6 +160,7 @@ localparam PKT_START_POS_PKT1 = PKT_START_POS+256;
 localparam PKT_START_POS_PKT2 = PKT_START_POS+512;
 localparam PKT_START_POS_PKT3 = PKT_START_POS+768;
 localparam WAIT_TILL_PARSE_DONE=0, PKT_1=1, PKT_2=2, PKT_3=3, FLUSH_PKT=4;
+//
 localparam TRIM_PKT0=0, TRIM_PKT1=1, TRIM_PKT2=2, TRIM_PKT3=3;
 localparam ALL_VALID=32'hffff_ffff;
 
@@ -175,7 +176,6 @@ reg [6:0] tot_length, tot_length_next;
 reg [1:0] trim_case_indicator;
 
 always @(*) begin
-	// trim_case_indicator_next = trim_case_indicator;
 	if (tot_length>32 && tot_length<=32*2) begin
 		trim_case_indicator = TRIM_PKT1;
 		pkt_keep = ALL_VALID << (32*2-tot_length);
@@ -215,7 +215,6 @@ always @(*) begin
 	pkt_3 = phv_fifo[PKT_START_POS_PKT3+:256];
 	tot_length_next = phv_fifo[TOT_LENGTH_POS+:7];
 	//
-	// trim_case_indicator_next = trim_case_indicator; // may never happen
 
 	case (state)
 		WAIT_TILL_PARSE_DONE: begin
@@ -229,18 +228,6 @@ always @(*) begin
 					pkt_fifo_rd_en = 1;
 
 					state_next = PKT_1;
-					// if (w_tot_length>32 && w_tot_length<=32*2) begin
-					// 	trim_case_indicator_next = TRIM_PKT1;
-					// end
-					// else if (w_tot_length>32*2 && w_tot_length<=32*3) begin
-					// 	trim_case_indicator_next = TRIM_PKT2;
-					// end
-					// else if (w_tot_length>32*3 && w_tot_length<=32*4) begin
-					// 	trim_case_indicator_next = TRIM_PKT3;
-					// end
-					// else begin
-					// 	trim_case_indicator_next = TRIM_PKT0; // not valid, may never happen
-					// end
 				end
 			end
 		end
@@ -256,7 +243,6 @@ always @(*) begin
 					end
 
 					if (trim_case_indicator == TRIM_PKT1) begin
-						// m_axis_tdata = pkt_1 & {{80{1'b0}},{176{1'b1}}};
 						m_axis_tdata = pkt_1;
 						m_axis_tkeep = {pkt_keep[0], pkt_keep[1], pkt_keep[2], pkt_keep[3], pkt_keep[4], pkt_keep[5],
 										pkt_keep[6], pkt_keep[7], pkt_keep[8], pkt_keep[9], pkt_keep[10], pkt_keep[11],
