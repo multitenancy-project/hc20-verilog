@@ -25,7 +25,7 @@
     > * the next `8b` represents immediate or the way to retrieve the value from PHV.
     > * the lowest 9b represents the 2nd operand.
   
-  * `256b`: the metadata attached to the packet. The lower 128b is copied from NetFPGA's `tuser` so that it follows the specification of NetFPGA.
+  * `256b`: the metadata attached to the packet. The lower 128b, namely `[127:0]`, is copied from NetFPGA's `tuser` so that it follows the specification of NetFPGA. The 128th bit is termed as drop mark, where 1 means dropping.
   
   ---
   
