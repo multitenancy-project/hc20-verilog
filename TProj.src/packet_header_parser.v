@@ -15,7 +15,7 @@ module packet_header_parser #(
 	parameter C_S_AXIS_DATA_WIDTH = 256,
 	parameter C_S_AXIS_TUSER_WIDTH = 128,
 	parameter C_VALID_NUM_HDR_PKTS = 4,			// 4*32B = 128B = 1024b
-	parameter PKT_HDR_LEN = 1024+7+24*8+512, // 1024 at-most 4 segments, 7 total length in byte, 24*(1+7) phv, 512 bits
+	parameter PKT_HDR_LEN = 1024+7+24*8+256, // 1024 at-most 4 segments, 7 total length in byte, 24*(1+7) phv, 512 bits
 	parameter PARSE_ACT_RAM_WIDTH = 167
 )
 (
@@ -24,6 +24,7 @@ module packet_header_parser #(
 
 	// input slvae axi stream
 	input [C_S_AXIS_DATA_WIDTH-1:0]			s_axis_tdata,
+	input [C_S_AXIS_TUSER_WIDTH-1:0]		s_axis_tuser,
 	input [C_S_AXIS_DATA_WIDTH/8-1:0]		s_axis_tkeep,
 	input									s_axis_tvalid,
 	input									s_axis_tlast,
@@ -42,6 +43,7 @@ localparam TOT_HDR_LEN = 1024; // assume at-most 128B (46B+82B) header
 wire [TOT_HDR_LEN-1:0] w_pkts;
 reg [3:0] pkt_cnt;
 reg [C_S_AXIS_DATA_WIDTH-1:0] pkts[0:C_VALID_NUM_HDR_PKTS-1];
+reg [C_S_AXIS_TUSER_WIDTH-1:0] tuser_1st;
 
 /****** store all or at-most 4 pkt segments ******/
 reg tlast_d1; // indicate whether the last valid packet 
@@ -81,12 +83,15 @@ always @(posedge axis_clk) begin
 		for (idx=0; idx<8; idx=idx+1) begin
 			pkts[idx] <= 0;
 		end
+
+		tuser_1st <= 0;
 	end
 	else if (hdr_window && pkt_cnt==0) begin
 		for (idx=1; idx<8; idx=idx+1) begin
 			pkts[idx] <= 0;
 		end
 		pkts[pkt_cnt] <= s_axis_tdata;
+		tuser_1st <= s_axis_tuser;
 	end
 	else if (hdr_window) begin
 		pkts[pkt_cnt] <= s_axis_tdata;
@@ -1535,7 +1540,8 @@ assign pkt_hdr_vec = {w_pkts,
 					r_off_con_8B_5,
 					r_off_con_8B_6,
 					r_off_con_8B_7,
-					{512{1'b0}}};
+					{128{1'b0}},
+					tuser_1st};
 
 // update TCAM match signal
 always @(posedge axis_clk) begin
