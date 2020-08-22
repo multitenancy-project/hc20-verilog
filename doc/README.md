@@ -82,11 +82,11 @@
   
   * Action format:
   
-    For `add` (`0b'0001`) and `sub` (`0b'0010`)operations, the action format is:
+    For `add` (`0b'0001`), `sub` (`0b'0010`), `load`(`0b'0101`) and `store`(`0b'0110`)operations, the action format is:
   
     ![image-20200820125159102](image-20200820125159102.png)
   
-    For `addi`(`0b'0011`), `subi`(`0b'0100`), `load`(`0b'0101`) and `store`(`0b'0110`), the action format is:
+    For `addi`(`0b'0011`) and `subi`(`0b'0100`), the action format is:
   
     ![image-20200820141447045](image-20200820141447045.png)
   
