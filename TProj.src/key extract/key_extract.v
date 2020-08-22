@@ -24,7 +24,7 @@ module key_extract #(
 
     //conditional flag: 1 for true, 0 for false.
     output reg                  cond_flag,
-    output reg [PHV_LEN-1:0]    pkt_hdr_vec_out;
+    output reg [PHV_LEN-1:0]    pkt_hdr_vec_out
 );
 
 /********intermediate variables declared here********/
