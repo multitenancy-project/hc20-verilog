@@ -145,16 +145,16 @@ act_ram
 (
 	.axi_clk		(axis_clk),
 	.axi_wr_en		(action_en),
-	.axi_rd_en		(),
+	.axi_rd_en		(match),
 	.axi_wr_addr	(action_addr),
-	.axi_rd_addr	(),
+	.axi_rd_addr	(match_addr),
 	.axi_data_in	(action_data_in),
-	.axi_data_out	(),
+	.axi_data_out	(action_wire),
 
-	.axis_clk		(axis_clk),
-	.axis_rd_en		(match),				// always set to 1 for reading
-	.axis_rd_addr	(match_addr),
-	.axis_data_out	(action_wire)
+	.axis_clk		(),
+	.axis_rd_en		(),				// always set to 1 for reading
+	.axis_rd_addr	(),
+	.axis_data_out	()
 );
 
 

@@ -129,9 +129,9 @@ always @(posedge axis_clk or negedge aresetn) begin
                     phv_reg <= pkt_hdr_vec;
                     //retrive the fields to containers
                     for (i=1; i<8; i+=1) begin
-                        val_2B[i] <= pkt_header[offset_2B[i] -: 16];
-                        val_4B[i] <= pkt_header[offset_4B[i] -: 32];
-                        val_8B[i] <= pkt_header[offset_8B[i] -: 64];
+                        val_2B[i] <= pkt_header[offset_2B[i]+1023 -: 16];
+                        val_4B[i] <= pkt_header[offset_4B[i]+1023 -: 32];
+                        val_8B[i] <= pkt_header[offset_8B[i]+1023 -: 64];
                     end
                     key_state <= KEY_S;
                 end
@@ -173,13 +173,13 @@ always @(posedge axis_clk or negedge aresetn) begin
                         com_op1 <= condition[16:9]; 
                     end
                     else begin
-                        com_op1 <= pkt_header[condition[16:9] -: 8];
+                        com_op1 <= pkt_header[condition[16:9]+1023 -: 8];
                     end
                     if (condition[8] == 1'b1) begin
                         com_op2 <= condition[7:0]; 
                     end
                     else begin
-                        com_op2 <= pkt_header[condition[7:0] -: 8];
+                        com_op2 <= pkt_header[condition[7:0]+1023 -: 8];
                     end
                     com_op <= condition[19:18];
 
