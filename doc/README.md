@@ -82,14 +82,18 @@
   
   * Action format:
   
-    For `add` (`0b'0001`) and `sub` (`0b'0010`)operations, the action format is:
+    For `add` (`4b'0001`) and `sub` (`4b'0010`)operations, the action format is:
   
     ![image-20200820125159102](image-20200820125159102.png)
   
-    For `addi`(`0b'0011`), `subi`(`0b'0100`), `load`(`0b'0101`) and `store`(`0b'0110`), the action format is:
+    For `addi`(`4b'0011`), `subi`(`4b'0100`), `load`(`4b'0101`) and `store`(`4b'0110`), the action format is:
   
     ![image-20200820141447045](image-20200820141447045.png)
   
-    For `redirect`(`0b'1000`) and `discard`(`0b'1001`), the action format is:
+    For `redirect`(`4b'1000`) and `discard`(`4b'1001`), the action format is:
   
     ![image-20200821135445018](image-20200821135445018.png)
+    
+    ***Action Details:***
+    
+    1. To simplify the design, `store`/`load` supports only 4B (32b) operations, while all other actions support 2B, 4B and 8B according to the data width of the 1st operand.
