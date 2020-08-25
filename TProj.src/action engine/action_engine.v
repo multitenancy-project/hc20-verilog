@@ -70,32 +70,32 @@ wire  [31:0]         load_data;
 assign pkt_header = phv_in[HDR_OFF +: 1024];
 assign header_len = phv_in[HDR_OFF -: 7];
 
-assign offset_2B[0] = phv_in[CONT_OFF_2B +: 8];
-assign offset_2B[1] = phv_in[CONT_OFF_2B+8 +: 8];
-assign offset_2B[2] = phv_in[CONT_OFF_2B+2*8 +: 8];
-assign offset_2B[3] = phv_in[CONT_OFF_2B+3*8 +: 8];
-assign offset_2B[4] = phv_in[CONT_OFF_2B+4*8 +: 8];
-assign offset_2B[5] = phv_in[CONT_OFF_2B+5*8 +: 8];
-assign offset_2B[6] = phv_in[CONT_OFF_2B+6*8 +: 8];
-assign offset_2B[7] = phv_in[CONT_OFF_2B+7*8 +: 8];
+assign offset_2B[7] = phv_in[CONT_OFF_2B +: 8];
+assign offset_2B[6] = phv_in[CONT_OFF_2B+8 +: 8];
+assign offset_2B[5] = phv_in[CONT_OFF_2B+2*8 +: 8];
+assign offset_2B[4] = phv_in[CONT_OFF_2B+3*8 +: 8];
+assign offset_2B[3] = phv_in[CONT_OFF_2B+4*8 +: 8];
+assign offset_2B[2] = phv_in[CONT_OFF_2B+5*8 +: 8];
+assign offset_2B[1] = phv_in[CONT_OFF_2B+6*8 +: 8];
+assign offset_2B[0] = phv_in[CONT_OFF_2B+7*8 +: 8];
 
-assign offset_4B[0] = phv_in[CONT_OFF_4B +: 8];
-assign offset_4B[1] = phv_in[CONT_OFF_4B+8 +: 8];
-assign offset_4B[2] = phv_in[CONT_OFF_4B+2*8 +: 8];
-assign offset_4B[3] = phv_in[CONT_OFF_4B+3*8 +: 8];
-assign offset_4B[4] = phv_in[CONT_OFF_4B+4*8 +: 8];
-assign offset_4B[5] = phv_in[CONT_OFF_4B+5*8 +: 8];
-assign offset_4B[6] = phv_in[CONT_OFF_4B+6*8 +: 8];
-assign offset_4B[7] = phv_in[CONT_OFF_4B+7*8 +: 8];
+assign offset_4B[7] = phv_in[CONT_OFF_4B +: 8];
+assign offset_4B[6] = phv_in[CONT_OFF_4B+8 +: 8];
+assign offset_4B[5] = phv_in[CONT_OFF_4B+2*8 +: 8];
+assign offset_4B[4] = phv_in[CONT_OFF_4B+3*8 +: 8];
+assign offset_4B[3] = phv_in[CONT_OFF_4B+4*8 +: 8];
+assign offset_4B[2] = phv_in[CONT_OFF_4B+5*8 +: 8];
+assign offset_4B[1] = phv_in[CONT_OFF_4B+6*8 +: 8];
+assign offset_4B[0] = phv_in[CONT_OFF_4B+7*8 +: 8];
 
-assign offset_8B[0] = phv_in[CONT_OFF_8B +: 8];
-assign offset_8B[1] = phv_in[CONT_OFF_8B+8 +: 8];
-assign offset_8B[2] = phv_in[CONT_OFF_8B+2*8 +: 8];
-assign offset_8B[3] = phv_in[CONT_OFF_8B+3*8 +: 8];
-assign offset_8B[4] = phv_in[CONT_OFF_8B+4*8 +: 8];
-assign offset_8B[5] = phv_in[CONT_OFF_8B+5*8 +: 8];
-assign offset_8B[6] = phv_in[CONT_OFF_8B+6*8 +: 8];
-assign offset_8B[7] = phv_in[CONT_OFF_8B+7*8 +: 8];
+assign offset_8B[7] = phv_in[CONT_OFF_8B +: 8];
+assign offset_8B[6] = phv_in[CONT_OFF_8B+8 +: 8];
+assign offset_8B[5] = phv_in[CONT_OFF_8B+2*8 +: 8];
+assign offset_8B[4] = phv_in[CONT_OFF_8B+3*8 +: 8];
+assign offset_8B[3] = phv_in[CONT_OFF_8B+4*8 +: 8];
+assign offset_8B[2] = phv_in[CONT_OFF_8B+5*8 +: 8];
+assign offset_8B[1] = phv_in[CONT_OFF_8B+6*8 +: 8];
+assign offset_8B[0] = phv_in[CONT_OFF_8B+7*8 +: 8];
 
 
 /*
@@ -148,8 +148,8 @@ always @(posedge axis_clk or negedge aresetn) begin
     else begin
         case(action_op_e1_state)
             IDLE_OP_E1_S: begin
-                if(action_in_valid && action_in[24:21]!=4b'0101
-                 && action_in[24:21]!=4b'0110) begin
+                if(action_in_valid && action_in[24:21]!=4'b0101
+                 && action_in[24:21]!=4'b0110) begin
                     //in GET_OP_E1_S, locate the actual operands.
                     action_op_e1_state <= GET_OP_E1_S;
                     
@@ -171,28 +171,28 @@ always @(posedge axis_clk or negedge aresetn) begin
                                 2'b00: begin
                                     case(action_in[18:16])
                                         3'b000: begin
-                                            op_1_e1_off <= offset_2B[0];
+                                            op_1_e1_off <= offset_2B[0]*8;
                                         end
                                         3'b001: begin
-                                            op_1_e1_off <= offset_2B[1];
+                                            op_1_e1_off <= offset_2B[1]*8;
                                         end
                                         3'b010: begin
-                                            op_1_e1_off <= offset_2B[2];
+                                            op_1_e1_off <= offset_2B[2]*8;
                                         end
                                         3'b011: begin
-                                            op_1_e1_off <= offset_2B[3];
+                                            op_1_e1_off <= offset_2B[3]*8;
                                         end
                                         3'b100: begin
-                                            op_1_e1_off <= offset_2B[4];
+                                            op_1_e1_off <= offset_2B[4]*8;
                                         end
                                         3'b101: begin
-                                            op_1_e1_off <= offset_2B[5];
+                                            op_1_e1_off <= offset_2B[5]*8;
                                         end
                                         3'b110: begin
-                                            op_1_e1_off <= offset_2B[6];
+                                            op_1_e1_off <= offset_2B[6]*8;
                                         end
                                         3'b111: begin
-                                            op_1_e1_off <= offset_2B[7];
+                                            op_1_e1_off <= offset_2B[7]*8;
                                         end
                                     endcase
                                 end
@@ -200,28 +200,28 @@ always @(posedge axis_clk or negedge aresetn) begin
                                     operand_wide <= 2'b01;
                                     case(action_in[18:16])
                                         3'b000: begin
-                                            op_1_e1_off <= offset_4B[0];
+                                            op_1_e1_off <= offset_4B[0]*8;
                                         end
                                         3'b001: begin
-                                            op_1_e1_off <= offset_4B[1];
+                                            op_1_e1_off <= offset_4B[1]*8;
                                         end
                                         3'b010: begin
-                                            op_1_e1_off <= offset_4B[2];
+                                            op_1_e1_off <= offset_4B[2]*8;
                                         end
                                         3'b011: begin
-                                            op_1_e1_off <= offset_4B[3];
+                                            op_1_e1_off <= offset_4B[3]*8;
                                         end
                                         3'b100: begin
-                                            op_1_e1_off <= offset_4B[4];
+                                            op_1_e1_off <= offset_4B[4]*8;
                                         end
                                         3'b101: begin
-                                            op_1_e1_off <= offset_4B[5];
+                                            op_1_e1_off <= offset_4B[5]*8;
                                         end
                                         3'b110: begin
-                                            op_1_e1_off <= offset_4B[6];
+                                            op_1_e1_off <= offset_4B[6]*8;
                                         end
                                         3'b111: begin
-                                            op_1_e1_off <= offset_4B[7];
+                                            op_1_e1_off <= offset_4B[7]*8;
                                         end
                                     endcase
                                 end
@@ -229,28 +229,28 @@ always @(posedge axis_clk or negedge aresetn) begin
                                     operand_wide <= 2'b10;
                                     case(action_in[18:16])
                                         3'b000: begin
-                                            op_1_e1_off <= offset_8B[0];
+                                            op_1_e1_off <= offset_8B[0]*8;
                                         end
                                         3'b001: begin
-                                            op_1_e1_off <= offset_8B[1];
+                                            op_1_e1_off <= offset_8B[1]*8;
                                         end
                                         3'b010: begin
-                                            op_1_e1_off <= offset_8B[2];
+                                            op_1_e1_off <= offset_8B[2]*8;
                                         end
                                         3'b011: begin
-                                            op_1_e1_off <= offset_8B[3];
+                                            op_1_e1_off <= offset_8B[3]*8;
                                         end
                                         3'b100: begin
-                                            op_1_e1_off <= offset_8B[4];
+                                            op_1_e1_off <= offset_8B[4]*8;
                                         end
                                         3'b101: begin
-                                            op_1_e1_off <= offset_8B[5];
+                                            op_1_e1_off <= offset_8B[5]*8;
                                         end
                                         3'b110: begin
-                                            op_1_e1_off <= offset_8B[6];
+                                            op_1_e1_off <= offset_8B[6]*8;
                                         end
                                         3'b111: begin
-                                            op_1_e1_off <= offset_8B[7];
+                                            op_1_e1_off <= offset_8B[7]*8;
                                         end
                                     endcase
                                 end
@@ -263,28 +263,28 @@ always @(posedge axis_clk or negedge aresetn) begin
                                     
                                     case(action_in[13:11])
                                         3'b000: begin
-                                            op_2_e1_off <= offset_2B[0];
+                                            op_2_e1_off <= offset_2B[0]*8;
                                         end
                                         3'b001: begin
-                                            op_2_e1_off <= offset_2B[1];
+                                            op_2_e1_off <= offset_2B[1]*8;
                                         end
                                         3'b010: begin
-                                            op_2_e1_off <= offset_2B[2];
+                                            op_2_e1_off <= offset_2B[2]*8;
                                         end
                                         3'b011: begin
-                                            op_2_e1_off <= offset_2B[3];
+                                            op_2_e1_off <= offset_2B[3]*8;
                                         end
                                         3'b100: begin
-                                            op_2_e1_off <= offset_2B[4];
+                                            op_2_e1_off <= offset_2B[4]*8;
                                         end
                                         3'b101: begin
-                                            op_2_e1_off <= offset_2B[5];
+                                            op_2_e1_off <= offset_2B[5]*8;
                                         end
                                         3'b110: begin
-                                            op_2_e1_off <= offset_2B[6];
+                                            op_2_e1_off <= offset_2B[6]*8;
                                         end
                                         3'b111: begin
-                                            op_2_e1_off <= offset_2B[7];
+                                            op_2_e1_off <= offset_2B[7]*8;
                                         end
                                     endcase
                                 end
@@ -292,56 +292,56 @@ always @(posedge axis_clk or negedge aresetn) begin
                                     
                                     case(action_in[13:11])
                                         3'b000: begin
-                                            op_2_e1_off <= offset_4B[0];
+                                            op_2_e1_off <= offset_4B[0]*8;
                                         end
                                         3'b001: begin
-                                            op_2_e1_off <= offset_4B[1];
+                                            op_2_e1_off <= offset_4B[1]*8;
                                         end
                                         3'b010: begin
-                                            op_2_e1_off <= offset_4B[2];
+                                            op_2_e1_off <= offset_4B[2]*8;
                                         end
                                         3'b011: begin
-                                            op_2_e1_off <= offset_4B[3];
+                                            op_2_e1_off <= offset_4B[3]*8;
                                         end
                                         3'b100: begin
-                                            op_2_e1_off <= offset_4B[4];
+                                            op_2_e1_off <= offset_4B[4]*8;
                                         end
                                         3'b101: begin
-                                            op_2_e1_off <= offset_4B[5];
+                                            op_2_e1_off <= offset_4B[5]*8;
                                         end
                                         3'b110: begin
-                                            op_2_e1_off <= offset_4B[6];
+                                            op_2_e1_off <= offset_4B[6]*8;
                                         end
                                         3'b111: begin
-                                            op_2_e1_off <= offset_4B[7];
+                                            op_2_e1_off <= offset_4B[7]*8;
                                         end
                                     endcase
                                 end
                                 2'b10: begin
                                     case(action_in[13:11])
                                         3'b000: begin
-                                            op_2_e1_off <= offset_8B[0];
+                                            op_2_e1_off <= offset_8B[0]*8;
                                         end
                                         3'b001: begin
-                                            op_2_e1_off <= offset_8B[1];
+                                            op_2_e1_off <= offset_8B[1]*8;
                                         end
                                         3'b010: begin
-                                            op_2_e1_off <= offset_8B[2];
+                                            op_2_e1_off <= offset_8B[2]*8;
                                         end
                                         3'b011: begin
-                                            op_2_e1_off <= offset_8B[3];
+                                            op_2_e1_off <= offset_8B[3]*8;
                                         end
                                         3'b100: begin
-                                            op_2_e1_off <= offset_8B[4];
+                                            op_2_e1_off <= offset_8B[4]*8;
                                         end
                                         3'b101: begin
-                                            op_2_e1_off <= offset_8B[5];
+                                            op_2_e1_off <= offset_8B[5]*8;
                                         end
                                         3'b110: begin
-                                            op_2_e1_off <= offset_8B[6];
+                                            op_2_e1_off <= offset_8B[6]*8;
                                         end
                                         3'b111: begin
-                                            op_2_e1_off <= offset_8B[7];
+                                            op_2_e1_off <= offset_8B[7]*8;
                                         end
                                     endcase
                                 end
@@ -359,28 +359,28 @@ always @(posedge axis_clk or negedge aresetn) begin
                                     operand_wide <= 2'b00;
                                     case(action_in[18:16])
                                         3'b000: begin
-                                            op_1_e1_off <= offset_2B[0];
+                                            op_1_e1_off <= offset_2B[0]*8;
                                         end
                                         3'b001: begin
-                                            op_1_e1_off <= offset_2B[1];
+                                            op_1_e1_off <= offset_2B[1]*8;
                                         end
                                         3'b010: begin
-                                            op_1_e1_off <= offset_2B[2];
+                                            op_1_e1_off <= offset_2B[2]*8;
                                         end
                                         3'b011: begin
-                                            op_1_e1_off <= offset_2B[3];
+                                            op_1_e1_off <= offset_2B[3]*8;
                                         end
                                         3'b100: begin
-                                            op_1_e1_off <= offset_2B[4];
+                                            op_1_e1_off <= offset_2B[4]*8;
                                         end
                                         3'b101: begin
-                                            op_1_e1_off <= offset_2B[5];
+                                            op_1_e1_off <= offset_2B[5]*8;
                                         end
                                         3'b110: begin
-                                            op_1_e1_off <= offset_2B[6];
+                                            op_1_e1_off <= offset_2B[6]*8;
                                         end
                                         3'b111: begin
-                                            op_1_e1_off <= offset_2B[7];
+                                            op_1_e1_off <= offset_2B[7]*8;
                                         end
                                     endcase
                                 end
@@ -388,28 +388,28 @@ always @(posedge axis_clk or negedge aresetn) begin
                                     operand_wide <= 2'b01;
                                     case(action_in[18:16])
                                         3'b000: begin
-                                            op_1_e1_off <= offset_4B[0];
+                                            op_1_e1_off <= offset_4B[0]*8;
                                         end
                                         3'b001: begin
-                                            op_1_e1_off <= offset_4B[1];
+                                            op_1_e1_off <= offset_4B[1]*8;
                                         end
                                         3'b010: begin
-                                            op_1_e1_off <= offset_4B[2];
+                                            op_1_e1_off <= offset_4B[2]*8;
                                         end
                                         3'b011: begin
-                                            op_1_e1_off <= offset_4B[3];
+                                            op_1_e1_off <= offset_4B[3]*8;
                                         end
                                         3'b100: begin
-                                            op_1_e1_off <= offset_4B[4];
+                                            op_1_e1_off <= offset_4B[4]*8;
                                         end
                                         3'b101: begin
-                                            op_1_e1_off <= offset_4B[5];
+                                            op_1_e1_off <= offset_4B[5]*8;
                                         end
                                         3'b110: begin
-                                            op_1_e1_off <= offset_4B[6];
+                                            op_1_e1_off <= offset_4B[6]*8;
                                         end
                                         3'b111: begin
-                                            op_1_e1_off <= offset_4B[7];
+                                            op_1_e1_off <= offset_4B[7]*8;
                                         end
                                     endcase
                                 end
@@ -417,28 +417,28 @@ always @(posedge axis_clk or negedge aresetn) begin
                                     operand_wide <= 2'b10;
                                     case(action_in[18:16])
                                         3'b000: begin
-                                            op_1_e1_off <= offset_8B[0];
+                                            op_1_e1_off <= offset_8B[0]*8;
                                         end
                                         3'b001: begin
-                                            op_1_e1_off <= offset_8B[1];
+                                            op_1_e1_off <= offset_8B[1]*8;
                                         end
                                         3'b010: begin
-                                            op_1_e1_off <= offset_8B[2];
+                                            op_1_e1_off <= offset_8B[2]*8;
                                         end
                                         3'b011: begin
-                                            op_1_e1_off <= offset_8B[3];
+                                            op_1_e1_off <= offset_8B[3]*8;
                                         end
                                         3'b100: begin
-                                            op_1_e1_off <= offset_8B[4];
+                                            op_1_e1_off <= offset_8B[4]*8;
                                         end
                                         3'b101: begin
-                                            op_1_e1_off <= offset_8B[5];
+                                            op_1_e1_off <= offset_8B[5]*8;
                                         end
                                         3'b110: begin
-                                            op_1_e1_off <= offset_8B[6];
+                                            op_1_e1_off <= offset_8B[6]*8;
                                         end
                                         3'b111: begin
-                                            op_1_e1_off <= offset_8B[7];
+                                            op_1_e1_off <= offset_8B[7]*8;
                                         end
                                     endcase
                                 end
@@ -457,28 +457,28 @@ always @(posedge axis_clk or negedge aresetn) begin
                                     operand_wide <= 2'b00;
                                     case(action_in[18:16])
                                         3'b000: begin
-                                            op_1_e1_off <= offset_2B[0];
+                                            op_1_e1_off <= offset_2B[0]*8;
                                         end
                                         3'b001: begin
-                                            op_1_e1_off <= offset_2B[1];
+                                            op_1_e1_off <= offset_2B[1]*8;
                                         end
                                         3'b010: begin
-                                            op_1_e1_off <= offset_2B[2];
+                                            op_1_e1_off <= offset_2B[2]*8;
                                         end
                                         3'b011: begin
-                                            op_1_e1_off <= offset_2B[3];
+                                            op_1_e1_off <= offset_2B[3]*8;
                                         end
                                         3'b100: begin
-                                            op_1_e1_off <= offset_2B[4];
+                                            op_1_e1_off <= offset_2B[4]*8;
                                         end
                                         3'b101: begin
-                                            op_1_e1_off <= offset_2B[5];
+                                            op_1_e1_off <= offset_2B[5]*8;
                                         end
                                         3'b110: begin
-                                            op_1_e1_off <= offset_2B[6];
+                                            op_1_e1_off <= offset_2B[6]*8;
                                         end
                                         3'b111: begin
-                                            op_1_e1_off <= offset_2B[7];
+                                            op_1_e1_off <= offset_2B[7]*8;
                                         end
                                     endcase
                                 end
@@ -486,28 +486,28 @@ always @(posedge axis_clk or negedge aresetn) begin
                                     operand_wide <= 2'b01;
                                     case(action_in[18:16])
                                         3'b000: begin
-                                            op_1_e1_off <= offset_4B[0];
+                                            op_1_e1_off <= offset_4B[0]*8;
                                         end
                                         3'b001: begin
-                                            op_1_e1_off <= offset_4B[1];
+                                            op_1_e1_off <= offset_4B[1]*8;
                                         end
                                         3'b010: begin
-                                            op_1_e1_off <= offset_4B[2];
+                                            op_1_e1_off <= offset_4B[2]*8;
                                         end
                                         3'b011: begin
-                                            op_1_e1_off <= offset_4B[3];
+                                            op_1_e1_off <= offset_4B[3]*8;
                                         end
                                         3'b100: begin
-                                            op_1_e1_off <= offset_4B[4];
+                                            op_1_e1_off <= offset_4B[4]*8;
                                         end
                                         3'b101: begin
-                                            op_1_e1_off <= offset_4B[5];
+                                            op_1_e1_off <= offset_4B[5]*8;
                                         end
                                         3'b110: begin
-                                            op_1_e1_off <= offset_4B[6];
+                                            op_1_e1_off <= offset_4B[6]*8;
                                         end
                                         3'b111: begin
-                                            op_1_e1_off <= offset_4B[7];
+                                            op_1_e1_off <= offset_4B[7]*8;
                                         end
                                     endcase
                                 end
@@ -515,28 +515,28 @@ always @(posedge axis_clk or negedge aresetn) begin
                                     operand_wide <= 2'b10;
                                     case(action_in[18:16])
                                         3'b000: begin
-                                            op_1_e1_off <= offset_8B[0];
+                                            op_1_e1_off <= offset_8B[0]*8;
                                         end
                                         3'b001: begin
-                                            op_1_e1_off <= offset_8B[1];
+                                            op_1_e1_off <= offset_8B[1]*8;
                                         end
                                         3'b010: begin
-                                            op_1_e1_off <= offset_8B[2];
+                                            op_1_e1_off <= offset_8B[2]*8;
                                         end
                                         3'b011: begin
-                                            op_1_e1_off <= offset_8B[3];
+                                            op_1_e1_off <= offset_8B[3]*8;
                                         end
                                         3'b100: begin
-                                            op_1_e1_off <= offset_8B[4];
+                                            op_1_e1_off <= offset_8B[4]*8;
                                         end
                                         3'b101: begin
-                                            op_1_e1_off <= offset_8B[5];
+                                            op_1_e1_off <= offset_8B[5]*8;
                                         end
                                         3'b110: begin
-                                            op_1_e1_off <= offset_8B[6];
+                                            op_1_e1_off <= offset_8B[6]*8;
                                         end
                                         3'b111: begin
-                                            op_1_e1_off <= offset_8B[7];
+                                            op_1_e1_off <= offset_8B[7]*8;
                                         end
                                     endcase
                                 end
@@ -862,24 +862,22 @@ end
 
 //ram for key-value
 //2 cycles to get value
-ram32x32 # (
+blk_mem_gen_0 # (
 	//.RAM_INIT_FILE ("parse_act_ram_init_file.mif")
     .RAM_INIT_FILE ()
 )
 act_ram
 (
-	.axi_clk		(axis_clk),
-	.axi_wr_en		(store_en),
-	.axi_rd_en		(1'b1),
-	.axi_wr_addr	(op_2_e1[4:0]),
-	.axi_rd_addr	(op_2_e2[4:0]),
-	.axi_data_in	(op_1_e1[31:0]),
-	.axi_data_out	(load_data),
+    .addra(op_2_e1[4:0]),
+    .clka(axis_clk),
+    .dina(op_1_e1[31:0]),
+    .ena(1'b1),
+    .wea(store_en),
 
-	.axis_clk		(),
-	.axis_rd_en		(),
-	.axis_rd_addr	(),
-	.axis_data_out	()
+    .addrb(op_2_e2[4:0]),
+    .clkb(axis_clk),
+    .doutb(load_data),
+    .enb(1'b1)
 );
 
 endmodule
