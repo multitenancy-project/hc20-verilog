@@ -92,7 +92,7 @@
   
     For `redirect`(`4b'1000`) and `discard`(`4b'1001`), the action format is:
   
-    ![image-20200821135445018](image-20200821135445018.png)
+    ![image-20200825014724113](image-20200825014724113.png)
     
     ***Action Details:***
     
