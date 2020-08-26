@@ -117,44 +117,66 @@ end
 // tcam for lookup
 cam_top # ( 
 	.C_DEPTH			(16),
-	.C_WIDTH			(1024),
-	.C_MEM_INIT_FILE	() //currently there is no mem_init
+	.C_WIDTH			(512),
+	.C_MEM_INIT_FILE	(init.mif) //currently there is no mem_init
 )
 cam
 (
 	.CLK				(axis_clk),
-	.CMP_DIN			(extract_key), //feed 896b into 1024b
-	.CMP_DATA_MASK		(4'b0000),
+	.CMP_DIN			(extract_key[895:-512]), //feed 896b into 1024b
+	.CMP_DATA_MASK		(512'b0),
 	.BUSY				(busy),
 	.MATCH				(match),
 	.MATCH_ADDR			(match_addr),
-	.WE					(lookup_din_en),
-	.WR_ADDR			(lookup_din_addr),
-	.DATA_MASK			(lookup_din_mask),
-	.DIN				(lookup_din),
+	//.WE					(lookup_din_en),
+	//.WR_ADDR			(lookup_din_addr),
+	//.DATA_MASK			(lookup_din_mask),
+	//.DIN				(lookup_din),
+    .WE                 (),
+    .WR_ADDR            (),
+    .DATA_MASK          (),
+    .DIN                (),
 	.EN					(1'b1)
 );
 
 //ram for action
 //2 cycles to get action after given match_addr & match
-ram1024x16 # (
+// ram1024x16 # (
+// 	//.RAM_INIT_FILE ("parse_act_ram_init_file.mif")
+//     .RAM_INIT_FILE ()
+// )
+// act_ram
+// (
+// 	.axi_clk		(axis_clk),
+// 	.axi_wr_en		(action_en),
+// 	.axi_rd_en		(match),
+// 	.axi_wr_addr	(action_addr),
+// 	.axi_rd_addr	(match_addr),
+// 	.axi_data_in	(action_data_in),
+// 	.axi_data_out	(action_wire),
+
+// 	.axis_clk		(),
+// 	.axis_rd_en		(),				// always set to 1 for reading
+// 	.axis_rd_addr	(),
+// 	.axis_data_out	()
+// );
+
+blk_mem_gen_1 # (
 	//.RAM_INIT_FILE ("parse_act_ram_init_file.mif")
     .RAM_INIT_FILE ()
 )
 act_ram
 (
-	.axi_clk		(axis_clk),
-	.axi_wr_en		(action_en),
-	.axi_rd_en		(match),
-	.axi_wr_addr	(action_addr),
-	.axi_rd_addr	(match_addr),
-	.axi_data_in	(action_data_in),
-	.axi_data_out	(action_wire),
+    .addra(action_addr),
+    .clka(axis_clk),
+    .dina(action_data_in),
+    .ena(1'b1),
+    .wea(action_en),
 
-	.axis_clk		(),
-	.axis_rd_en		(),				// always set to 1 for reading
-	.axis_rd_addr	(),
-	.axis_data_out	()
+    .addrb(match_addr),
+    .clkb(axis_clk),
+    .doutb(action_wire),
+    .enb(match)
 );
 
 

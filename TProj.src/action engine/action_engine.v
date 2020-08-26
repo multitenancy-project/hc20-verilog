@@ -868,7 +868,7 @@ blk_mem_gen_0 # (
 	//.RAM_INIT_FILE ("parse_act_ram_init_file.mif")
     .RAM_INIT_FILE ()
 )
-act_ram
+data_ram
 (
     .addra(op_2_e1[4:0]),
     .clka(axis_clk),

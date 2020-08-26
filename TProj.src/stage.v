@@ -54,45 +54,45 @@ key_extract #(
 lookup_engine #(
     .STAGE(STAGE_P)
 ) lookup_engine(
-    axis_clk(axis_clk),
-    aresetn(aresetn),
+    .axis_clk(axis_clk),
+    .aresetn(aresetn),
 
     //output from key extractor
-    extract_key(key2lookup_key),
-    key_valid(key2lookup_key_valid),
-    cond_flag(key2lookup_cond_flag),
-    pkt_hdr_vec(key2lookup_phv),
+    .extract_key(key2lookup_key),
+    .key_valid(key2lookup_key_valid),
+    .cond_flag(key2lookup_cond_flag),
+    .pkt_hdr_vec(key2lookup_phv),
 
     //output to the action engine
-    action(lookup2action_action),
-    action_valid(lookup2action_action_valid),
-    pkt_hdr_vec_out(lookup2action_phv),
+    .action(lookup2action_action),
+    .action_valid(lookup2action_action_valid),
+    .pkt_hdr_vec_out(lookup2action_phv),
 
     //control channel
-    lookup_din(),
-    lookup_din_mask(),
-    lookup_din_addr(),
-    lookup_din_en(),
+    .lookup_din(),
+    .lookup_din_mask(),
+    .lookup_din_addr(),
+    .lookup_din_en(),
 
     //control channel (action ram)
-    action_data_in(),
-    action_en(),
-    action_addr()
+    .action_data_in(),
+    .action_en(),
+    .action_addr()
 );
 
 action_engine #(
     .STAGE(STAGE_P)
 ) action_engine(
-    axis_clk(),
-    aresetn(),
+    .axis_clk(axis_clk),
+    .aresetn(aresetn),
 
     //output from lookup engine
-    action_in(lookup2action_action),
-    action_in_valid(lookup2action_action_valid),
-    phv_in(lookup2action_phv),
+    .action_in(lookup2action_action),
+    .action_in_valid(lookup2action_action_valid),
+    .phv_in(lookup2action_phv),
 
     //output to the next stage
-    phv_out(phv_out),
-    phv_out_valid(phv_out_valid)
+    .phv_out(phv_out),
+    .phv_out_valid(phv_out_valid)
 );
 endmodule
