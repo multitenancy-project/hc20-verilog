@@ -3,7 +3,7 @@
 module lookup_engine #(
     parameter KEY_LEN  = 896,
     parameter MASK_LEN = 896,
-    parameter PKT_HDR_LEN = 1024+7+24*8+5*20+256,
+    parameter PHV_LEN = 1024+7+24*8+5*20+256,
     parameter STAGE = 0
 )
 (
@@ -52,8 +52,8 @@ localparam IDLE_S = 2'd0,
            WAIT2_S = 2'd2,
            TRANS_S = 2'd3;
 
-always @(posedge axi_clk or negedge aresetn) begin
-    if (~arestn) begin
+always @(posedge axis_clk or negedge aresetn) begin
+    if (~aresetn) begin
         phv_reg <= 1579'b0;
         lookup_state <= IDLE_S;
     end
@@ -62,6 +62,7 @@ always @(posedge axi_clk or negedge aresetn) begin
         case(lookup_state)
             IDLE_S: begin
                 //wait 3 cycles
+                action_valid <= 1'b0;
                 if(key_valid == 1'b1) begin
                     phv_reg <= pkt_hdr_vec;
                     lookup_state <= WAIT1_S;
@@ -74,8 +75,8 @@ always @(posedge axi_clk or negedge aresetn) begin
             WAIT1_S: begin
                 //TCAM missed
                 if(match == 1'b0) begin
-                    action <= 24'h0x3f; //0x3f represents default action
-                    action_valid <= 1'b0;
+                    action <= 25'h3f; //0x3f represents default action
+                    action_valid <= 1'b1;
                     pkt_hdr_vec_out <= phv_reg;
 
                     lookup_state <= IDLE_S;
@@ -103,10 +104,6 @@ always @(posedge axi_clk or negedge aresetn) begin
         if(key_valid == 1'b1) begin
             phv_reg <= pkt_hdr_vec;
         end
-        //matched, wait 3 cycles and output the result.
-        if(match == 1'b1) begin
-
-        end
     end
 end
 
@@ -118,13 +115,14 @@ end
 cam_top # ( 
 	.C_DEPTH			(16),
 	.C_WIDTH			(512),
-	.C_MEM_INIT_FILE	(init.mif) //currently there is no mem_init
+	.C_MEM_INIT_FILE	() //currently there is no mem_init
 )
+//TODO remember to change it back.
 cam
 (
 	.CLK				(axis_clk),
 	.CMP_DIN			(extract_key[895:-512]), //feed 896b into 1024b
-	.CMP_DATA_MASK		(512'b0),
+	.CMP_DATA_MASK		(512'h0),
 	.BUSY				(busy),
 	.MATCH				(match),
 	.MATCH_ADDR			(match_addr),
@@ -140,32 +138,7 @@ cam
 );
 
 //ram for action
-//2 cycles to get action after given match_addr & match
-// ram1024x16 # (
-// 	//.RAM_INIT_FILE ("parse_act_ram_init_file.mif")
-//     .RAM_INIT_FILE ()
-// )
-// act_ram
-// (
-// 	.axi_clk		(axis_clk),
-// 	.axi_wr_en		(action_en),
-// 	.axi_rd_en		(match),
-// 	.axi_wr_addr	(action_addr),
-// 	.axi_rd_addr	(match_addr),
-// 	.axi_data_in	(action_data_in),
-// 	.axi_data_out	(action_wire),
-
-// 	.axis_clk		(),
-// 	.axis_rd_en		(),				// always set to 1 for reading
-// 	.axis_rd_addr	(),
-// 	.axis_data_out	()
-// );
-
-blk_mem_gen_1 # (
-	//.RAM_INIT_FILE ("parse_act_ram_init_file.mif")
-    .RAM_INIT_FILE ()
-)
-act_ram
+blk_mem_gen_1 act_ram_25w_16d
 (
     .addra(action_addr),
     .clka(axis_clk),

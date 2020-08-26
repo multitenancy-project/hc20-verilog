@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module tb_action_engine #(
+module tb_lookup_engine #(
     parameter KEY_LEN = 896,
     parameter MASK_LEN = 896,
     parameter PHV_LEN = 1024+7+24*8+5*20+256,
@@ -18,7 +18,7 @@ reg [PHV_LEN-1:0]       pkt_hdr_vec;
 
 wire [ACTION_LEN-1:0]   action;
 wire                    action_valid;
-wire [PHV-1:0]          pkt_hdr_vec_out;
+wire [PHV_LEN-1:0]      pkt_hdr_vec_out;
 
 //clk signal
 localparam CYCLE = 10;
@@ -41,88 +41,45 @@ end
 initial begin
     #(2*CYCLE); //after the rst_n, start the test
     #(5)    
-    action_in_valid <= 1'b1;
-    phv_in <= 1579'b10;
-    action_in <= 24'b0;
+    key_valid <= 1'b1;
+    cond_flag <= 1'b1;
+    extract_key <= {8'hff, 888'h0};
+    pkt_hdr_vec <= {4'b1111, 1020'b0, 7'b0, 8'b0, 184'b0, 356'b0};
     #CYCLE 
-    action_in_valid <= 1'b0;
-    action_in <= 25'hff;
-    #(2*CYCLE)
+    key_valid <= 1'b0;
+    cond_flag <= 1'b0;
+    extract_key <= 896'b1;
+    pkt_hdr_vec <= 1579'b0;
+    #(3*CYCLE)
 
     /* 
-        test add/sub
+        TODO hit
     */
-    action_in_valid <= 1'b1;
-    /***4B[0] = 4B[0] + 4B[1]****/
-    action_in <= {4'b0001, 2'b00, 3'b0, 2'b00, 3'b1, 11'b0};
-    phv_in <= {4'b1111, 1020'b0, 7'b0, 8'b0, 184'b0, 356'b0};
+    key_valid <= 1'b1;
+    cond_flag <= 1'b1;
+    extract_key <= {8'hff, 888'h0};
+    pkt_hdr_vec <= {4'b1111, 1020'b0, 7'b0, 8'b0, 184'b0, 356'b0};
     #CYCLE
-    action_in_valid <= 1'b0;
-    phv_in <= 1579'b0;
+    key_valid <= 1'b0;
+    cond_flag <= 1'b0;
+    extract_key <= 896'b1;
+    pkt_hdr_vec <= 1579'b0;
     #(4*CYCLE);
 
-    /*
-        test addi/subi
+    /* 
+        TODO miss
     */
-    action_in_valid <= 1'b1;
-    /***4B[0] = 4B[0] + 4B[1]****/
-    action_in <= {4'b0011, 2'b00, 3'b0, 16'b11};
-    phv_in <= {4'b1111, 1020'b0, 7'b0, 8'b0, 184'b0, 356'b0};
+    key_valid <= 1'b1;
+    cond_flag <= 1'b1;
+    extract_key <= 896'b11;
+    pkt_hdr_vec <= {4'b1111, 1020'b0, 7'b0, 8'b0, 184'b0, 356'b0};
     #CYCLE
-    action_in_valid <= 1'b0;
-    phv_in <= 1579'b0;
-    #(3*CYCLE);
+    key_valid <= 1'b0;
+    cond_flag <= 1'b0;
+    extract_key <= 896'b1;
+    pkt_hdr_vec <= 1579'b0;
+    #(4*CYCLE);
 
-
-    /*
-        test redirect / discard
-    */
-    //
-    action_in_valid <= 1'b1;
-    /*** replace matadata******/
-    action_in <= {4'b1000, 8'b11111111, 13'b0};
-    phv_in <= {4'b1111, 1020'b0, 7'b0, 8'b0, 184'b0, 356'b0};
-    #CYCLE
-    action_in_valid <= 1'b0;
-    action_in <= 25'b0;
-    phv_in <= 1579'b0;
-    #(3*CYCLE);
-
-    //discard
-    action_in_valid <= 1'b1;
-    /*** replace matadata******/
-    action_in <= {4'b1001, 8'b11111111, 1'b1, 12'b0};
-    phv_in <= {4'b1111, 1020'b0, 7'b0, 8'b0, 184'b0, 356'b0};
-    #CYCLE
-    action_in_valid <= 1'b0;
-    action_in <= 25'b0;
-    phv_in <= 1579'b0;
-    #(3*CYCLE);
-
-    /*
-        test store
-    */
-
-    action_in_valid <= 1'b1;
-    action_in <= {4'b0110, 5'b0, 16'b11};
-    phv_in <= {4'b1111, 1020'b0, 7'b0, 8'b0, 184'b0, 356'b0};
-    #CYCLE
-    action_in_valid <= 1'b0;
-    action_in <= 25'b0;
-    phv_in <= 1579'b0;
-    #(3*CYCLE);
-
-    /*
-        test load
-    */
-    action_in_valid <= 1'b1;
-    action_in <= {4'b0101, 5'b0, 16'b11};
-    phv_in <= {4'b1111, 1020'b0, 7'b0, 8'b0, 184'b0, 356'b0};
-    #CYCLE
-    action_in_valid <= 1'b0;
-    action_in <= 25'b0;
-    phv_in <= 1579'b0;
-    #(3*CYCLE);
 
 end
 

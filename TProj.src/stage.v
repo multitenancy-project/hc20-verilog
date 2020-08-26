@@ -7,13 +7,13 @@ module stage #(
     parameter STAGE_P = 0  //valid: 0-4
 )
 (
-    input                        axis_clk;
-    input                        aresetn;
+    input                        axis_clk,
+    input                        aresetn,
 
-    input      [PHV_LEN-1:0]     phv_in;
-    input                        phv_in_valid;
-    output reg [PHV_LEN-1:0]     phv_out;
-    output reg                   phv_out_valid;
+    input      [PHV_LEN-1:0]     phv_in,
+    input                        phv_in_valid,
+    output reg [PHV_LEN-1:0]     phv_out,
+    output reg                   phv_out_valid
 );
 
 //key_extract to lookup_engine
