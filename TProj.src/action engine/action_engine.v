@@ -148,8 +148,7 @@ always @(posedge axis_clk or negedge aresetn) begin
     else begin
         case(action_op_e1_state)
             IDLE_OP_E1_S: begin
-                if(action_in_valid && action_in[24:21]!=4'b0101
-                 && action_in[24:21]!=4'b0110) begin
+                if(action_in_valid && action_in[24:21]!=4'b0101) begin
                     //in GET_OP_E1_S, locate the actual operands.
                     action_op_e1_state <= GET_OP_E1_S;
                     
@@ -620,7 +619,7 @@ always @(posedge axis_clk or negedge aresetn) begin
                     end
                     2'b00: begin
                         //do nothing
-                        action_op_e1_state <= GET_OP_E1_S;
+                        //action_op_e1_state <= GET_OP_E1_S;
                     end
                 endcase
             end
@@ -689,7 +688,7 @@ end
 
 //localparam  IDLE_OP_E1_S  =  3'd0,
 
-//this is for LOAD & STORE exclusively.
+//this is for LOAD exclusively.
 localparam  IDLE_OP_E2_S  =  3'd0,
             GET_OP_E2_S   =  3'd1,
             WAIT1_OP_E2_S =  3'd2,
@@ -705,7 +704,7 @@ always @(posedge axis_clk or negedge aresetn) begin
         op_2_e2_off <= 8'b0;
         e2_finish <= 1'b0;
 
-        action_op_e1_state <= IDLE_OP_E2_S;
+        action_op_e2_state <= IDLE_OP_E2_S;
     end
     else begin
         case(action_op_e2_state)
@@ -815,12 +814,15 @@ always @(posedge axis_clk or negedge aresetn) begin
                     op_2_e2_off <= 8'b0;
                     e2_finish <= 1'b0;
 
-                    action_op_e1_state <= IDLE_OP_E2_S;
+                    action_op_e2_state <= IDLE_OP_E2_S;
                 end
             end
             GET_OP_E2_S: begin
                 op_1_e2 <= phv_e2_reg[PHV_LENS-op_1_e2_off -: 32];
                 op_2_e2 <= op_2_e2;
+                action_op_e2_state <= WAIT1_OP_E2_S;
+            end
+            WAIT1_OP_E2_S: begin
                 action_op_e2_state <= CALC_OP_E2_S;
             end
             CALC_OP_E2_S: begin

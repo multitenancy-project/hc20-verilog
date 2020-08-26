@@ -69,20 +69,59 @@ initial begin
     #CYCLE
     action_in_valid <= 1'b0;
     phv_in <= 1579'b0;
-    #(2*CYCLE);
+    #(3*CYCLE);
 
 
-    // /*
-    //     TODO test redirect / discard
-    // */
+    /*
+        test redirect / discard
+    */
+    //
+    action_in_valid <= 1'b1;
+    /*** replace matadata******/
+    action_in <= {4'b1000, 8'b11111111, 13'b0};
+    phv_in <= {4'b1111, 1020'b0, 7'b0, 8'b0, 184'b0, 356'b0};
+    #CYCLE
+    action_in_valid <= 1'b0;
+    action_in <= 25'b0;
+    phv_in <= 1579'b0;
+    #(3*CYCLE);
 
-    // /*
-    //     TODO test store
-    // */
+    //discard
+    action_in_valid <= 1'b1;
+    /*** replace matadata******/
+    action_in <= {4'b1001, 8'b11111111, 1'b1, 12'b0};
+    phv_in <= {4'b1111, 1020'b0, 7'b0, 8'b0, 184'b0, 356'b0};
+    #CYCLE
+    action_in_valid <= 1'b0;
+    action_in <= 25'b0;
+    phv_in <= 1579'b0;
+    #(3*CYCLE);
 
-    // /*
-    //     TODO test load
-    // */
+    /*
+        test store
+    */
+
+    action_in_valid <= 1'b1;
+    action_in <= {4'b0110, 5'b0, 16'b11};
+    phv_in <= {4'b1111, 1020'b0, 7'b0, 8'b0, 184'b0, 356'b0};
+    #CYCLE
+    action_in_valid <= 1'b0;
+    action_in <= 25'b0;
+    phv_in <= 1579'b0;
+    #(3*CYCLE);
+
+    /*
+        test load
+    */
+    action_in_valid <= 1'b1;
+    action_in <= {4'b0101, 5'b0, 16'b11};
+    phv_in <= {4'b1111, 1020'b0, 7'b0, 8'b0, 184'b0, 356'b0};
+    #CYCLE
+    action_in_valid <= 1'b0;
+    action_in <= 25'b0;
+    phv_in <= 1579'b0;
+    #(3*CYCLE);
+
 end
 
 
