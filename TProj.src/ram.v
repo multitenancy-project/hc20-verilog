@@ -2,7 +2,7 @@
 
 
 
-module ram167x16 # (
+module ram267x16 # (
 	parameter RAM_INIT_FILE = ""
 )
 (
@@ -12,18 +12,18 @@ module ram167x16 # (
 	input								axi_rd_en,
 	input [3:0]							axi_wr_addr,
 	input [3:0]							axi_rd_addr,
-	input [166:0]						axi_data_in,
-	output [166:0]					axi_data_out,
+	input [266:0]						axi_data_in,
+	output [266:0]					axi_data_out,
 	// axis, read
 	input								axis_clk,
 	input								axis_rd_en,
 	input [3:0]							axis_rd_addr,
-	output [166:0]					axis_data_out
+	output [266:0]					axis_data_out
 );
 
-reg [166:0] mem[0:15];
-reg [166:0] axi_data_out_reg;
-reg [166:0] axis_data_out_reg;
+reg [266:0] mem[0:15];
+reg [266:0] axi_data_out_reg;
+reg [266:0] axis_data_out_reg;
 
 // I/O connection
 assign axi_data_out = axi_data_out_reg;

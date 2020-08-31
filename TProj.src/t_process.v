@@ -76,7 +76,8 @@ module t_process #(
 /*==== [END] definitions of functions ====*/
 
 /*=================================================*/
-localparam PKT_VEC_WIDTH = 1024+7+24*8+512;
+// TODO: pkt vec width may change
+localparam PKT_VEC_WIDTH = 1024+7+24*8+20*5+256;
 // pkt fifo
 reg									pkt_fifo_rd_en;
 wire								pkt_fifo_nearly_full;
@@ -133,6 +134,10 @@ paser_done_fifo
 	.clk									(clk)
 );
 
+// for debug use
+wire [127:0] phv_fifo_dbg;
+assign phv_fifo_dbg = phv_fifo[127:0];
+//
 
 packet_header_parser
 parser (
@@ -142,6 +147,7 @@ parser (
 
 	// input axis data
 	.s_axis_tdata							(s_axis_tdata),
+	.s_axis_tuser							(s_axis_tuser),
 	.s_axis_tkeep							(s_axis_tkeep),
 	.s_axis_tvalid							(s_axis_tvalid & s_axis_tready),
 	.s_axis_tlast							(s_axis_tlast),
@@ -152,8 +158,8 @@ parser (
 
 // reassemble the packets
 //
-
-localparam TOT_LENGTH_POS = 24*8+512;
+// TODO: the position may change
+localparam TOT_LENGTH_POS = 24*8+20*5+256;
 localparam PKT_START_POS = 7+TOT_LENGTH_POS;
 localparam PKT_START_POS_PKT0 = PKT_START_POS;
 localparam PKT_START_POS_PKT1 = PKT_START_POS+256;
