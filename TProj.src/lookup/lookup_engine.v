@@ -34,9 +34,10 @@ module lookup_engine #(
 );
 
 /********intermediate variables declared here********/
-wire busy;
-wire [3:0] match_addr;
-wire match;
+wire        busy            [0:1];
+wire [3:0]  match_addr      [0:1];
+wire        match           [0:1];
+
 wire [24:0] action_wire;
 
 
@@ -74,7 +75,8 @@ always @(posedge axis_clk or negedge aresetn) begin
 
             WAIT1_S: begin
                 //TCAM missed
-                if(match == 1'b0) begin
+                if((match[0] || match[1]) == 1'b0) begin
+
                     action <= 25'h3f; //0x3f represents default action
                     action_valid <= 1'b1;
                     pkt_hdr_vec_out <= phv_reg;
@@ -89,6 +91,10 @@ always @(posedge axis_clk or negedge aresetn) begin
 
             //wait a cycle;
             WAIT2_S: begin
+                if(match_addr[1] == match_addr[0]) begin
+                    lookup_state <= IDLE_S;
+                end
+
                 lookup_state <= TRANS_S;
             end
 
@@ -111,7 +117,9 @@ end
 //control channel (maybe future?)
 
 
-// tcam for lookup
+
+// tcam1 for lookup
+
 cam_top # ( 
 	.C_DEPTH			(16),
 	.C_WIDTH			(512),
@@ -123,9 +131,37 @@ cam
 	.CLK				(axis_clk),
 	.CMP_DIN			(extract_key[895:-512]), //feed 896b into 1024b
 	.CMP_DATA_MASK		(512'h0),
-	.BUSY				(busy),
-	.MATCH				(match),
-	.MATCH_ADDR			(match_addr),
+	.BUSY				(busy[0]),
+	.MATCH				(match[0]),
+	.MATCH_ADDR			(match_addr[0]),
+	//.WE					(lookup_din_en),
+	//.WR_ADDR			(lookup_din_addr),
+	//.DATA_MASK			(lookup_din_mask),
+	//.DIN				(lookup_din),
+    .WE                 (),
+    .WR_ADDR            (),
+    .DATA_MASK          (),
+    .DIN                (),
+	.EN					(1'b1)
+);
+
+
+// tcam2 for lookup
+cam_top # ( 
+	.C_DEPTH			(16),
+	.C_WIDTH			(385),
+	.C_MEM_INIT_FILE	() //currently there is no mem_init
+)
+//TODO remember to change it back.
+cam
+(
+	.CLK				(axis_clk),
+	.CMP_DIN			({extract_key[383:0], cond_flag}), //feed 896b into 1024b
+	.CMP_DATA_MASK		(385'h0),
+	.BUSY				(busy[1]),
+	.MATCH				(match[1]),
+	.MATCH_ADDR			(match_addr[1]),
+
 	//.WE					(lookup_din_en),
 	//.WR_ADDR			(lookup_din_addr),
 	//.DATA_MASK			(lookup_din_mask),
@@ -145,11 +181,10 @@ blk_mem_gen_1 act_ram_25w_16d
     .dina(action_data_in),
     .ena(1'b1),
     .wea(action_en),
-
-    .addrb(match_addr),
+    .addrb(match_addr[0]),
     .clkb(axis_clk),
     .doutb(action_wire),
-    .enb(match)
+    .enb(match[0])
 );
 
 
