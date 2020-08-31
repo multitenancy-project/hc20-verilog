@@ -77,7 +77,7 @@ module t_process #(
 
 /*=================================================*/
 // TODO: pkt vec width may change
-localparam PKT_VEC_WIDTH = 1024+7+24*8+256;
+localparam PKT_VEC_WIDTH = 1024+7+24*8+20*5+256;
 // pkt fifo
 reg									pkt_fifo_rd_en;
 wire								pkt_fifo_nearly_full;
@@ -159,7 +159,7 @@ parser (
 // reassemble the packets
 //
 // TODO: the position may change
-localparam TOT_LENGTH_POS = 24*8+256;
+localparam TOT_LENGTH_POS = 24*8+20*5+256;
 localparam PKT_START_POS = 7+TOT_LENGTH_POS;
 localparam PKT_START_POS_PKT0 = PKT_START_POS;
 localparam PKT_START_POS_PKT1 = PKT_START_POS+256;

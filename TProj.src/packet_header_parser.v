@@ -15,8 +15,8 @@ module packet_header_parser #(
 	parameter C_S_AXIS_DATA_WIDTH = 256,
 	parameter C_S_AXIS_TUSER_WIDTH = 128,
 	parameter C_VALID_NUM_HDR_PKTS = 4,			// 4*32B = 128B = 1024b
-	parameter PKT_HDR_LEN = 1024+7+24*8+256, // 1024 at-most 4 segments, 7 total length in byte, 24*(1+7) phv, 512 bits
-	parameter PARSE_ACT_RAM_WIDTH = 167
+	parameter PKT_HDR_LEN = 1024+7+24*8+5*20+256, // 1024 at-most 4 segments, 7 total length in byte, 24*(1+7) phv, 5*20 conditional, 256 bits
+	parameter PARSE_ACT_RAM_WIDTH = 267 // original 167 bits + 100 conditional block bits
 )
 (
 	input									axis_clk,
@@ -191,17 +191,24 @@ wire [15:0] w_parse_act_unit_7;
 wire [15:0] w_parse_act_unit_8;
 wire [15:0] w_parse_act_unit_9;
 wire [6:0] w_tot_length;
-assign w_parse_act_unit_0 = parse_act_data_out[0+:16];
-assign w_parse_act_unit_1 = parse_act_data_out[16+:16];
-assign w_parse_act_unit_2 = parse_act_data_out[32+:16];
-assign w_parse_act_unit_3 = parse_act_data_out[48+:16];
-assign w_parse_act_unit_4 = parse_act_data_out[64+:16];
-assign w_parse_act_unit_5 = parse_act_data_out[80+:16];
-assign w_parse_act_unit_6 = parse_act_data_out[96+:16];
-assign w_parse_act_unit_7 = parse_act_data_out[112+:16];
-assign w_parse_act_unit_8 = parse_act_data_out[128+:16];
-assign w_parse_act_unit_9 = parse_act_data_out[144+:16];
-assign w_tot_length = parse_act_data_out[160+:7];
+// conditional blocks
+reg [19:0] r_cond_blk_0;
+reg [19:0] r_cond_blk_1;
+reg [19:0] r_cond_blk_2;
+reg [19:0] r_cond_blk_3;
+reg [19:0] r_cond_blk_4;
+//
+assign w_parse_act_unit_0 = parse_act_data_out[100+:16];
+assign w_parse_act_unit_1 = parse_act_data_out[116+:16];
+assign w_parse_act_unit_2 = parse_act_data_out[132+:16];
+assign w_parse_act_unit_3 = parse_act_data_out[148+:16];
+assign w_parse_act_unit_4 = parse_act_data_out[164+:16];
+assign w_parse_act_unit_5 = parse_act_data_out[180+:16];
+assign w_parse_act_unit_6 = parse_act_data_out[196+:16];
+assign w_parse_act_unit_7 = parse_act_data_out[212+:16];
+assign w_parse_act_unit_8 = parse_act_data_out[228+:16];
+assign w_parse_act_unit_9 = parse_act_data_out[244+:16];
+assign w_tot_length = parse_act_data_out[260+:7];
 //
 //
 always @(*) begin
@@ -230,6 +237,13 @@ always @(*) begin
 	r_off_con_8B_5 = 0;
 	r_off_con_8B_6 = 0;
 	r_off_con_8B_7 = 0;
+	// conditional block
+	r_cond_blk_0 = parse_act_data_out[0+:20];
+	r_cond_blk_1 = parse_act_data_out[20+:20];
+	r_cond_blk_2 = parse_act_data_out[40+:20];
+	r_cond_blk_3 = parse_act_data_out[60+:20];
+	r_cond_blk_4 = parse_act_data_out[80+:20];
+	
 
 	r_tot_length = w_tot_length;
 
@@ -1540,6 +1554,11 @@ assign pkt_hdr_vec = {w_pkts,
 					r_off_con_8B_5,
 					r_off_con_8B_6,
 					r_off_con_8B_7,
+					r_cond_blk_0,	// conditional block
+					r_cond_blk_1,
+					r_cond_blk_2,
+					r_cond_blk_3,
+					r_cond_blk_4,
 					{128{1'b0}},
 					tuser_1st};
 
@@ -1575,7 +1594,7 @@ cam
 );
 
 // action ram
-ram167x16 # (
+ram267x16 # (
 	.RAM_INIT_FILE ("parse_act_ram_init_file.mif")
 )
 act_ram
