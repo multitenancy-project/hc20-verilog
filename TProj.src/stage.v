@@ -12,8 +12,8 @@ module stage #(
 
     input      [PHV_LEN-1:0]     phv_in,
     input                        phv_in_valid,
-    output reg [PHV_LEN-1:0]     phv_out,
-    output reg                   phv_out_valid
+    output [PHV_LEN-1:0]     phv_out,
+    output phv_out_valid
 );
 
 //key_extract to lookup_engine

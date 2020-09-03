@@ -87,12 +87,14 @@ wire [C_S_AXIS_TUSER_WIDTH-1:0]		tuser_fifo;
 wire [C_S_AXIS_DATA_WIDTH/8-1:0]	tkeep_fifo;
 wire								tlast_fifo;
 // phv fifo
-wire								phv_valid;
-wire [PKT_VEC_WIDTH-1:0]			phv_in;
+wire								stg0_phv_in_valid;
+wire [PKT_VEC_WIDTH-1:0]			stg0_phv_in;
 wire [PKT_VEC_WIDTH-1:0]			phv_fifo;
 reg									phv_rd_en;
 wire								phv_empty;
-// 
+// stage-related
+wire [PKT_VEC_WIDTH-1:0]			stg0_phv_out;
+wire								stg0_phv_out_valid;
 
 /*=================================================*/
 assign s_axis_tready = !pkt_fifo_nearly_full;
@@ -122,8 +124,8 @@ fallthrough_small_fifo #(
 )
 paser_done_fifo
 (
-	.din									(phv_in),
-	.wr_en									(phv_valid),
+	.din									(stg0_phv_out),
+	.wr_en									(stg0_phv_out_valid),
 	.rd_en									(phv_rd_en),
 	.dout									(phv_fifo),
 	.full									(),
@@ -151,9 +153,20 @@ parser (
 	.s_axis_tkeep							(s_axis_tkeep),
 	.s_axis_tvalid							(s_axis_tvalid & s_axis_tready),
 	.s_axis_tlast							(s_axis_tlast),
-	// output to phv fifo
-	.parser_valid							(phv_valid),
-	.pkt_hdr_vec							(phv_in)
+	// output to stage0
+	.parser_valid							(stg0_phv_in_valid),
+	.pkt_hdr_vec							(stg0_phv_in)
+);
+
+// stage
+stage
+stage0 (
+	.axis_clk								(clk),
+	.aresetn								(aresetn),
+	.phv_in									(stg0_phv_in),
+	.phv_in_valid							(stg0_phv_in_valid),
+	.phv_out								(stg0_phv_out),
+	.phv_out_valid							(stg0_phv_out_valid)
 );
 
 // reassemble the packets
