@@ -12,8 +12,8 @@ module stage #(
 
     input      [PHV_LEN-1:0]     phv_in,
     input                        phv_in_valid,
-    output reg [PHV_LEN-1:0]     phv_out,
-    output reg                   phv_out_valid
+    output [PHV_LEN-1:0]     phv_out,
+    output phv_out_valid
 );
 
 //key_extract to lookup_engine
@@ -27,6 +27,10 @@ wire [24:0]        lookup2action_action;
 wire               lookup2action_action_valid;
 wire [PHV_LEN-1:0] lookup2action_phv;
 
+//
+wire				key2lookup_key_valid_w;
+reg					key2lookup_key_valid_r;
+//
 
 key_extract #(
 	.STAGE(STAGE_P)
@@ -59,7 +63,7 @@ lookup_engine #(
 
     //output from key extractor
     .extract_key(key2lookup_key),
-    .key_valid(key2lookup_key_valid),
+    .key_valid(key2lookup_key_valid_w),
     .cond_flag(key2lookup_cond_flag),
     .pkt_hdr_vec(key2lookup_phv),
 
@@ -95,4 +99,15 @@ action_engine #(
     .phv_out(phv_out),
     .phv_out_valid(phv_out_valid)
 );
+
+
+always @(posedge axis_clk) begin
+	if (~aresetn) begin
+		key2lookup_key_valid_r <= 0;
+	end
+	else begin
+		key2lookup_key_valid_r <= key2lookup_key_valid;
+	end
+end
+
 endmodule

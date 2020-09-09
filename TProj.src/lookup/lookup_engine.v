@@ -123,13 +123,15 @@ end
 cam_top # ( 
 	.C_DEPTH			(16),
 	.C_WIDTH			(512),
-	.C_MEM_INIT_FILE	() //currently there is no mem_init
+	.C_MEM_INIT			(0)
+	// .C_MEM_INIT_FILE	() //currently there is no mem_init
 )
 //TODO remember to change it back.
-cam
+cam_0
 (
 	.CLK				(axis_clk),
-	.CMP_DIN			(extract_key[895:-512]), //feed 896b into 1024b
+	// .CMP_DIN			(extract_key[895:-512]), //feed 896b into 1024b
+	.CMP_DIN			(extract_key[895-:512]), //feed 896b into 1024b
 	.CMP_DATA_MASK		(512'h0),
 	.BUSY				(busy[0]),
 	.MATCH				(match[0]),
@@ -150,10 +152,11 @@ cam
 cam_top # ( 
 	.C_DEPTH			(16),
 	.C_WIDTH			(385),
-	.C_MEM_INIT_FILE	() //currently there is no mem_init
+	.C_MEM_INIT			(0)
+	//.C_MEM_INIT_FILE	() //currently there is no mem_init
 )
 //TODO remember to change it back.
-cam
+cam_1
 (
 	.CLK				(axis_clk),
 	.CMP_DIN			({extract_key[383:0], cond_flag}), //feed 896b into 1024b
@@ -174,7 +177,8 @@ cam
 );
 
 //ram for action
-blk_mem_gen_1 act_ram_25w_16d
+//blk_mem_gen_1 act_ram_25w_16d
+blk_mem_gen_0 act_ram_25w_16d
 (
     .addra(action_addr),
     .clka(axis_clk),
