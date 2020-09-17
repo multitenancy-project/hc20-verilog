@@ -14,7 +14,7 @@
   The PHV is defined as below and is 1124b wide. (5-stage pipeline)
 
   ![phv](phv.png)
-  
+
 
   ```|8x6B|8x4B|8x2B|nx20b|256b|``` (n is num of stage of pipeline)
 
@@ -35,24 +35,24 @@
     > * `[255:250]` represents the next match table the PHV is going to be matched with.
     > * `[249:129]` is reserved for other usage.
 
-  ---
-  
+---
+
   #### Key Extractor
-  
+
   Key Extractor is used to generate the key according to PHV.  meanwhile, in order to support `if-else` statement, Key Extractor module also set the value of the `conditional flag` according to the `nx20b` fields to determine if the match-action should be executed in the current stage.
-  
+
   * Comparation:
   
     In stage `M`, the 2 operands and the operator in `M`-th will be extracted and fed in to the comparator. If the result is `1`, the flag to the lookup table would be set, meaning the key will be matched in the lookup engine. Otherwise, the lookup engine would be bypassed and the action field will be set to `0` (meaning do nothing in the stage).
-  
-  ---
-  
+
+---
+
   #### Lookup engine
-  
+
   Lookup Engine takes the key generated from Parser, conducts a matching operation and outputs an VLIW-style `action` which determines the actions that need to execute in the Action Engine.
-  
+
   ![lookup_engine](lookup_engine.png)
-  
+
   * Format of the lookup table entry
   
     each entry consists of one 769b entry and one 769b mask to support ternary match. (768b for PHV containers and 1b for conditional flag)
@@ -66,15 +66,15 @@
   * Control plane
   
     both lookup table entry and action ram are configured using AXI-Lite. 
-  
-  ---
-  
+
+---
+
   #### Action Engine
-  
+
   Action Engine takes the `action` output from Lookup Engine, and modifies PHV according to it. The actions that will be supported in the demo include `add`, `addi`, `sub`, `subi`, `load`, `store` `redirect port`, `discard`, `redirect table`. (still thinking about adding VxLAN and MPLS in the pipeline). Besides all these actions mentioned above, in each stage the action engine also needs to update the `next table id` in the metadata to support TTP in the RMT architecture.
-  
+
   ![image-20200821140130485](image-20200821140130485.png)
-  
+
   1. `add`: takes two operands from the PHV based on the indexes in the action field, add them, and write the result back to the location of 1st operand.
   2. `addi` takes one operand from PHV based on the index in the action field and one operand from the action field directly, add them, and write the result back to the location of operand. 
   3. `sub`: takes two operands from the PHV based on the indexes in the action field, substract the 2nd operand from the 1st, and write the result back to the location of 1st operand.
@@ -83,7 +83,7 @@
   6. `store`: read the value from PHV according to the index in the action field, write it into the address stored in the action field.
   7. `port`: send the current packet from ports listed in the action field (including multicast).
   8. `discard`: drop the current packet.
-  
+
   There are three types of actions: 2-operand action, 1-operand action and metadata action as is shown below.
 
   * Action format:
@@ -94,13 +94,13 @@
   
     For `addi`(`0b'0011`), `subi`(`0b'0100`), `load`(`0b'0101`) and `store`(`0b'0110`), the action format is:
   
-    ![1_action](2_action.png)
+    ![1_action](1_action.png)
   
     For `port`(`4b'1000`) and `discard`(`4b'1001`), the action format is:
   
     ![md_action](md_action.png)
 
-  
+
   In order to support VLIW (very long instruction word) in the action engine, there are 24 standard ALUs hard-wired with 24 containers in the PHV, and also 1 extra ALU to modify the metadata field in the PHV. A workflow of the action engine can be shown in the figure below:
 
 
@@ -110,20 +110,20 @@
     
     1. To simplify the design, `store`/`load` supports only 4B (32b) operations, while all other actions support 2B, 4B and 6B according to the data width of the 1st operand.
 
-  ---
+---
 
   #### Deparser
 
   Deparser is used to recombine the packet header using info from the orginal packet header and PHV. Generally, it reverses the process executed in Parser.
 
-  ---
+---
 
   #### Note 
 
     1. According to RMT, which match table the packet is going through is determined by the result (action) of the last match. In this way it forms a TTP (see TTP in OpenFlow).
-
+    
       > The `control flow` is realized by giving each table an **index** (stage NO) and judging whether the PHV should be handled in the current stage by matching the **index** with a specific field in the `metadata`. Noted that the field in metadata that controls the control flow is modified by the action in each stage.
-
+    
     2. Another question worth to ask is how to determine which fields in the container is going to be matched in the current stage.
-
+    
       > One method would be using TCAM for the match table and masking the fields that we don't care.
