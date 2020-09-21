@@ -39,7 +39,9 @@
 
   #### Key Extractor
 
-  Key Extractor is used to generate the key according to PHV.  meanwhile, in order to support `if-else` statement, Key Extractor module also set the value of the `conditional flag` according to the `nx20b` fields to determine if the match-action should be executed in the current stage.
+  Key Extractor is used to generate the key according to PHV. At first, the user should config the RAM in Key Extractor to extract the values that will be used in the following Lookup module. During the runtime, Key Extractor will extract the key out of PHV according to the instructions in the RAM.
+
+  meanwhile, in order to support `if-else` statement, Key Extractor module also set the value of the `conditional flag` according to the `nx20b` fields to determine if the match-action should be executed in the current stage.
 
   * Comparation:
   
@@ -51,21 +53,20 @@
 
   Lookup Engine takes the key generated from Parser, conducts a matching operation and outputs an VLIW-style `action` which determines the actions that need to execute in the Action Engine.
 
-  ![lookup_engine](lookup_engine.png)
 
   * Format of the lookup table entry
   
-    each entry consists of one 769b entry and one 769b mask to support ternary match. (768b for PHV containers and 1b for conditional flag)
+    each entry consists of one 271b entry and one 271b mask to support ternary match. (256b for the key and 5b for conditional flags)
   
     For example: entry1: `10011001...1001` mask1:  `111111111...1000` would avoid the match of the lowest 3 bits.
   
   * Lookup elements
   
-    Lookup Engine consists of 2 lookup elements, each of which is 512b wide and has 8 entries. 
+    Lookup Engine consists of 1 TCAM engine which is 271b wide.
   
   * Control plane
   
-    both lookup table entry and action ram are configured using AXI-Lite. 
+    both lookup table entry and action ram wil be configured using AXI-Lite. 
 
 ---
 
@@ -92,11 +93,11 @@
   
     ![2_action](2_action.png)
   
-    For `addi`(`0b'0011`), `subi`(`0b'0100`), `load`(`0b'0101`) and `store`(`0b'0110`), the action format is:
+    For `addi`(`0b'1001`), `subi`(`0b'1010`), `load`(`0b'1011`) and `store`(`0b'1000`), the action format is:
   
     ![1_action](1_action.png)
   
-    For `port`(`4b'1000`) and `discard`(`4b'1001`), the action format is:
+    For `port`(`4b'1100`) and `discard`(`4b'1101`), the action format is:
   
     ![md_action](md_action.png)
 
