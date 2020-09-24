@@ -39,7 +39,7 @@
 
   #### Key Extractor
 
-  Key Extractor is used to generate the key according to PHV. At first, the user should config the RAM in Key Extractor to extract the values that will be used in the following Lookup module. During the runtime, Key Extractor will extract the key out of PHV according to the instructions in the RAM.
+  Key Extractor is used to generate the key according to PHV. At first, the user should config the RAM in Key Extractor to extract the values that will be used in the following Lookup module. During the runtime, Key Extractor will extract the key out of PHV according to the instructions in the RAM. **Each key include 2x6B containers, 2x4B containers and 2x2B containers as well as 5b more which indicates the result of the conditions.**
 
   meanwhile, in order to support `if-else` statement, Key Extractor module also set the value of the `conditional flag` according to the `nx20b` fields to determine if the match-action should be executed in the current stage.
 
@@ -56,7 +56,7 @@
 
   * Format of the lookup table entry
   
-    each entry consists of one 271b entry and one 271b mask to support ternary match. (256b for the key and 5b for conditional flags)
+    each entry consists of one 261b entry and one 261b mask to support ternary match. (256b for the key and 5b for conditional flags)
   
     For example: entry1: `10011001...1001` mask1:  `111111111...1000` would avoid the match of the lowest 3 bits.
   
@@ -100,6 +100,8 @@
     For `port`(`4b'1100`) and `discard`(`4b'1101`), the action format is:
   
     ![md_action](md_action.png)
+
+    The default action field is `0x3f`, which can be seen if no action is matched.
 
 
   In order to support VLIW (very long instruction word) in the action engine, there are 24 standard ALUs hard-wired with 24 containers in the PHV, and also 1 extra ALU to modify the metadata field in the PHV. A workflow of the action engine can be shown in the figure below:

@@ -1,0 +1,189 @@
+/****************************************************/
+//	Module name: crossbar.v
+//	Authority @ yangxiangrui (yangxiangrui11@nudt.edu.cn)
+//	Last edited time: 2020/09/24
+//	Function outline: crossbar used exclusived for RMT
+/****************************************************/
+
+`timescale 1ns / 1ps
+module corssbar #(
+    parameter STAGE = 0,
+    parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
+    parameter ACT_LEN = 25
+)
+(
+    input clk,
+    input rst_n,
+
+    //input from PHV
+    input [PHV_LEN-1:0]         phv_in,
+    input                       phv_in_valid,
+
+    //input from action
+    input [ACT_LEN*25-1:0]      action_in,
+    input                       action_in_valid,
+
+    //output to the ALU
+    output reg                  alu_in_valid;
+    output reg [width_6B-1:0]   alu_in_6B_1 [0:7];
+    output reg [width_6B-1:0]   alu_in_6B_2 [0:7];
+    output reg [width_4B-1:0]   alu_in_4B_1 [0:7];
+    output reg [width_4B-1:0]   alu_in_4B_2 [0:7];
+    //this for load/store exclusively
+    output reg [width_4B-1:0]   alu_in_4B_3 [0:7];
+    output reg [width_2B-1:0]   alu_in_2B_1 [0:7];
+    output reg [width_2B-1:0]   alu_in_2B_2 [0:7];
+    output reg [355:0]          phv_remain_data;
+);
+
+/********intermediate variables declared here********/
+integer i;
+
+localparam width_2B = 16;
+localparam width_4B = 32;
+localparam width_6B = 48;
+
+reg [PHV_LEN-1:0]        phv_reg;
+reg [ACT_LEN*25-1:0]     action_full_reg;
+reg                      phv_valid_reg;
+reg                      action_valid_reg;
+
+wire [width_6B-1:0]      cont_6B [0:7];
+wire [width_4B-1:0]      cont_4B [0:7];
+wire [width_2B-1:0]      cont_2B [0:7];
+
+wire [ACT_LEN-1:0]       sub_action [24:0];
+
+
+/********intermediate variables declared here********/
+
+assign cont_6B[7] = phv_in[PHV_LEN-1            -: width_6B];
+assign cont_6B[6] = phv_in[PHV_LEN-1-  width_6B -: width_6B];
+assign cont_6B[5] = phv_in[PHV_LEN-1-2*width_6B -: width_6B];
+assign cont_6B[4] = phv_in[PHV_LEN-1-3*width_6B -: width_6B];
+assign cont_6B[3] = phv_in[PHV_LEN-1-4*width_6B -: width_6B];
+assign cont_6B[2] = phv_in[PHV_LEN-1-5*width_6B -: width_6B];
+assign cont_6B[1] = phv_in[PHV_LEN-1-6*width_6B -: width_6B];
+assign cont_6B[0] = phv_in[PHV_LEN-1-7*width_6B -: width_6B];
+
+assign cont_4B[7] = phv_in[PHV_LEN-1-8*width_6B           -: width_4B];
+assign cont_4B[6] = phv_in[PHV_LEN-1-8*width_6B-  width_4B -: width_4B];
+assign cont_4B[5] = phv_in[PHV_LEN-1-8*width_6B-2*width_4B -: width_4B];
+assign cont_4B[4] = phv_in[PHV_LEN-1-8*width_6B-3*width_4B -: width_4B];
+assign cont_4B[3] = phv_in[PHV_LEN-1-8*width_6B-4*width_4B -: width_4B];
+assign cont_4B[2] = phv_in[PHV_LEN-1-8*width_6B-5*width_4B -: width_4B];
+assign cont_4B[1] = phv_in[PHV_LEN-1-8*width_6B-6*width_4B -: width_4B];
+assign cont_4B[0] = phv_in[PHV_LEN-1-8*width_6B-7*width_4B -: width_4B];
+
+
+assign cont_2B[7] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B            -: width_2B];
+assign cont_2B[6] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-  width_2B -: width_2B];
+assign cont_2B[5] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-2*width_2B -: width_2B];
+assign cont_2B[4] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-3*width_2B -: width_2B];
+assign cont_2B[3] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-4*width_2B -: width_2B];
+assign cont_2B[2] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-5*width_2B -: width_2B];
+assign cont_2B[1] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-6*width_2B -: width_2B];
+assign cont_2B[0] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-7*width_2B -: width_2B];
+
+assign sub_action[24] = action_in[ACT_LEN*25-1-ACT_LEN:0];
+
+//assign inputs for ALUs 
+
+always @(posedge clk or negedge rst_n) begin
+    if(~rst_n) begin
+        // phv_reg <= 1124'b0;
+        // action_full_reg <= 625'b0;
+        // phv_valid_reg <= 1'b0;
+        // action_valid_reg <= 1'b0;
+        //reset outputs
+        alu_in_valid <= 1'b0;
+        phv_remain_data <= 356'b0;
+        for(i=0; i<8; i=i+1) begin
+            alu_in_6B_1[i] <= 48'b0;
+            alu_in_6B_2[i] <= 48'b0;
+            alu_in_6B_3[i] <= 48'b0;
+            alu_in_4B_1[i] <= 32'b0;
+            alu_in_4B_2[i] <= 32'b0;
+            alu_in_4B_3[i] <= 32'b0;
+            alu_in_2B_1[i] <= 16'b0;
+            alu_in_2B_2[i] <= 16'b0;
+            alu_in_2B_3[i] <= 16'b0;
+        end
+    end
+
+    else begin
+        if(phv_in_valid == 1'b1) begin
+            phv_reg <= phv_in;
+            action_full_reg <= action_in;
+            //assign values one by one (of course need to consider act format)
+            for(i=7; i>=0; i=i-1) begin
+                casez(sub_action[16+i+1][24:21])
+                    //be noted that 2 ops need to be the same width
+                    4'b0001, 4'b0010: begin
+                        alu_in_6B_1[i] <= cont_6B[sub_action[16+i+1][18:16]];
+                        alu_in_6B_2[i] <= cont_6B[sub_action[16+i+1][13:11]];
+                    end
+                    4'b1001, 4'b1010: begin
+                        alu_in_6B_1[i] <= cont_6B[sub_action[16+i+1][18:16]];
+                        alu_in_6B_2[i] <= {32'b0,sub_action[16+i+1][15:0]};
+                    end
+                    //if there is no action to take, output the original value
+                    default: begin
+                        //alu_1 should be set to the phv value
+                        alu_in_6B_1[i] <= cont_6B[i];
+                        alu_in_6B_2[i] <= 48'b0;
+                    end
+                endcase
+            end
+            //4B is a bit of differernt from 2B and 6B
+            for(i=7; i>=0; i=i-1) begin
+                alu_in_4B_3[i] <= cont_4B[i];
+                casez(sub_action[8+i+1][24:21])
+                    //be noted that 2 ops need to be the same width
+                    4'b0001, 4'b0010: begin
+                        alu_in_4B_1[i] <= cont_4B[sub_action[8+i+1][18:16]];
+                        alu_in_4B_2[i] <= cont_4B[sub_action[8+i+1][13:11]];
+                    end
+                    4'b1001, 4'b1010: begin
+                        alu_in_4B_1[i] <= cont_4B[sub_action[8+i+1][18:16]];
+                        alu_in_4B_2[i] <= {16'b0,sub_action[8+i+1][15:0]};
+                    end
+                    4'b1011, 4'b1000: begin
+                        alu_in_4B_1[i] <= cont_4B[sub_action[8+i+1][18:16]];
+                        alu_in_4B_2[i] <= {16'b0,sub_action[8+i+1][15:0]};
+                    end
+                    //if there is no action to take, output the original value
+                    default: begin
+                        //alu_1 should be set to the phv value
+                        alu_in_4B_1[i] <= cont_4B[i];
+                        alu_in_4B_2[i] <= 32'b0;
+                    end
+                endcase
+            end
+            for(i=7; i>=0; i=i-1) begin
+                casez(sub_action[i+1][24:21])
+                    //be noted that 2 ops need to be the same width
+                    4'b0001, 4'b0010: begin
+                        alu_in_2B_1[i] <= cont_2B[sub_action[i+1][18:16]];
+                        alu_in_2B_2[i] <= cont_2B[sub_action[i+1][13:11]];
+                    end
+                    4'b1001, 4'b1010: begin
+                        alu_in_2B_1[i] <= cont_2B[sub_action[16+i+1][18:16]];
+                        alu_in_2B_2[i] <= sub_action[16+i+1][15:0];
+                    end
+                    //if there is no action to take, output the original value
+                    default: begin
+                        //alu_1 should be set to the phv value
+                        alu_in_2B_1[i] <= cont_2B[i];
+                        alu_in_2B_2[i] <= 16'b0;
+                    end
+                endcase
+            end
+            
+            //the left is metadata & conditional ins, no need to modify
+            phv_remain_data <= phv_in[355:0];
+        end 
+    end
+end
+
+endmodule
