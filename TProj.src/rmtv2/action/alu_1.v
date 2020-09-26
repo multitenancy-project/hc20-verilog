@@ -8,7 +8,6 @@
 `timescale 1ns / 1ps
 
 module alu_1 #(
-    parameter OUT_LEN = 16,
     parameter STAGE = 0,
     parameter ACTION_LEN = 25,
     parameter DATA_WIDTH = 48  //data width of the ALU
@@ -18,14 +17,14 @@ module alu_1 #(
     input rst_n,
 
     //input from sub_action
-    input [ACTION_LEN-1:0]            action_in;
-    input                             action_valid;
-    input [DATA_WIDTH-1:0]            operand_1_in;
-    input [DATA_WIDTH-1:0]            operand_2_in;
+    input [ACTION_LEN-1:0]            action_in,
+    input                             action_valid,
+    input [DATA_WIDTH-1:0]            operand_1_in,
+    input [DATA_WIDTH-1:0]            operand_2_in,
 
     //output to form PHV
-    output reg [DATA_WIDTH-1:0]       container_out;
-    output reg                        container_out_valid;
+    output reg [DATA_WIDTH-1:0]       container_out,
+    output reg                        container_out_valid
 
 );
 
@@ -71,6 +70,11 @@ always @(posedge clk or negedge rst_n) begin
                 end
                 4'b0010, 4'b1010: begin:
                     container_out_delay <= operand_1_in - operand_2_in;
+                    container_out_valid_delay <= action_valid;
+                end
+                //if its an empty (default) action
+                default: begin
+                    container_out_delay <= operand_1_in;
                     container_out_valid_delay <= action_valid;
                 end
             endcase

@@ -13,6 +13,8 @@ module key_extract #(
     parameter KEY_OFF = (3+3)*3
 )
 (
+    input                      clk,
+    input                      rst_n,
     input [PHV_LEN-1:0]        phv_in,
     input                      phv_valid_in,
 

@@ -21,7 +21,6 @@ module lookup_engine#(
     //output from key extractor
     input [KEY_LEN-1:0]           extract_key,
     input                         key_valid,
-    input                         cond_flag,
     input [PHV_LEN-1:0]           phv_in,
 
     //output to the action engine

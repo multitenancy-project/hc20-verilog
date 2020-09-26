@@ -11,22 +11,22 @@ module alu_2 #(
     parameter OUT_LEN = 16,
     parameter STAGE = 0,
     parameter ACTION_LEN = 25,
-    parameter DATA_WIDTH = 48  //data width of the ALU
+    parameter DATA_WIDTH = 32  //data width of the ALU
 )
 (
     input clk,
     input rst_n,
 
     //input from sub_action
-    input [ACTION_LEN-1:0]            action_in;
-    input                             action_valid;
-    input [DATA_WIDTH-1:0]            operand_1_in;
-    input [DATA_WIDTH-1:0]            operand_2_in;
-    input [DATA_WIDTH-1:0]            operand_3_in;
+    input [ACTION_LEN-1:0]            action_in,
+    input                             action_valid,
+    input [DATA_WIDTH-1:0]            operand_1_in,
+    input [DATA_WIDTH-1:0]            operand_2_in,
+    input [DATA_WIDTH-1:0]            operand_3_in,
 
     //output to form PHV
-    output reg [DATA_WIDTH-1:0]       container_out;
-    output reg                        container_out_valid;
+    output reg [DATA_WIDTH-1:0]       container_out,
+    output reg                        container_out_valid
 );
 
 /********intermediate variables declared here********/
@@ -120,8 +120,11 @@ always @(posedge clk or negedge rst_n) begin
                             load_addr <= operand_2_in[4:0];
                             alu_state <= LOAD_S;
                         end
+                        //cannot go back to IDLE since this
+                        //might be a legal action.
                         default: begin
-                            alu_state <= IDLE_S;
+                            container_reg <= operand_3_in;
+                            alu_state <= OTHER_S;
                         end
 
                     endcase

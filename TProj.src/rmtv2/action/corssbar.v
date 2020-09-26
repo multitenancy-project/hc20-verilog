@@ -9,7 +9,10 @@
 module corssbar #(
     parameter STAGE = 0,
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
-    parameter ACT_LEN = 25
+    parameter ACT_LEN = 25,
+    parameter width_2B = 16,
+    parameter width_4B = 32,
+    parameter width_6B = 48
 )
 (
     input clk,
@@ -24,24 +27,21 @@ module corssbar #(
     input                       action_in_valid,
 
     //output to the ALU
-    output reg                  alu_in_valid;
-    output reg [width_6B-1:0]   alu_in_6B_1 [0:7];
-    output reg [width_6B-1:0]   alu_in_6B_2 [0:7];
-    output reg [width_4B-1:0]   alu_in_4B_1 [0:7];
-    output reg [width_4B-1:0]   alu_in_4B_2 [0:7];
-    //this for load/store exclusively
-    output reg [width_4B-1:0]   alu_in_4B_3 [0:7];
-    output reg [width_2B-1:0]   alu_in_2B_1 [0:7];
-    output reg [width_2B-1:0]   alu_in_2B_2 [0:7];
-    output reg [355:0]          phv_remain_data;
+    output reg                    alu_in_valid,
+    output reg [width_6B*8-1:0]   alu_in_6B_1,
+    output reg [width_6B*8-1:0]   alu_in_6B_2,
+    output reg [width_4B*8-1:0]   alu_in_4B_1,
+    output reg [width_4B*8-1:0]   alu_in_4B_2,
+    output reg [width_4B*8-1:0]   alu_in_4B_3,
+    output reg [width_2B*8-1:0]   alu_in_2B_1,
+    output reg [width_2B*8-1:0]   alu_in_2B_2,
+    output reg [355:0]            phv_remain_data
 );
 
 /********intermediate variables declared here********/
 integer i;
 
-localparam width_2B = 16;
-localparam width_4B = 32;
-localparam width_6B = 48;
+
 
 reg [PHV_LEN-1:0]        phv_reg;
 reg [ACT_LEN*25-1:0]     action_full_reg;
@@ -98,17 +98,15 @@ always @(posedge clk or negedge rst_n) begin
         //reset outputs
         alu_in_valid <= 1'b0;
         phv_remain_data <= 356'b0;
-        for(i=0; i<8; i=i+1) begin
-            alu_in_6B_1[i] <= 48'b0;
-            alu_in_6B_2[i] <= 48'b0;
-            alu_in_6B_3[i] <= 48'b0;
-            alu_in_4B_1[i] <= 32'b0;
-            alu_in_4B_2[i] <= 32'b0;
-            alu_in_4B_3[i] <= 32'b0;
-            alu_in_2B_1[i] <= 16'b0;
-            alu_in_2B_2[i] <= 16'b0;
-            alu_in_2B_3[i] <= 16'b0;
-        end
+        //reset all the outputs
+        alu_in_6B_1 <= 384'b0;
+        alu_in_6B_2 <= 384'b0;
+        alu_in_4B_1 <= 256'b0;
+        alu_in_4B_2 <= 256'b0;
+        alu_in_4B_3 <= 256'b0;
+        alu_in_2B_1 <= 128'b0;
+        alu_in_2B_2 <= 128'b0;
+        
     end
 
     else begin
@@ -120,43 +118,43 @@ always @(posedge clk or negedge rst_n) begin
                 casez(sub_action[16+i+1][24:21])
                     //be noted that 2 ops need to be the same width
                     4'b0001, 4'b0010: begin
-                        alu_in_6B_1[i] <= cont_6B[sub_action[16+i+1][18:16]];
-                        alu_in_6B_2[i] <= cont_6B[sub_action[16+i+1][13:11]];
+                        alu_in_6B_1[i*width_6B-1 +: width_6B] <= cont_6B[sub_action[16+i+1][18:16]];
+                        alu_in_6B_2[i*width_6B-1 +: width_6B] <= cont_6B[sub_action[16+i+1][13:11]];
                     end
                     4'b1001, 4'b1010: begin
-                        alu_in_6B_1[i] <= cont_6B[sub_action[16+i+1][18:16]];
-                        alu_in_6B_2[i] <= {32'b0,sub_action[16+i+1][15:0]};
+                        alu_in_6B_1[i*width_6B-1 +: width_6B] <= cont_6B[sub_action[16+i+1][18:16]];
+                        alu_in_6B_2[i*width_6B-1 +: width_6B] <= {32'b0,sub_action[16+i+1][15:0]};
                     end
                     //if there is no action to take, output the original value
                     default: begin
                         //alu_1 should be set to the phv value
-                        alu_in_6B_1[i] <= cont_6B[i];
-                        alu_in_6B_2[i] <= 48'b0;
+                        alu_in_6B_1[i*width_6B-1 +: width_6B] <= cont_6B[i];
+                        alu_in_6B_2[i*width_6B-1 +: width_6B] <= 48'b0;
                     end
                 endcase
             end
             //4B is a bit of differernt from 2B and 6B
             for(i=7; i>=0; i=i-1) begin
-                alu_in_4B_3[i] <= cont_4B[i];
+                alu_in_4B_3[i*width_4B-1 +: width_4B] <= cont_4B[i];
                 casez(sub_action[8+i+1][24:21])
                     //be noted that 2 ops need to be the same width
                     4'b0001, 4'b0010: begin
-                        alu_in_4B_1[i] <= cont_4B[sub_action[8+i+1][18:16]];
-                        alu_in_4B_2[i] <= cont_4B[sub_action[8+i+1][13:11]];
+                        alu_in_4B_1[i*width_4B-1 +: width_4B] <= cont_4B[sub_action[8+i+1][18:16]];
+                        alu_in_4B_2[i*width_4B-1 +: width_4B] <= cont_4B[sub_action[8+i+1][13:11]];
                     end
                     4'b1001, 4'b1010: begin
-                        alu_in_4B_1[i] <= cont_4B[sub_action[8+i+1][18:16]];
-                        alu_in_4B_2[i] <= {16'b0,sub_action[8+i+1][15:0]};
+                        alu_in_4B_1[i*width_4B-1 +: width_4B] <= cont_4B[sub_action[8+i+1][18:16]];
+                        alu_in_4B_2[i*width_4B-1 +: width_4B] <= {16'b0,sub_action[8+i+1][15:0]};
                     end
                     4'b1011, 4'b1000: begin
-                        alu_in_4B_1[i] <= cont_4B[sub_action[8+i+1][18:16]];
-                        alu_in_4B_2[i] <= {16'b0,sub_action[8+i+1][15:0]};
+                        alu_in_4B_1[i*width_4B-1 +: width_4B] <= cont_4B[sub_action[8+i+1][18:16]];
+                        alu_in_4B_2[i*width_4B-1 +: width_4B] <= {16'b0,sub_action[8+i+1][15:0]};
                     end
                     //if there is no action to take, output the original value
                     default: begin
                         //alu_1 should be set to the phv value
-                        alu_in_4B_1[i] <= cont_4B[i];
-                        alu_in_4B_2[i] <= 32'b0;
+                        alu_in_4B_1[i*width_4B-1 +: width_4B] <= cont_4B[i];
+                        alu_in_4B_2[i*width_4B-1 +: width_4B] <= 32'b0;
                     end
                 endcase
             end
@@ -164,18 +162,18 @@ always @(posedge clk or negedge rst_n) begin
                 casez(sub_action[i+1][24:21])
                     //be noted that 2 ops need to be the same width
                     4'b0001, 4'b0010: begin
-                        alu_in_2B_1[i] <= cont_2B[sub_action[i+1][18:16]];
-                        alu_in_2B_2[i] <= cont_2B[sub_action[i+1][13:11]];
+                        alu_in_2B_1[i*width_2B-1 +: width_2B] <= cont_2B[sub_action[i+1][18:16]];
+                        alu_in_2B_2[i*width_2B-1 +: width_2B] <= cont_2B[sub_action[i+1][13:11]];
                     end
                     4'b1001, 4'b1010: begin
-                        alu_in_2B_1[i] <= cont_2B[sub_action[16+i+1][18:16]];
-                        alu_in_2B_2[i] <= sub_action[16+i+1][15:0];
+                        alu_in_2B_1[i*width_2B-1 +: width_2B] <= cont_2B[sub_action[16+i+1][18:16]];
+                        alu_in_2B_2[i*width_2B-1 +: width_2B] <= sub_action[16+i+1][15:0];
                     end
                     //if there is no action to take, output the original value
                     default: begin
                         //alu_1 should be set to the phv value
-                        alu_in_2B_1[i] <= cont_2B[i];
-                        alu_in_2B_2[i] <= 16'b0;
+                        alu_in_2B_1[i*width_2B-1 +: width_2B] <= cont_2B[i];
+                        alu_in_2B_2[i*width_2B-1 +: width_2B] <= 16'b0;
                     end
                 endcase
             end
