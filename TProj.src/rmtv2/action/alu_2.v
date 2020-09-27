@@ -8,7 +8,6 @@
 `timescale 1ns / 1ps
 
 module alu_2 #(
-    parameter OUT_LEN = 16,
     parameter STAGE = 0,
     parameter ACTION_LEN = 25,
     parameter DATA_WIDTH = 32  //data width of the ALU
@@ -44,13 +43,14 @@ reg  [4:0]           store_addr;
 reg  [31:0]          store_din;
 
 wire [31:0]          load_data;
-reg  [4:0]           load_addr;
+wire [4:0]           load_addr;
 
 reg  [2:0]           alu_state;
 
 
 /********intermediate variables declared here********/
 
+assign load_addr = operand_2_in[4:0];
 
 /*
 8 operations to support:
@@ -80,7 +80,7 @@ always @(posedge clk or negedge rst_n) begin
         container_out <= 0;
 
         //initialize regs
-        container_valid_reg <= 1'b0;
+        //container_valid_reg <= 1'b0;
         action_type <= 4'b0;
         store_en <= 1'b0;
         store_addr <= 5'b0;
@@ -117,7 +117,7 @@ always @(posedge clk or negedge rst_n) begin
                             alu_state <= OTHER_S;
                         end
                         4'b1011: begin
-                            load_addr <= operand_2_in[4:0];
+                            //load_addr <= operand_2_in[4:0];
                             alu_state <= LOAD_S;
                         end
                         //cannot go back to IDLE since this
@@ -171,15 +171,13 @@ always @(posedge clk or negedge rst_n) begin
 
         endcase
     end
-            
-        end        
-    end
+
 end
 
 //ram for key-value
 //2 cycles to get value
 // blk_mem_gen_0 # (
-blk_mem_gen_1 # (
+blk_mem_gen_0 # (
 	//.RAM_INIT_FILE ("parse_act_ram_init_file.mif")
     .RAM_INIT_FILE ()
 )
@@ -188,7 +186,7 @@ data_ram_32w_32d
     //store-related
     .addra(store_addr),
     .clka(clk),
-    .dina(op_1_e1[31:0]),
+    .dina(store_din),
     .ena(1'b1),
     .wea(store_en),
 

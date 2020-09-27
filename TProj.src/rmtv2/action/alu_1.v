@@ -64,11 +64,11 @@ always @(posedge clk or negedge rst_n) begin
     else begin
         if(action_valid) begin
             case(action_in[24:21])
-                4'b0001, 4'b1001: begin:
+                4'b0001, 4'b1001: begin
                     container_out_delay <= operand_1_in + operand_2_in;
                     container_out_valid_delay <= action_valid;
                 end
-                4'b0010, 4'b1010: begin:
+                4'b0010, 4'b1010: begin
                     container_out_delay <= operand_1_in - operand_2_in;
                     container_out_valid_delay <= action_valid;
                 end
@@ -78,6 +78,11 @@ always @(posedge clk or negedge rst_n) begin
                     container_out_valid_delay <= action_valid;
                 end
             endcase
+        end
+
+        else begin
+            container_out_valid_delay <= 1'b0;
+            container_out_delay <= 0;
         end
     end
 end

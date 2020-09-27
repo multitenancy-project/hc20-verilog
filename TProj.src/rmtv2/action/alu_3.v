@@ -6,18 +6,17 @@
 /****************************************************/
 `timescale 1ns / 1ps
 module alu_3 #(
-    parameter OUT_LEN = 16,
     parameter STAGE = 0,
     parameter ACTION_LEN = 25,
     parameter META_LEN = 256,
     parameter COMP_LEN = 100
 )(
-    input clk,
-    input rst_n,
+    input                               clk,
+    input                               rst_n,
     //the input data shall be metadata & com_ins
     input [META_LEN+COMP_LEN-1:0]       comp_meta_data_in,
     input                               comp_meta_data_valid_in,
-    input [ACT_LEN-1:0]                 action_in,
+    input [ACTION_LEN-1:0]                 action_in,
     input                               action_valid_in,
 
     //output is the modified metadata plus comp_ins
@@ -67,21 +66,25 @@ always @(posedge clk or negedge rst_n) begin
     else begin
         if(action_valid_in) begin
             comp_meta_data_valid_delay <= comp_meta_data_valid_in;
-            case(comp_meta_data_in[24:20])
+            case(action_in[24:21])
                 4'b1100: begin
                     comp_meta_data_delay[355:32] <= {action_in[10:5],comp_meta_data_in[349:32]};
-                    comp_meta_data_delay[31:24]  <= action_in[19:12];
+                    comp_meta_data_delay[31:24]  <= action_in[20:13];
                     comp_meta_data_delay[23:0]   <= comp_meta_data_in[23:0];
                 end
                 4'b1101: begin
                     comp_meta_data_delay[355:129] <= {action_in[10:5],comp_meta_data_in[349:129]};
-                    comp_meta_data_delay[128] <= action_in[128];
+                    comp_meta_data_delay[128] <= action_in[12];
                     comp_meta_data_delay[127:0] <= comp_meta_data_in[127:0];
                 end
                 default: begin
                     comp_meta_data_delay <= comp_meta_data_in;
                 end
             endcase
+        end
+
+        else begin
+            comp_meta_data_valid_delay <= 1'b0;
         end
     end
 end

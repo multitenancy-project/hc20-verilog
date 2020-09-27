@@ -50,15 +50,14 @@ assign phv_valid_out = phv_valid_bit[7];
 /********IPs instancilzed here*********/
 
 //crossbar
-corssbar #(
+crossbar #(
     .STAGE(STAGE),
     .PHV_LEN(),
     .ACT_LEN(),
     .width_2B(),
     .width_4B(),
     .width_6B()
-)
-(
+)cross_bar(
     .clk(clk),
     .rst_n(rst_n),
     //input from PHV
@@ -86,11 +85,11 @@ genvar gen_i;
 generate
     //initialize 8 6B containers 
     for(gen_i = 7; gen_i >= 0; gen_i = gen_i - 1) begin
-        alu_1 alu_1_0 #(
+        alu_1 #(
             .STAGE(STAGE),
             .ACTION_LEN(),
             .DATA_WIDTH(width_6B)
-        )(
+        )alu_1_0(
             .clk(clk),
             .rst_n(rst_n),
             .action_in(action_in[(gen_i+8+8+1)*ACT_LEN-1 +: ACT_LEN]),
@@ -101,11 +100,11 @@ generate
             .container_out_valid(phv_valid_bit[gen_i])
         );
 
-        alu_1 alu_1_1 #(
+        alu_1 #(
             .STAGE(STAGE),
             .ACTION_LEN(),
             .DATA_WIDTH(width_2B)
-        )(
+        )alu_1_1(
             .clk(clk),
             .rst_n(rst_n),
             .action_in(action_in[(gen_i+1)*ACT_LEN-1 +: ACT_LEN]]),
@@ -116,12 +115,11 @@ generate
             .container_out_valid()
         );
 
-        alu_2 alu_2_0 #(
-            .OUT_LEN(),
+        alu_2 #(
             .STAGE(STAGE),
             .ACTION_LEN(),
             .DATA_WIDTH(width_4B)  //data width of the ALU
-        )(
+        )alu_2_0(
             .clk(clk),
             .rst_n(rst_n),
             //input from sub_action
@@ -140,13 +138,12 @@ endgenerate
 
 //initialize ALU_3 for matedata
 
-alu_3 alu_3_0 #(
-    .OUT_LEN(),
+alu_3 #(
     .STAGE(STAGE),
     .ACTION_LEN(),
     .META_LEN(),
     .COMP_LEN()
-)(
+)alu_3_0(
     .clk(clk),
     .rst_n(rst_n),
     //input data shall be metadata & com_ins
