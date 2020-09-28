@@ -743,7 +743,7 @@ always @(posedge axis_clk or negedge aresetn) begin
                             endcase
                         end
                         2'b01: begin
-                            operand_wide <= 2'b01;
+                            // operand_wide <= 2'b01;
                             case(action_in[18:16])
                                 3'b000: begin
                                     op_1_e2_off <= offset_4B[0];
@@ -772,7 +772,7 @@ always @(posedge axis_clk or negedge aresetn) begin
                             endcase
                         end
                         2'b10: begin
-                            operand_wide <= 2'b10;
+                            // operand_wide <= 2'b10;
                             case(action_in[18:16])
                                 3'b000: begin
                                     op_1_e2_off <= offset_8B[0];
@@ -864,7 +864,8 @@ end
 
 //ram for key-value
 //2 cycles to get value
-blk_mem_gen_0 # (
+// blk_mem_gen_0 # (
+blk_mem_gen_1 # (
 	//.RAM_INIT_FILE ("parse_act_ram_init_file.mif")
     .RAM_INIT_FILE ()
 )

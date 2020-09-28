@@ -87,13 +87,32 @@ wire [C_S_AXIS_TUSER_WIDTH-1:0]		tuser_fifo;
 wire [C_S_AXIS_DATA_WIDTH/8-1:0]	tkeep_fifo;
 wire								tlast_fifo;
 // phv fifo
-wire								phv_valid;
-wire [PKT_VEC_WIDTH-1:0]			phv_in;
+wire								stg0_phv_in_valid;
+wire [PKT_VEC_WIDTH-1:0]			stg0_phv_in;
 wire [PKT_VEC_WIDTH-1:0]			phv_fifo;
 reg									phv_rd_en;
 wire								phv_empty;
-// 
-
+// stage-related
+wire [PKT_VEC_WIDTH-1:0]			stg0_phv_out;
+wire								stg0_phv_out_valid;
+wire								stg0_phv_out_valid_w;
+reg									stg0_phv_out_valid_r;
+wire [PKT_VEC_WIDTH-1:0]			stg1_phv_out;
+wire								stg1_phv_out_valid;
+wire								stg1_phv_out_valid_w;
+reg									stg1_phv_out_valid_r;
+wire [PKT_VEC_WIDTH-1:0]			stg2_phv_out;
+wire								stg2_phv_out_valid;
+wire								stg2_phv_out_valid_w;
+reg									stg2_phv_out_valid_r;
+wire [PKT_VEC_WIDTH-1:0]			stg3_phv_out;
+wire								stg3_phv_out_valid;
+wire								stg3_phv_out_valid_w;
+reg									stg3_phv_out_valid_r;
+wire [PKT_VEC_WIDTH-1:0]			stg4_phv_out;
+wire								stg4_phv_out_valid;
+wire								stg4_phv_out_valid_w;
+reg									stg4_phv_out_valid_r;
 /*=================================================*/
 assign s_axis_tready = !pkt_fifo_nearly_full;
 
@@ -122,8 +141,8 @@ fallthrough_small_fifo #(
 )
 paser_done_fifo
 (
-	.din									(phv_in),
-	.wr_en									(phv_valid),
+	.din									(stg4_phv_out),
+	.wr_en									(stg4_phv_out_valid),
 	.rd_en									(phv_rd_en),
 	.dout									(phv_fifo),
 	.full									(),
@@ -134,10 +153,6 @@ paser_done_fifo
 	.clk									(clk)
 );
 
-// for debug use
-wire [127:0] phv_fifo_dbg;
-assign phv_fifo_dbg = phv_fifo[127:0];
-//
 
 packet_header_parser
 parser (
@@ -151,14 +166,66 @@ parser (
 	.s_axis_tkeep							(s_axis_tkeep),
 	.s_axis_tvalid							(s_axis_tvalid & s_axis_tready),
 	.s_axis_tlast							(s_axis_tlast),
-	// output to phv fifo
-	.parser_valid							(phv_valid),
-	.pkt_hdr_vec							(phv_in)
+	// output to stage0
+	.parser_valid							(stg0_phv_in_valid),
+	.pkt_hdr_vec							(stg0_phv_in)
+);
+
+// stage
+stage
+stage0 (
+	.axis_clk								(clk),
+	.aresetn								(aresetn),
+	.phv_in									(stg0_phv_in),
+	.phv_in_valid							(stg0_phv_in_valid),
+	.phv_out								(stg0_phv_out),
+	.phv_out_valid							(stg0_phv_out_valid)
+);
+
+stage
+stage1 (
+	.axis_clk								(clk),
+	.aresetn								(aresetn),
+	.phv_in									(stg0_phv_out),
+	.phv_in_valid							(stg0_phv_out_valid),
+	.phv_out								(stg1_phv_out),
+	.phv_out_valid							(stg1_phv_out_valid)
+);
+
+stage
+stage2 (
+	.axis_clk								(clk),
+	.aresetn								(aresetn),
+	.phv_in									(stg1_phv_out),
+	.phv_in_valid							(stg1_phv_out_valid),
+	.phv_out								(stg2_phv_out),
+	.phv_out_valid							(stg2_phv_out_valid)
+);
+
+stage
+stage3 (
+	.axis_clk								(clk),
+	.aresetn								(aresetn),
+	.phv_in									(stg2_phv_out),
+	.phv_in_valid							(stg2_phv_out_valid),
+	.phv_out								(stg3_phv_out),
+	.phv_out_valid							(stg3_phv_out_valid)
+);
+
+stage
+stage4 (
+	.axis_clk								(clk),
+	.aresetn								(aresetn),
+	.phv_in									(stg3_phv_out),
+	.phv_in_valid							(stg3_phv_out_valid),
+	.phv_out								(stg4_phv_out),
+	.phv_out_valid							(stg4_phv_out_valid)
 );
 
 // reassemble the packets
 //
 // TODO: the position may change
+// TODO: the logics here may need change
 localparam TOT_LENGTH_POS = 24*8+20*5+256;
 localparam PKT_START_POS = 7+TOT_LENGTH_POS;
 localparam PKT_START_POS_PKT0 = PKT_START_POS;
