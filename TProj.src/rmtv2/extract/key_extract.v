@@ -10,9 +10,9 @@ module key_extract #(
     parameter STAGE = 0,
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
     parameter KEY_LEN = 48*2+32*2+16*2+5,
-    parameter KEY_OFF = (3+3)*3
-)
-(
+    // format of KEY_OFF: |--3(6B)--|--3(6B)--|--3(4B)--|--3(4B)--|--3(2B)--|--3(2B)--|
+    parameter KEY_OFF = (3+3)*3    
+    )(
     input                      clk,
     input                      rst_n,
     input [PHV_LEN-1:0]        phv_in,
@@ -81,9 +81,9 @@ assign cont_2B[0] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-7*width_2B -: width_2
 //retrive the operators here using wire
 assign com_op[0] = phv_in[255+100 -: 20];
 assign com_op[1] = phv_in[255+80  -: 20];
-assign com_op[3] = phv_in[255+60  -: 20];
-assign com_op[4] = phv_in[255+40  -: 20];
-assign com_op[5] = phv_in[255+20  -: 20];
+assign com_op[2] = phv_in[255+60  -: 20];
+assign com_op[3] = phv_in[255+40  -: 20];
+assign com_op[4] = phv_in[255+20  -: 20];
 
 //assign com_op_1[0] = (phv_in[255+100-2])?phv_in[255+100-3 -: 8]:phv_in[-:8]
 
@@ -146,7 +146,7 @@ always @(posedge clk or negedge rst_n) begin
         key_out[KEY_LEN-1- 2*width_6B - 2*width_4B - width_2B -: width_2B] = cont_2B[key_offset[KEY_OFF-1-5*3 -: 3]];
         
         //deal with comparators
-        case(com_op[19:18])
+        case(com_op[STAGE][19:18])
             2'b00: begin
                 key_out[4-STAGE] <= (com_op_1>com_op_2)?1'b1:1'b0;
             end

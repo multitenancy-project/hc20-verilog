@@ -2,7 +2,7 @@
 //	Module name: lookup_engine.v
 //	Authority @ yangxiangrui (yangxiangrui11@nudt.edu.cn)
 //	Last edited time: 2020/09/24
-//	Function outline: perform match action with 261b key
+//	Function outline: perform match action with 197b key
 /****************************************************/
 
 `timescale 1ns / 1ps
@@ -35,7 +35,7 @@ module lookup_engine#(
     input                         lookup_din_en,
 
     //control channel (action ram)
-    input [24:0]                  action_data_in,
+    input [ACT_LEN*25-1:0]        action_data_in,
     input                         action_en,
     input [3:0]                   action_addr
 
@@ -46,7 +46,7 @@ wire        busy;
 wire [3:0]  match_addr;
 wire        match;
 
-wire [24:0] action_wire;
+wire [ACT_LEN*25-1:0] action_wire;
 
 
 reg [PHV_LEN-1:0] phv_reg;
@@ -60,7 +60,7 @@ localparam IDLE_S = 2'd0,
            WAIT2_S = 2'd2,
            TRANS_S = 2'd3;
 
-always @(posedge axis_clk or negedge aresetn) begin
+always @(posedge clk or negedge rst_n) begin
 
     if (~rst_n) begin
         phv_reg <= 0;
@@ -84,9 +84,9 @@ always @(posedge axis_clk or negedge aresetn) begin
 
             WAIT1_S: begin
                 //TCAM missed
-                if((match) == 1'b0) begin
+                if(match == 1'b0) begin
 
-                    action <= 25'h3f; //0x3f represents default action
+                    action <= 625'h3f; //0x3f represents default action
                     action_valid <= 1'b1;
                     phv_out <= phv_reg;
                     lookup_state <= IDLE_S;
@@ -130,26 +130,27 @@ end
 
 cam_top # ( 
 	.C_DEPTH			(16),
-	.C_WIDTH			(512),
+	.C_WIDTH			(256),
 	.C_MEM_INIT			(0)
-	// .C_MEM_INIT_FILE	() //currently there is no mem_init
+	//.C_MEM_INIT_FILE	(F:/NYC/project_1/cam_init_file.mif) //currently there is no mem_init
 )
 //TODO remember to change it back.
 cam_0
 (
 	.CLK				(clk),
-	.CMP_DIN			({251'b0,extract_key}), //feed 896b into 1024b
-	.CMP_DATA_MASK		(512'h0),
+	.CMP_DIN			({59'b0,extract_key}),
+	.CMP_DATA_MASK		(256'h0),
 	.BUSY				(busy),
 	.MATCH				(match),
 	.MATCH_ADDR			(match_addr),
 	//.WE				(lookup_din_en),
 	//.WR_ADDR			(lookup_din_addr),
-	//.DATA_MASK		(lookup_din_mask),
+	//.DATA_MASK		(lookup_din_mask),  
 	//.DIN				(lookup_din),
+
     .WE                 (),
     .WR_ADDR            (),
-    .DATA_MASK          (),
+    .DATA_MASK          (),  //TODO du we need ternary matching?
     .DIN                (),
 	.EN					(1'b1)
 );
@@ -157,7 +158,7 @@ cam_0
 
 //ram for action
 //blk_mem_gen_1 act_ram_625w_16d
-blk_mem_gen_0 act_ram_625w_16d
+blk_mem_gen_1 act_ram_625w_16d
 (
     .addra(action_addr),
     .clka(clk),
@@ -165,7 +166,7 @@ blk_mem_gen_0 act_ram_625w_16d
     .ena(1'b1),
     .wea(action_en),
     .addrb(match_addr),
-    .clkb(axis_clk),
+    .clkb(clk),
     .doutb(action_wire),
     .enb(match)
 );

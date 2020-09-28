@@ -35,17 +35,16 @@ module crossbar #(
     output reg [width_4B*8-1:0]   alu_in_4B_3,
     output reg [width_2B*8-1:0]   alu_in_2B_1,
     output reg [width_2B*8-1:0]   alu_in_2B_2,
-    output reg [355:0]            phv_remain_data
+    output reg [355:0]            phv_remain_data,
+
+    //I have to delay action_in for ALUs for 1 cycle
+    output reg [ACT_LEN*25-1:0]   action_out,
+    output reg                    action_valid_out
 );
 
 /********intermediate variables declared here********/
 integer i;
 
-
-
-reg [PHV_LEN-1:0]        phv_reg;
-reg                      phv_valid_reg;
-reg                      action_valid_reg;
 
 wire [width_6B-1:0]      cont_6B [0:7];
 wire [width_4B-1:0]      cont_4B [0:7];
@@ -114,6 +113,11 @@ assign sub_action[0] = action_in[ACT_LEN*25-1 -24*ACT_LEN-:ACT_LEN];
 
 //assign inputs for ALUs 
 
+always @(posedge clk) begin
+    action_out <= action_in;
+    action_valid_out <= action_in_valid;
+end
+
 always @(posedge clk or negedge rst_n) begin
     if(~rst_n) begin
         // phv_reg <= 1124'b0;
@@ -136,7 +140,7 @@ always @(posedge clk or negedge rst_n) begin
 
     else begin
         if(phv_in_valid == 1'b1) begin
-            phv_reg <= phv_in;
+            alu_in_valid <= 1'b1;
             //assign values one by one (of course need to consider act format)
             for(i=7; i>=0; i=i-1) begin
                 case(sub_action[16+i+1][24:21])
@@ -206,6 +210,10 @@ always @(posedge clk or negedge rst_n) begin
             //the left is metadata & conditional ins, no need to modify
             phv_remain_data <= phv_in[355:0];
         end 
+
+        else begin
+            alu_in_valid <= 1'b0;
+        end
     end
 end
 

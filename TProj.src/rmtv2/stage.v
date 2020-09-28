@@ -11,6 +11,7 @@ module stage #(
     parameter STAGE = 0,  //valid: 0-4
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
     parameter KEY_LEN = 48*2+32*2+16*2+5,
+    parameter ACT_LEN = 25,
     parameter KEY_OFF = 3*6
 )
 (
@@ -42,7 +43,7 @@ wire [PHV_LEN-1:0]           lookup2action_phv;
 //
 
 key_extract #(
-	.STAGE(STAGE_P),
+	.STAGE(STAGE),
     .PHV_LEN(),
     .KEY_LEN(),
     .KEY_OFF()
@@ -52,7 +53,7 @@ key_extract #(
 
     //output from parser
     .phv_in(phv_in),
-    .phv_valid_in(phv_valid_in),
+    .phv_valid_in(phv_in_valid),
     //key for lookup table
     .key_offset_in(key_offset_in),
     .key_offset_valid_in(key_offset_valid_in),
@@ -97,7 +98,7 @@ action_engine #(
     .STAGE(STAGE),
     .PHV_LEN(),
     .ACT_LEN()
-)lookup_engine(
+)action_engine(
     .clk(axis_clk),
     .rst_n(aresetn),
 
@@ -112,14 +113,5 @@ action_engine #(
     .phv_valid_out(phv_out_valid)
 );
 
-
-// always @(posedge axis_clk) begin
-// 	if (~aresetn) begin
-// 		key2lookup_key_valid_r <= 0;
-// 	end
-// 	else begin
-// 		key2lookup_key_valid_r <= key2lookup_key_valid;
-// 	end
-// end
 
 endmodule

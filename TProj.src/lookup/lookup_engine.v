@@ -178,7 +178,7 @@ cam_1
 
 //ram for action
 //blk_mem_gen_1 act_ram_25w_16d
-blk_mem_gen_0 act_ram_25w_16d
+blk_mem_gen_0 act_ram_625w_16d
 (
     .addra(action_addr),
     .clka(axis_clk),
