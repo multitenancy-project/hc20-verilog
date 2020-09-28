@@ -1,15 +1,15 @@
 `timescale 1ns / 1ps
 
-// `define DEF_MAC_ADDR	48
-// `define DEF_VLAN		32
-// `define DEF_ETHTYPE		16
-// 
-// `define TYPE_IPV4		16'h0008
-// `define TYPE_ARP		16'h0608
-// 
-// `define PROT_ICMP		8'h01
-// `define PROT_TCP		8'h06
-// `define PROT_UDP		8'h11
+`define DEF_MAC_ADDR	48
+`define DEF_VLAN		32
+`define DEF_ETHTYPE		16
+
+`define TYPE_IPV4		16'h0008
+`define TYPE_ARP		16'h0608
+
+`define PROT_ICMP		8'h01
+`define PROT_TCP		8'h06
+`define PROT_UDP		8'h11
 
 module packet_header_parser #(
 	parameter C_S_AXIS_DATA_WIDTH = 256,
@@ -42,8 +42,6 @@ reg [PKT_HDR_LEN-1:0]	pkt_hdr_vec_r;
 integer idx;
 localparam TOT_HDR_LEN = 1024;
 localparam C_VALID_NUM_HDR_PKTS = 4;		// 4*32B = 128B = 1024b
-localparam TYPE_IPV4 = 16'h0008;
-localparam PROT_UDP = 8'h11;
 wire [TOT_HDR_LEN-1:0] w_pkts;
 reg [3:0] pkt_cnt;
 reg [C_S_AXIS_DATA_WIDTH-1:0] pkts[0:C_VALID_NUM_HDR_PKTS-1];
@@ -89,7 +87,7 @@ always @(posedge axis_clk) begin
 		tuser_1st <= 0;
 	end
 	else if (hdr_window && pkt_cnt==0) begin
-		for (idx=1; idx<C_VALID_NUM_HDR_PKTS; idx=idx+1) begin
+		for (idx=0; idx<C_VALID_NUM_HDR_PKTS; idx=idx+1) begin
 			pkts[idx] <= 0;
 		end
 		pkts[pkt_cnt] <= s_axis_tdata;
@@ -114,8 +112,8 @@ reg [2:0] state, state_next;
 // common headers
 reg [3:0] vlan_id; // vlan id
 reg [15:0] eth_type_r;
-reg [15:0] eth_type;
 reg [7:0] ip_prot_r;
+reg [15:0] eth_type;
 reg [7:0] ip_prot;
 
 // parsing actions
@@ -174,12 +172,6 @@ always@(*) begin
 		WAIT_BRAM_OUT_1: begin
 			// empty cycle
 			state_next = WAIT_BRAM_OUT_2;
-			// if ((eth_type==TYPE_IPV4) && (ip_prot==PROT_UDP)) begin
-			// 	state_next = WAIT_BRAM_OUT_2;
-			// end
-			// else begin
-			// 	state_next = WAIT_FOR_PKTS;
-			// end
 		end
 		WAIT_BRAM_OUT_2: begin
 			for (idx=0; idx<10; idx=idx+1) begin
@@ -280,7 +272,7 @@ always@(*) begin
 							val_4B[0], val_4B[1], val_4B[2], val_4B[3], val_4B[4], val_4B[5], val_4B[6], val_4B[7],
 							val_2B[0], val_2B[1], val_2B[2], val_2B[3], val_2B[4], val_2B[5], val_2B[6], val_2B[7],
 							cond_action[0], cond_action[1], cond_action[2], cond_action[3], cond_action[4],
-							{128{1'b0}}, tuser_1st};
+							{128{1'b0}}, tuser_1st[127:32], 8'h04, tuser_1st[23:0]};
 		end
 	endcase
 end
@@ -300,8 +292,8 @@ always@(posedge axis_clk) begin
 
 		eth_type <= eth_type_r;
 		ip_prot <= ip_prot_r;
-		// pkt_hdr_vec <= pkt_hdr_vec_r;
-		pkt_hdr_vec <= {1124{1'b0}};
+		pkt_hdr_vec <= pkt_hdr_vec_r;
+		// pkt_hdr_vec <= {1124{1'b0}};
 		parser_valid <= parser_valid_r;
 	end
 end

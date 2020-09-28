@@ -1,5 +1,58 @@
 `timescale 1ns / 1ps
 
+`define STATE_REASS_IDX_BITSIZE(idx, bit_size, ed_state) \
+	STATE_REASS_``idx``_``bit_size: begin \
+		case(parse_action[idx][3:1]) \
+			0 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*0)+:(bit_size)]; \
+			end \
+			1 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*1)+:(bit_size)]; \
+			end \
+			2 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*2)+:(bit_size)]; \
+			end \
+			3 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*3)+:(bit_size)]; \
+			end \
+			4 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*4)+:(bit_size)]; \
+			end \
+			5 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*5)+:(bit_size)]; \
+			end \
+			6 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*6)+:(bit_size)]; \
+			end \
+			7 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*7)+:(bit_size)]; \
+			end \
+		endcase \
+		state_next = (ed_state); \
+	end \
+
+`define STATE_REASSEMBLE_DATA(idx, ed_state) \
+	REASSEMBLE_DATA_``idx: begin \
+		if (parse_action[(idx)][0] == 1'b1) begin \
+			case(parse_action[(idx)][5:4]) \
+				1 : begin \
+					state_next = STATE_REASS_``idx``_16; \
+				end \
+				2 : begin \
+					state_next = STATE_REASS_``idx``_32; \
+				end \
+				3 : begin \
+					state_next = STATE_REASS_``idx``_48; \
+				end \
+				default : begin \
+				end \
+			endcase \
+		end \
+		else begin \
+			state_next = (ed_state); \
+		end \
+	end \
+
 module t_process #(
 	// Slave AXI parameters
 	parameter C_S_AXI_DATA_WIDTH = 32,
@@ -38,6 +91,8 @@ module t_process #(
 	
 );
 
+integer idx;
+
 /*=================================================*/
 localparam PKT_VEC_WIDTH = (6+4+2)*8*8+20*5+256;
 // pkt fifo
@@ -53,7 +108,7 @@ reg									phv_fifo_rd_en;
 wire								phv_fifo_nearly_full;
 wire								phv_fifo_empty;
 wire [PKT_VEC_WIDTH-1:0]			phv_fifo_in;
-wire [PKT_VEC_WIDTH-1:0]			phv_fifo_out;
+wire [PKT_VEC_WIDTH-1:0]			phv_fifo_out_w;
 //
 wire								phv_valid;
 
@@ -88,7 +143,7 @@ phv_fifo
 	.din			(phv_fifo_in),
 	.wr_en			(phv_valid),
 	.rd_en			(phv_fifo_rd_en),
-	.dout			(phv_fifo_out),
+	.dout			(phv_fifo_out_w),
 	.full			(),
 	.prog_full		(),
 	.nearly_full	(phv_fifo_nearly_full),
@@ -114,38 +169,237 @@ phv_parser
 	.pkt_hdr_vec	(phv_fifo_in)
 );
 
-localparam WAIT_TILL_PARSE_DONE = 0, FLUSH_PKT = 1;
 
-reg [2:0] state, state_next;
+
+//=====================================deparser part
+localparam WAIT_TILL_PARSE_DONE = 0; 
+localparam WAIT_PKT_1 = 1;
+localparam WAIT_PKT_2 = 2;
+localparam WAIT_PKT_3 = 3;
+localparam REASSEMBLE_DATA_0 = 4;
+localparam REASSEMBLE_DATA_1 = 5;
+localparam REASSEMBLE_DATA_2 = 6;
+localparam STATE_REASS_0_16 = 7;
+localparam STATE_REASS_0_32 = 8;
+localparam STATE_REASS_0_48 = 9;
+localparam STATE_REASS_1_16 = 10;
+localparam STATE_REASS_1_32 = 11;
+localparam STATE_REASS_1_48 = 12;
+localparam STATE_REASS_2_16 = 13;
+localparam STATE_REASS_2_32 = 14;
+localparam STATE_REASS_2_48 = 15;
+localparam FLUSH_PKT_0 = 16;
+localparam FLUSH_PKT_1 = 17;
+localparam FLUSH_PKT_2 = 18;
+localparam FLUSH_PKT_3 = 19;
+localparam FLUSH_PKT = 20;
+
+reg [4*C_S_AXIS_DATA_WIDTH-1:0]		pkts_tdata_stored_r;
+reg [4*C_S_AXIS_DATA_WIDTH-1:0]		pkts_tdata_stored;
+reg [4*C_S_AXIS_TUSER_WIDTH-1:0]	pkts_tuser_stored_r;
+reg [4*C_S_AXIS_TUSER_WIDTH-1:0]	pkts_tuser_stored;
+reg [4*(C_S_AXIS_DATA_WIDTH/8)-1:0]	pkts_tkeep_stored_r;
+reg [4*(C_S_AXIS_DATA_WIDTH/8)-1:0]	pkts_tkeep_stored;
+reg [3:0]							pkts_tlast_stored_r;
+reg [3:0]							pkts_tlast_stored;
+
+reg [4:0] state, state_next;
+
+reg [3:0] vlan_id; // vlan id
+wire [259:0] bram_out;
+wire [6:0] parse_action_ind [0:9];
+
+wire [15:0] parse_action [0:9];		// we have 10 parse action
+
+assign parse_action[0] = bram_out[100+:16];
+assign parse_action[1] = bram_out[116+:16];
+assign parse_action[2] = bram_out[132+:16];
+assign parse_action[3] = bram_out[148+:16];
+assign parse_action[4] = bram_out[164+:16];
+assign parse_action[5] = bram_out[180+:16];
+assign parse_action[6] = bram_out[196+:16];
+assign parse_action[7] = bram_out[212+:16];
+assign parse_action[8] = bram_out[228+:16];
+assign parse_action[9] = bram_out[244+:16];
+
+assign parse_action_ind[0] = parse_action[0][12:6];
+assign parse_action_ind[1] = parse_action[1][12:6];
+assign parse_action_ind[2] = parse_action[2][12:6];
+assign parse_action_ind[3] = parse_action[3][12:6];
+assign parse_action_ind[4] = parse_action[4][12:6];
+assign parse_action_ind[5] = parse_action[5][12:6];
+assign parse_action_ind[6] = parse_action[6][12:6];
+assign parse_action_ind[7] = parse_action[7][12:6];
+assign parse_action_ind[8] = parse_action[8][12:6];
+assign parse_action_ind[9] = parse_action[9][12:6];
+
+localparam PHV_2B_START_POS = 20*5+256;
+localparam PHV_4B_START_POS = 20*5+256+16*8;
+localparam PHV_6B_START_POS = 20*5+256+16*8+32*8;
 
 always @(*) begin
-	m_axis_tdata = tdata_fifo;
-	m_axis_tuser = tuser_fifo;
-	m_axis_tkeep = tkeep_fifo;
-	m_axis_tlast = tlast_fifo;
 
-	// 
+	// remember to set m_axis_tdata, tuser, tkeep, tlast, tvalid
+	m_axis_tdata = 0;
+	m_axis_tuser = 0;
+	m_axis_tkeep = 0;
+	m_axis_tlast = 0;
 	m_axis_tvalid = 0;
+	// fifo rd signals
 	pkt_fifo_rd_en = 0;
 	phv_fifo_rd_en = 0;
+
+	pkts_tdata_stored_r = pkts_tdata_stored;
+	pkts_tuser_stored_r = pkts_tuser_stored;
+	pkts_tkeep_stored_r = pkts_tkeep_stored;
+	pkts_tlast_stored_r = pkts_tlast_stored;
 
 	state_next = state;
 	//
 	case (state)
-		WAIT_TILL_PARSE_DONE: begin
+		WAIT_TILL_PARSE_DONE: begin // later will be modifed to PROCESSING done
 			if (!pkt_fifo_empty && !phv_fifo_empty) begin // both pkt and phv fifo are not empty
-				m_axis_tvalid = 1;
-				m_axis_tdata = tdata_fifo;
-				m_axis_tuser[31:24] = 8'h04; // for any packet, output to port 1
-				if (m_axis_tready) begin // we can downstream pkt, the 1st packet
-					pkt_fifo_rd_en = 1;
-					phv_fifo_rd_en = 1;
+				pkts_tdata_stored_r[0+:C_S_AXIS_DATA_WIDTH] = tdata_fifo;
+				pkts_tuser_stored_r[0+:C_S_AXIS_TUSER_WIDTH] = tuser_fifo;
+				pkts_tkeep_stored_r[0+:(C_S_AXIS_DATA_WIDTH/8)] = tkeep_fifo;
+				pkts_tlast_stored_r[0] = tlast_fifo;
+				
+				pkt_fifo_rd_en = 1;
+				vlan_id = tdata_fifo[120+:4];
+
+				state_next = WAIT_PKT_1;
+			end
+		end
+		WAIT_PKT_1: begin
+			pkts_tdata_stored_r[(C_S_AXIS_DATA_WIDTH*1)+:C_S_AXIS_DATA_WIDTH] = tdata_fifo;
+			pkts_tuser_stored_r[(C_S_AXIS_TUSER_WIDTH*1)+:C_S_AXIS_TUSER_WIDTH] = tuser_fifo;
+			pkts_tkeep_stored_r[(C_S_AXIS_DATA_WIDTH/8*1)+:(C_S_AXIS_DATA_WIDTH/8)] = tkeep_fifo;
+			pkts_tlast_stored_r[1] = tlast_fifo;
+
+			pkt_fifo_rd_en = 1;
+			if (tlast_fifo) begin
+				state_next = REASSEMBLE_DATA_0;
+			end
+			else begin
+				state_next = WAIT_PKT_2;
+			end
+		end
+		WAIT_PKT_2: begin
+			pkts_tdata_stored_r[(C_S_AXIS_DATA_WIDTH*2)+:C_S_AXIS_DATA_WIDTH] = tdata_fifo;
+			pkts_tuser_stored_r[(C_S_AXIS_TUSER_WIDTH*2)+:C_S_AXIS_TUSER_WIDTH] = tuser_fifo;
+			pkts_tkeep_stored_r[(C_S_AXIS_DATA_WIDTH/8*2)+:(C_S_AXIS_DATA_WIDTH/8)] = tkeep_fifo;
+			pkts_tlast_stored_r[2] = tlast_fifo;
+
+			pkt_fifo_rd_en = 1;
+			if (tlast_fifo) begin
+				state_next = REASSEMBLE_DATA_0;
+			end
+			else begin
+				state_next = WAIT_PKT_3;
+			end
+		end
+		WAIT_PKT_3: begin
+			pkts_tdata_stored_r[(C_S_AXIS_DATA_WIDTH*3)+:C_S_AXIS_DATA_WIDTH] = tdata_fifo;
+			pkts_tuser_stored_r[(C_S_AXIS_TUSER_WIDTH*3)+:C_S_AXIS_TUSER_WIDTH] = tuser_fifo;
+			pkts_tkeep_stored_r[(C_S_AXIS_DATA_WIDTH/8*3)+:(C_S_AXIS_DATA_WIDTH/8)] = tkeep_fifo;
+			pkts_tlast_stored_r[3] = tlast_fifo;
+
+			pkt_fifo_rd_en = 1;
+			state_next = REASSEMBLE_DATA_0;
+		end
+
+		`STATE_REASSEMBLE_DATA(0, REASSEMBLE_DATA_1)
+		`STATE_REASS_IDX_BITSIZE(0, 16, REASSEMBLE_DATA_1)
+		`STATE_REASS_IDX_BITSIZE(0, 32, REASSEMBLE_DATA_1)
+		`STATE_REASS_IDX_BITSIZE(0, 48, REASSEMBLE_DATA_1)
+		`STATE_REASSEMBLE_DATA(1, REASSEMBLE_DATA_2)
+		`STATE_REASS_IDX_BITSIZE(1, 16, REASSEMBLE_DATA_1)
+		`STATE_REASS_IDX_BITSIZE(1, 32, REASSEMBLE_DATA_1)
+		`STATE_REASS_IDX_BITSIZE(1, 48, REASSEMBLE_DATA_1)
+		`STATE_REASSEMBLE_DATA(2, FLUSH_PKT_0)
+		`STATE_REASS_IDX_BITSIZE(2, 16, FLUSH_PKT_0)
+		`STATE_REASS_IDX_BITSIZE(2, 32, FLUSH_PKT_0)
+		`STATE_REASS_IDX_BITSIZE(2, 48, FLUSH_PKT_0)
+
+		// `STATE_REASSEMBLE_DATA(2, REASSEMBLE_DATA_2, REASSEMBLE_DATA_3)
+		// `STATE_REASSEMBLE_DATA(3, REASSEMBLE_DATA_3, REASSEMBLE_DATA_4)
+		// `STATE_REASSEMBLE_DATA(4, REASSEMBLE_DATA_4, REASSEMBLE_DATA_5)
+		// `STATE_REASSEMBLE_DATA(5, REASSEMBLE_DATA_5, REASSEMBLE_DATA_6)
+		// `STATE_REASSEMBLE_DATA(6, REASSEMBLE_DATA_6, REASSEMBLE_DATA_7)
+		// `STATE_REASSEMBLE_DATA(7, REASSEMBLE_DATA_7, REASSEMBLE_DATA_8)
+		// `STATE_REASSEMBLE_DATA(8, REASSEMBLE_DATA_8, REASSEMBLE_DATA_9)
+		// `STATE_REASSEMBLE_DATA_LAST(9, REASSEMBLE_DATA_9, FLUSH_PKT_0)
+
+		FLUSH_PKT_0: begin
+			m_axis_tdata = pkts_tdata_stored[(C_S_AXIS_DATA_WIDTH*0)+:C_S_AXIS_DATA_WIDTH];
+			m_axis_tuser = pkts_tuser_stored[(C_S_AXIS_TUSER_WIDTH*0)+:C_S_AXIS_TUSER_WIDTH];
+			m_axis_tkeep = pkts_tkeep_stored[(C_S_AXIS_DATA_WIDTH/8*0)+:(C_S_AXIS_DATA_WIDTH/8)];
+			m_axis_tlast = pkts_tlast_stored[0];
+			m_axis_tvalid = 1;
+
+			if (m_axis_tready) begin
+				if (pkts_tlast_stored[0]) begin
+					state_next = WAIT_TILL_PARSE_DONE;
+				end
+				else begin
+					state_next = FLUSH_PKT_1;
+				end
+			end
+		end
+		FLUSH_PKT_1: begin
+			m_axis_tdata = pkts_tdata_stored[(C_S_AXIS_DATA_WIDTH*1)+:C_S_AXIS_DATA_WIDTH];
+			m_axis_tuser = pkts_tuser_stored[(C_S_AXIS_TUSER_WIDTH*1)+:C_S_AXIS_TUSER_WIDTH];
+			m_axis_tkeep = pkts_tkeep_stored[(C_S_AXIS_DATA_WIDTH/8*1)+:(C_S_AXIS_DATA_WIDTH/8)];
+			m_axis_tlast = pkts_tlast_stored[1];
+			m_axis_tvalid = 1;
+
+			if (m_axis_tready) begin
+				if (pkts_tlast_stored[1]) begin
+					state_next = WAIT_TILL_PARSE_DONE;
+				end
+				else begin
+					state_next = FLUSH_PKT_2;
+				end
+			end
+		end
+		FLUSH_PKT_2: begin
+			m_axis_tdata = pkts_tdata_stored[(C_S_AXIS_DATA_WIDTH*2)+:C_S_AXIS_DATA_WIDTH];
+			m_axis_tuser = pkts_tuser_stored[(C_S_AXIS_TUSER_WIDTH*2)+:C_S_AXIS_TUSER_WIDTH];
+			m_axis_tkeep = pkts_tkeep_stored[(C_S_AXIS_DATA_WIDTH/8*2)+:(C_S_AXIS_DATA_WIDTH/8)];
+			m_axis_tlast = pkts_tlast_stored[2];
+			m_axis_tvalid = 1;
+
+			if (m_axis_tready) begin
+				if (pkts_tlast_stored[2]) begin
+					state_next = WAIT_TILL_PARSE_DONE;
+				end
+				else begin
+					state_next = FLUSH_PKT_3;
+				end
+			end
+		end
+		FLUSH_PKT_3: begin
+			m_axis_tdata = pkts_tdata_stored[(C_S_AXIS_DATA_WIDTH*3)+:C_S_AXIS_DATA_WIDTH];
+			m_axis_tuser = pkts_tuser_stored[(C_S_AXIS_TUSER_WIDTH*3)+:C_S_AXIS_TUSER_WIDTH];
+			m_axis_tkeep = pkts_tkeep_stored[(C_S_AXIS_DATA_WIDTH/8*3)+:(C_S_AXIS_DATA_WIDTH/8)];
+			m_axis_tlast = pkts_tlast_stored[3];
+			m_axis_tvalid = 1;
+
+			if (m_axis_tready) begin
+				if (pkts_tlast_stored[3]) begin
+					state_next = WAIT_TILL_PARSE_DONE;
+				end
+				else begin
 					state_next = FLUSH_PKT;
 				end
 			end
 		end
 		FLUSH_PKT: begin
 			if (!pkt_fifo_empty) begin
+				m_axis_tvalid = tdata_fifo;
+				m_axis_tuser = tuser_fifo;
+				m_axis_tkeep = tkeep_fifo;
+				m_axis_tlast = tlast_fifo;
 				m_axis_tvalid = 1;
 				if(m_axis_tready) begin
 					pkt_fifo_rd_en = 1;
@@ -164,10 +418,41 @@ end
 always @(posedge clk) begin
 	if (~aresetn) begin
 		state <= WAIT_TILL_PARSE_DONE;
+
+		pkts_tdata_stored <= 0;
+		pkts_tuser_stored <= 0;
+		pkts_tkeep_stored <= 0;
+		pkts_tlast_stored <= 0;
 	end
 	else begin
 		state <= state_next;
+
+		pkts_tdata_stored <= pkts_tdata_stored_r;
+		pkts_tuser_stored <= pkts_tuser_stored_r;
+		pkts_tkeep_stored <= pkts_tkeep_stored_r;
+		pkts_tlast_stored <= pkts_tlast_stored_r;
 	end
 end
+
+parse_act_ram_ip #(
+	.C_INIT_FILE_NAME	("./parse_act_ram_init_file.mif"),
+	.C_LOAD_INIT_FILE	(1)
+)
+parse_act_ram
+(
+	// write port
+	.clka		(clk),
+	.addra		(),
+	.dina		(),
+	.ena		(),
+	.wea		(),
+
+	//
+	.clkb		(clk),
+	.addrb		(vlan_id),
+	// .addrb		(4'b10),
+	.doutb		(bram_out),
+	.enb		(1'b1) // always set to 1
+);
 
 endmodule
