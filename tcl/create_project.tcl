@@ -159,6 +159,10 @@ add_files [glob TProj.src/*.v]
 # add_files [glob TProj.src/*.vhd]
 add_files [glob TProj.src/*.coe]
 add_files [glob TProj.src/*.mif]
+read_verilog TProj.src/action_engine/action_engine.v
+read_verilog TProj.src/key_extract/key_extract.v
+read_verilog TProj.src/lookup/lookup_engine.v
+
 add_files [glob TProj.src/input_files/*.axi]
 # generic_bit.xdc, nf_sume_general.xdc, nf_sume_10g.xdc
 add_files -fileset constrs_1 [glob TProj.src/*.xdc]

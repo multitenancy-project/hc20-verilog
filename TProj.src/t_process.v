@@ -112,6 +112,32 @@ wire [PKT_VEC_WIDTH-1:0]			phv_fifo_out_w;
 //
 wire								phv_valid;
 
+wire								stg0_phv_in_valid;
+wire [PKT_VEC_WIDTH-1:0]			stg0_phv_in;
+wire [PKT_VEC_WIDTH-1:0]			phv_fifo;
+reg									phv_rd_en;
+wire								phv_empty;
+// stage-related
+wire [PKT_VEC_WIDTH-1:0]			stg0_phv_out;
+wire								stg0_phv_out_valid;
+wire								stg0_phv_out_valid_w;
+reg									stg0_phv_out_valid_r;
+wire [PKT_VEC_WIDTH-1:0]			stg1_phv_out;
+wire								stg1_phv_out_valid;
+wire								stg1_phv_out_valid_w;
+reg									stg1_phv_out_valid_r;
+wire [PKT_VEC_WIDTH-1:0]			stg2_phv_out;
+wire								stg2_phv_out_valid;
+wire								stg2_phv_out_valid_w;
+reg									stg2_phv_out_valid_r;
+wire [PKT_VEC_WIDTH-1:0]			stg3_phv_out;
+wire								stg3_phv_out_valid;
+wire								stg3_phv_out_valid_w;
+reg									stg3_phv_out_valid_r;
+wire [PKT_VEC_WIDTH-1:0]			stg4_phv_out;
+wire								stg4_phv_out_valid;
+wire								stg4_phv_out_valid_w;
+reg									stg4_phv_out_valid_r;
 /*=================================================*/
 assign s_axis_tready = !pkt_fifo_nearly_full;
 
@@ -168,8 +194,6 @@ phv_parser
 	.parser_valid	(phv_valid),
 	.pkt_hdr_vec	(phv_fifo_in)
 );
-
-
 
 //=====================================deparser part
 localparam WAIT_TILL_PARSE_DONE = 0; 
