@@ -11,6 +11,61 @@
 `define PROT_TCP		8'h06
 `define PROT_UDP		8'h11
 
+`define STATE_PARSE_IDX_CASE_BYTES(idx, bit_size, ed_state, bytes) \
+	STATE_PARSE_``idx``_``bit_size : begin \
+		case(parse_action[(idx)][3:1]) \
+			0 : begin \
+				val_``bytes``B[0] = w_pkts[(parse_action[(idx)][12:6])*8 +:16]; \
+			end \
+			1 : begin \
+				val_``bytes``B[1] = w_pkts[(parse_action[(idx)][12:6])*8 +:16]; \
+			end \
+			2 : begin \
+				val_``bytes``B[2] = w_pkts[(parse_action[(idx)][12:6])*8 +:16]; \
+			end \
+			3 : begin \
+				val_``bytes``B[3] = w_pkts[(parse_action[(idx)][12:6])*8 +:16]; \
+			end \
+			4 : begin \
+				val_``bytes``B[4] = w_pkts[(parse_action[(idx)][12:6])*8 +:16]; \
+			end \
+			5 : begin \
+				val_``bytes``B[5] = w_pkts[(parse_action[(idx)][12:6])*8 +:16]; \
+			end \
+			6 : begin \
+				val_``bytes``B[6] = w_pkts[(parse_action[(idx)][12:6])*8 +:16]; \
+			end \
+			7 : begin \
+				val_``bytes``B[7] = w_pkts[(parse_action[(idx)][12:6])*8 +:16]; \
+			end \
+			default : begin \
+			end \
+		endcase \
+		state_next = ed_state; \
+	end \
+
+`define STATE_PARSE_DATA_IDX(idx, ed_state) \
+	STATE_PARSE_``idx: begin \
+		if (parse_action[(idx)][0] == 1'b1) begin \
+			case(parse_action[(idx)][5:4]) \
+				1 : begin \
+					state_next = STATE_PARSE_``idx``_16; \
+				end \
+				2 : begin \
+					state_next = STATE_PARSE_``idx``_32; \
+				end \
+				3 : begin \
+					state_next = STATE_PARSE_``idx``_48; \
+				end \
+				default : begin \
+				end \
+			endcase \
+		end \
+		else begin \
+			state_next = (ed_state); \
+		end \
+	end \
+
 module packet_header_parser #(
 	parameter C_S_AXIS_DATA_WIDTH = 256,
 	parameter C_S_AXIS_TUSER_WIDTH = 128,
@@ -105,9 +160,20 @@ assign w_pkts = {pkts[3], pkts[2], pkts[1], pkts[0]};
 
 
 
-localparam WAIT_FOR_PKTS=0, START_PARSING=1, WAIT_BRAM_OUT_1=2, WAIT_BRAM_OUT_2=3;
+localparam WAIT_FOR_PKTS=0, START_PARSING=1, WAIT_BRAM_OUT_1=2;
+localparam STATE_PARSE_0=3, STATE_PARSE_0_16=4, STATE_PARSE_0_32=5, STATE_PARSE_0_48=6;
+localparam STATE_PARSE_1=7, STATE_PARSE_1_16=8, STATE_PARSE_1_32=9, STATE_PARSE_1_48=10;
+localparam STATE_PARSE_2=11, STATE_PARSE_2_16=12, STATE_PARSE_2_32=13, STATE_PARSE_2_48=14;
+localparam STATE_PARSE_3=15, STATE_PARSE_3_16=16, STATE_PARSE_3_32=17, STATE_PARSE_3_48=18;
+localparam STATE_PARSE_4=19, STATE_PARSE_4_16=20, STATE_PARSE_4_32=21, STATE_PARSE_4_48=22;
+localparam STATE_PARSE_5=23, STATE_PARSE_5_16=24, STATE_PARSE_5_32=25, STATE_PARSE_5_48=26;
+localparam STATE_PARSE_6=27, STATE_PARSE_6_16=28, STATE_PARSE_6_32=29, STATE_PARSE_6_48=30;
+localparam STATE_PARSE_7=31, STATE_PARSE_7_16=32, STATE_PARSE_7_32=33, STATE_PARSE_7_48=34;
+localparam STATE_PARSE_8=35, STATE_PARSE_8_16=36, STATE_PARSE_8_32=37, STATE_PARSE_8_48=38;
+localparam STATE_PARSE_9=39, STATE_PARSE_9_16=40, STATE_PARSE_9_32=41, STATE_PARSE_9_48=42;
+localparam WAIT_BRAM_OUT_2=43;
 wire [259:0] bram_out;
-reg [2:0] state, state_next;
+reg [5:0] state, state_next;
 
 // common headers
 reg [3:0] vlan_id; // vlan id
@@ -120,16 +186,16 @@ reg [7:0] ip_prot;
 wire [15:0] parse_action [0:9];		// we have 10 parse action
 wire [19:0] cond_action [0:4];		// we have 5 conditonal 
 
-assign parse_action[0] = bram_out[100+:16];
-assign parse_action[1] = bram_out[116+:16];
-assign parse_action[2] = bram_out[132+:16];
-assign parse_action[3] = bram_out[148+:16];
-assign parse_action[4] = bram_out[164+:16];
-assign parse_action[5] = bram_out[180+:16];
-assign parse_action[6] = bram_out[196+:16];
-assign parse_action[7] = bram_out[212+:16];
-assign parse_action[8] = bram_out[228+:16];
-assign parse_action[9] = bram_out[244+:16];
+assign parse_action[9] = bram_out[100+:16];
+assign parse_action[8] = bram_out[116+:16];
+assign parse_action[7] = bram_out[132+:16];
+assign parse_action[6] = bram_out[148+:16];
+assign parse_action[5] = bram_out[164+:16];
+assign parse_action[4] = bram_out[180+:16];
+assign parse_action[3] = bram_out[196+:16];
+assign parse_action[2] = bram_out[212+:16];
+assign parse_action[1] = bram_out[228+:16];
+assign parse_action[0] = bram_out[244+:16];
 
 assign cond_action[0] = bram_out[0+:20];
 assign cond_action[1] = bram_out[20+:20];

@@ -1,31 +1,33 @@
 `timescale 1ns / 1ps
 
-`define STATE_REASS_IDX_BITSIZE(idx, bit_size, ed_state) \
+`define STATE_REASS_IDX_BITSIZE(idx, bit_size, ed_state, bytes) \
 	STATE_REASS_``idx``_``bit_size: begin \
 		case(parse_action[idx][3:1]) \
-			0 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*0)+:(bit_size)]; \
-			end \
-			1 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*1)+:(bit_size)]; \
-			end \
-			2 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*2)+:(bit_size)]; \
-			end \
-			3 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*3)+:(bit_size)]; \
-			end \
-			4 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*4)+:(bit_size)]; \
-			end \
-			5 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*5)+:(bit_size)]; \
+			7 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*0)+:(bit_size)]; \
 			end \
 			6 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*6)+:(bit_size)]; \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*1)+:(bit_size)]; \
 			end \
-			7 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_4B_START_POS+(bit_size)*7)+:(bit_size)]; \
+			5 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*2)+:(bit_size)]; \
+			end \
+			4 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*3)+:(bit_size)]; \
+			end \
+			3 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*4)+:(bit_size)]; \
+			end \
+			2 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*5)+:(bit_size)]; \
+			end \
+			1 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*6)+:(bit_size)]; \
+			end \
+			0 : begin \
+				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*7)+:(bit_size)]; \
+			end \
+			default : begin \
 			end \
 		endcase \
 		state_next = (ed_state); \
@@ -111,10 +113,9 @@ wire [PKT_VEC_WIDTH-1:0]			phv_fifo_in;
 wire [PKT_VEC_WIDTH-1:0]			phv_fifo_out_w;
 //
 wire								phv_valid;
-
+// 
 wire								stg0_phv_in_valid;
 wire [PKT_VEC_WIDTH-1:0]			stg0_phv_in;
-wire [PKT_VEC_WIDTH-1:0]			phv_fifo;
 reg									phv_rd_en;
 wire								phv_empty;
 // stage-related
@@ -140,6 +141,8 @@ wire								stg4_phv_out_valid_w;
 reg									stg4_phv_out_valid_r;
 /*=================================================*/
 assign s_axis_tready = !pkt_fifo_nearly_full;
+
+
 
 
 fallthrough_small_fifo #(
@@ -235,16 +238,16 @@ wire [6:0] parse_action_ind [0:9];
 
 wire [15:0] parse_action [0:9];		// we have 10 parse action
 
-assign parse_action[0] = bram_out[100+:16];
-assign parse_action[1] = bram_out[116+:16];
-assign parse_action[2] = bram_out[132+:16];
-assign parse_action[3] = bram_out[148+:16];
-assign parse_action[4] = bram_out[164+:16];
-assign parse_action[5] = bram_out[180+:16];
-assign parse_action[6] = bram_out[196+:16];
-assign parse_action[7] = bram_out[212+:16];
-assign parse_action[8] = bram_out[228+:16];
-assign parse_action[9] = bram_out[244+:16];
+assign parse_action[9] = bram_out[100+:16];
+assign parse_action[8] = bram_out[116+:16];
+assign parse_action[7] = bram_out[132+:16];
+assign parse_action[6] = bram_out[148+:16];
+assign parse_action[5] = bram_out[164+:16];
+assign parse_action[4] = bram_out[180+:16];
+assign parse_action[3] = bram_out[196+:16];
+assign parse_action[2] = bram_out[212+:16];
+assign parse_action[1] = bram_out[228+:16];
+assign parse_action[0] = bram_out[244+:16];
 
 assign parse_action_ind[0] = parse_action[0][12:6];
 assign parse_action_ind[1] = parse_action[1][12:6];
@@ -284,7 +287,8 @@ always @(*) begin
 		WAIT_TILL_PARSE_DONE: begin // later will be modifed to PROCESSING done
 			if (!pkt_fifo_empty && !phv_fifo_empty) begin // both pkt and phv fifo are not empty
 				pkts_tdata_stored_r[0+:C_S_AXIS_DATA_WIDTH] = tdata_fifo;
-				pkts_tuser_stored_r[0+:C_S_AXIS_TUSER_WIDTH] = tuser_fifo;
+				// pkts_tuser_stored_r[0+:C_S_AXIS_TUSER_WIDTH] = tuser_fifo;
+				pkts_tuser_stored_r[0+:C_S_AXIS_TUSER_WIDTH] = phv_fifo_out_w[0+:128];
 				pkts_tkeep_stored_r[0+:(C_S_AXIS_DATA_WIDTH/8)] = tkeep_fifo;
 				pkts_tlast_stored_r[0] = tlast_fifo;
 				
@@ -333,17 +337,17 @@ always @(*) begin
 		end
 
 		`STATE_REASSEMBLE_DATA(0, REASSEMBLE_DATA_1)
-		`STATE_REASS_IDX_BITSIZE(0, 16, REASSEMBLE_DATA_1)
-		`STATE_REASS_IDX_BITSIZE(0, 32, REASSEMBLE_DATA_1)
-		`STATE_REASS_IDX_BITSIZE(0, 48, REASSEMBLE_DATA_1)
+		`STATE_REASS_IDX_BITSIZE(0, 16, REASSEMBLE_DATA_1, 2)
+		`STATE_REASS_IDX_BITSIZE(0, 32, REASSEMBLE_DATA_1, 4)
+		`STATE_REASS_IDX_BITSIZE(0, 48, REASSEMBLE_DATA_1, 6)
 		`STATE_REASSEMBLE_DATA(1, REASSEMBLE_DATA_2)
-		`STATE_REASS_IDX_BITSIZE(1, 16, REASSEMBLE_DATA_1)
-		`STATE_REASS_IDX_BITSIZE(1, 32, REASSEMBLE_DATA_1)
-		`STATE_REASS_IDX_BITSIZE(1, 48, REASSEMBLE_DATA_1)
+		`STATE_REASS_IDX_BITSIZE(1, 16, REASSEMBLE_DATA_2, 2)
+		`STATE_REASS_IDX_BITSIZE(1, 32, REASSEMBLE_DATA_2, 4)
+		`STATE_REASS_IDX_BITSIZE(1, 48, REASSEMBLE_DATA_2, 6)
 		`STATE_REASSEMBLE_DATA(2, FLUSH_PKT_0)
-		`STATE_REASS_IDX_BITSIZE(2, 16, FLUSH_PKT_0)
-		`STATE_REASS_IDX_BITSIZE(2, 32, FLUSH_PKT_0)
-		`STATE_REASS_IDX_BITSIZE(2, 48, FLUSH_PKT_0)
+		`STATE_REASS_IDX_BITSIZE(2, 16, FLUSH_PKT_0, 2)
+		`STATE_REASS_IDX_BITSIZE(2, 32, FLUSH_PKT_0, 4)
+		`STATE_REASS_IDX_BITSIZE(2, 48, FLUSH_PKT_0, 6)
 
 		// `STATE_REASSEMBLE_DATA(2, REASSEMBLE_DATA_2, REASSEMBLE_DATA_3)
 		// `STATE_REASSEMBLE_DATA(3, REASSEMBLE_DATA_3, REASSEMBLE_DATA_4)
@@ -355,6 +359,7 @@ always @(*) begin
 		// `STATE_REASSEMBLE_DATA_LAST(9, REASSEMBLE_DATA_9, FLUSH_PKT_0)
 
 		FLUSH_PKT_0: begin
+			phv_fifo_rd_en = 1;
 			m_axis_tdata = pkts_tdata_stored[(C_S_AXIS_DATA_WIDTH*0)+:C_S_AXIS_DATA_WIDTH];
 			m_axis_tuser = pkts_tuser_stored[(C_S_AXIS_TUSER_WIDTH*0)+:C_S_AXIS_TUSER_WIDTH];
 			m_axis_tkeep = pkts_tkeep_stored[(C_S_AXIS_DATA_WIDTH/8*0)+:(C_S_AXIS_DATA_WIDTH/8)];
@@ -478,5 +483,19 @@ parse_act_ram
 	.doutb		(bram_out),
 	.enb		(1'b1) // always set to 1
 );
+
+ila_0 
+debug
+(
+	.clk		(clk),
+
+
+	.probe0		(state),
+	.probe1		(m_axis_tuser),
+	.probe2		(m_axis_tlast)
+);
+
+// signals for debug
+// [END]
 
 endmodule
