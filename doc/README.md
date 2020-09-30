@@ -33,7 +33,8 @@
     > * `[127:0]` is copied from NetFPGA's `tuser` data.
     > * `[128]` is the discard flag where 1 means drop packet.
     > * `[255:250]` represents the next match table the PHV is going to be matched with.
-    > * `[249:129]` is reserved for other usage.
+    > * `[140:129]` is the vlan id.
+    > * `[249:141]` is reserved for other usage.
 
 ---
 
