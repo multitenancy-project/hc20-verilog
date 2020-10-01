@@ -84,6 +84,18 @@ set_property generate_synth_checkpoint false [get_files parse_act_ram_ip.xci]
 reset_target all [get_ips parse_act_ram_ip]
 generate_target all [get_ips parse_act_ram_ip]
 
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name blk_mem_gen_0
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../TProj.src/alu_1.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {32} CONFIG.Read_Width_A {32} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {32} CONFIG.Read_Width_B {32} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_0]
+set_property generate_synth_checkpoint false [get_files blk_mem_gen_0.xci]
+reset_target all [get_ips blk_mem_gen_0]
+generate_target all [get_ips blk_mem_gen_0]
+
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name blk_mem_gen_1
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../TProj.src/lkup.coe} CONFIG.Write_Depth_A {16} CONFIG.Write_Width_A {625} CONFIG.Read_Width_A {625} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {625} CONFIG.Read_Width_B {625} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_1]
+set_property generate_synth_checkpoint false [get_files blk_mem_gen_1.xci]
+reset_target all [get_ips blk_mem_gen_1]
+generate_target all [get_ips blk_mem_gen_1]
+
 # create_ip -name axi_clock_converter -module_name axi_clock_converter_0
 # set_property -dict [list CONFIG.PROTOCOL {AXI4LITE} CONFIG.DATA_WIDTH {32} CONFIG.ID_WIDTH {0} CONFIG.AWUSER_WIDTH {0} CONFIG.ARUSER_WIDTH {0} CONFIG.RUSER_WIDTH {0} CONFIG.WUSER_WIDTH {0} CONFIG.BUSER_WIDTH {0}] [get_ips axi_clock_converter_0]
 # 
@@ -156,12 +168,17 @@ generate_target all [get_ips axi_sim_transactor_ip]
 update_ip_catalog
 
 add_files [glob TProj.src/*.v]
+add_files [glob TProj.src/*.v]
+add_files [glob TProj.src/rmtv2/*.v]
+add_files [glob TProj.src/rmtv2/action/*.v]
+add_files [glob TProj.src/rmtv2/extract/*.v]
+add_files [glob TProj.src/rmtv2/lookup/*.v]
 # add_files [glob TProj.src/*.vhd]
 add_files [glob TProj.src/*.coe]
 add_files [glob TProj.src/*.mif]
-read_verilog TProj.src/action_engine/action_engine.v
-read_verilog TProj.src/key_extract/key_extract.v
-read_verilog TProj.src/lookup/lookup_engine.v
+# read_verilog TProj.src/action_engine/action_engine.v
+# read_verilog TProj.src/key_extract/key_extract.v
+# read_verilog TProj.src/lookup/lookup_engine.v
 
 add_files [glob TProj.src/input_files/*.axi]
 # generic_bit.xdc, nf_sume_general.xdc, nf_sume_10g.xdc
