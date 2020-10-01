@@ -42,21 +42,45 @@ wire [PHV_LEN-1:0]           lookup2action_phv;
 
 //
 
-key_extract #(
-	.STAGE(STAGE),
+// key_extract #(
+// 	.STAGE(STAGE),
+//     .PHV_LEN(),
+//     .KEY_LEN(),
+//     .KEY_OFF()
+// ) key_extract(
+//     .clk(axis_clk),
+//     .rst_n(aresetn),
+
+//     //output from parser
+//     .phv_in(phv_in),
+//     .phv_valid_in(phv_in_valid),
+//     //key for lookup table
+//     .key_offset_in(key_offset_in),
+//     .key_offset_valid_in(key_offset_valid_in),
+//     .phv_out(key2lookup_phv),
+//     .phv_valid_out(key2lookup_key_valid),
+//     .key_out(key2lookup_key),
+//     .key_valid_out(key2lookup_key_valid)
+// );
+
+key_extract_2 #(
+    .STAGE(STAGE),
     .PHV_LEN(),
     .KEY_LEN(),
-    .KEY_OFF()
-) key_extract(
+    .KEY_OFF(),
+    .AXIL_WIDTH(),
+    .KEY_OFF_ADDR_WIDTH()    
+)key_extract(
     .clk(axis_clk),
     .rst_n(aresetn),
-
-    //output from parser
     .phv_in(phv_in),
-    .phv_valid_in(phv_in_valid),
-    //key for lookup table
-    .key_offset_in(key_offset_in),
-    .key_offset_valid_in(key_offset_valid_in),
+    .phv_valid_in(phv_valid_in),
+
+    //signals used to config key extract offset
+    .key_off_entry_in(),
+    .key_off_entry_in_valid(),
+    .key_off_entry_addr(),
+
     .phv_out(key2lookup_phv),
     .phv_valid_out(key2lookup_key_valid),
     .key_out(key2lookup_key),

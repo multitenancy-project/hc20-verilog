@@ -1,7 +1,7 @@
 /****************************************************/
 //	Module name: key_extract.v
 //	Authority @ yangxiangrui (yangxiangrui11@nudt.edu.cn)
-//	Last edited time: 2020/09/24
+//	Last edited time: 2020/10/01
 //	Function outline: extract 256b+5b key out of PHV
 //  Note: Used only for multi-tenants scenario
 /****************************************************/
@@ -176,7 +176,6 @@ always @(posedge clk or negedge rst_n) begin
         phv_out <= 0;
         phv_valid_out <= 1'b0;
     end
-    //TODO rewrite this part to delay 2 cycles because we added a RAM here!
     else begin
         //output PHV
         phv_out_delay <= phv_in;
@@ -186,12 +185,12 @@ always @(posedge clk or negedge rst_n) begin
 
         //extract keys according to key_off
         if(phv_valid_out_delay) begin
-            key_out[KEY_LEN-1                                     -: width_6B] = cont_6B[key_offset[KEY_OFF-1     -: 3]];
-            key_out[KEY_LEN-1- 1*width_6B                         -: width_6B] = cont_6B[key_offset[KEY_OFF-1-1*3 -: 3]];
-            key_out[KEY_LEN-1- 2*width_6B                         -: width_4B] = cont_4B[key_offset[KEY_OFF-1-2*3 -: 3]];
-            key_out[KEY_LEN-1- 2*width_6B - 1*width_4B            -: width_4B] = cont_4B[key_offset[KEY_OFF-1-3*3 -: 3]];
-            key_out[KEY_LEN-1- 2*width_6B - 2*width_4B            -: width_2B] = cont_2B[key_offset[KEY_OFF-1-4*3 -: 3]];
-            key_out[KEY_LEN-1- 2*width_6B - 2*width_4B - width_2B -: width_2B] = cont_2B[key_offset[KEY_OFF-1-5*3 -: 3]];
+            key_out[KEY_LEN-1                                     -: width_6B] <= cont_6B[key_offset[KEY_OFF-1     -: 3]];
+            key_out[KEY_LEN-1- 1*width_6B                         -: width_6B] <= cont_6B[key_offset[KEY_OFF-1-1*3 -: 3]];
+            key_out[KEY_LEN-1- 2*width_6B                         -: width_4B] <= cont_4B[key_offset[KEY_OFF-1-2*3 -: 3]];
+            key_out[KEY_LEN-1- 2*width_6B - 1*width_4B            -: width_4B] <= cont_4B[key_offset[KEY_OFF-1-3*3 -: 3]];
+            key_out[KEY_LEN-1- 2*width_6B - 2*width_4B            -: width_2B] <= cont_2B[key_offset[KEY_OFF-1-4*3 -: 3]];
+            key_out[KEY_LEN-1- 2*width_6B - 2*width_4B - width_2B -: width_2B] <= cont_2B[key_offset[KEY_OFF-1-5*3 -: 3]];
             //deal with comparators
             case(com_op[STAGE][19:18])
                 2'b00: begin
