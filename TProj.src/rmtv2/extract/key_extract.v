@@ -3,6 +3,7 @@
 //	Authority @ yangxiangrui (yangxiangrui11@nudt.edu.cn)
 //	Last edited time: 2020/09/24
 //	Function outline: extract 256b+5b key out of PHV
+//  Note: Used only for single-tenant scenario
 /****************************************************/
 
 `timescale 1ns / 1ps
