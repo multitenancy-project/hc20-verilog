@@ -99,7 +99,7 @@ always @(posedge clk or negedge rst_n) begin
 
             //wait a cycle for action to come out;
             WAIT2_S: begin
-                if(match_addr[1] == match_addr[0]) begin
+                if(match_addr[1] == match_addr[0]) begin // Tao: what's this?
                     lookup_state <= IDLE_S;
                 end
 
@@ -131,7 +131,8 @@ end
 cam_top # ( 
 	.C_DEPTH			(16),
 	.C_WIDTH			(256),
-	.C_MEM_INIT			(0)
+	.C_MEM_INIT			(1),
+	.C_MEM_INIT_FILE	("./cam_init_file.mif")
 	//.C_MEM_INIT_FILE	(F:/NYC/project_1/cam_init_file.mif) //currently there is no mem_init
 )
 //TODO remember to change it back.
@@ -139,7 +140,8 @@ cam_0
 (
 	.CLK				(clk),
 	.CMP_DIN			({59'b0,extract_key}),
-	.CMP_DATA_MASK		(256'h0),
+	// .CMP_DATA_MASK		(256'h0),
+	.CMP_DATA_MASK		(),
 	.BUSY				(busy),
 	.MATCH				(match),
 	.MATCH_ADDR			(match_addr),
@@ -157,18 +159,24 @@ cam_0
 
 
 //ram for action
-//blk_mem_gen_1 act_ram_625w_16d
-blk_mem_gen_1 act_ram_625w_16d
+blk_mem_gen_1 #(
+	.C_INIT_FILE_NAME	("./lkup.coe"),
+	.C_LOAD_INIT_FILE	(1)
+)
+act_ram_625w_16d
 (
     .addra(action_addr),
     .clka(clk),
     .dina(action_data_in),
     .ena(1'b1),
     .wea(action_en),
+
     .addrb(match_addr),
+    // .addrb(4'h2),
     .clkb(clk),
     .doutb(action_wire),
-    .enb(match)
+    // .enb(match)
+    .enb(1'b1)
 );
 
 

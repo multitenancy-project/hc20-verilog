@@ -111,13 +111,12 @@ wire								phv_fifo_nearly_full;
 wire								phv_fifo_empty;
 wire [PKT_VEC_WIDTH-1:0]			phv_fifo_in;
 wire [PKT_VEC_WIDTH-1:0]			phv_fifo_out_w;
-//
 wire								phv_valid;
 // 
 wire								stg0_phv_in_valid;
+wire								stg0_phv_in_valid_w;
+reg									stg0_phv_in_valid_r;
 wire [PKT_VEC_WIDTH-1:0]			stg0_phv_in;
-reg									phv_rd_en;
-wire								phv_empty;
 // stage-related
 wire [PKT_VEC_WIDTH-1:0]			stg0_phv_out;
 wire								stg0_phv_out_valid;
@@ -169,10 +168,14 @@ fallthrough_small_fifo #(
 )
 phv_fifo
 (
-	.din			(phv_fifo_in),
-	.wr_en			(phv_valid),
+	// .din			(phv_fifo_in),
+	// .wr_en			(phv_valid),
+	.din			(stg4_phv_out),
+	.wr_en			(stg4_phv_out_valid_w),
+
 	.rd_en			(phv_fifo_rd_en),
 	.dout			(phv_fifo_out_w),
+
 	.full			(),
 	.prog_full		(),
 	.nearly_full	(phv_fifo_nearly_full),
@@ -194,26 +197,117 @@ phv_parser
 	.s_axis_tlast	(s_axis_tlast),
 
 	// output
-	.parser_valid	(phv_valid),
-	.pkt_hdr_vec	(phv_fifo_in)
+	// .parser_valid	(phv_valid),
+	// .pkt_hdr_vec	(phv_fifo_in)
+	.parser_valid	(stg0_phv_in_valid),
+	.pkt_hdr_vec	(stg0_phv_in)
 );
 
 stage #(
 	.STAGE(0)
 )
-stage 
+stage0
 (
 	.axis_clk				(clk),
     .aresetn				(aresetn),
 
-    .phv_in					(),
-    .phv_in_valid			(),
-    .phv_out				(),
-    .phv_out_valid			(),
-
-    .key_offset_in			(),
-    .key_offset_valid_in	()
+	// input
+    .phv_in					(stg0_phv_in),
+    .phv_in_valid			(stg0_phv_in_valid_w),
+	// output
+    .phv_out				(stg0_phv_out),
+    .phv_out_valid			(stg0_phv_out_valid)
 );
+
+stage #(
+	.STAGE(1)
+)
+stage1
+(
+	.axis_clk				(clk),
+    .aresetn				(aresetn),
+
+	// input
+    .phv_in					(stg0_phv_out),
+    .phv_in_valid			(stg0_phv_out_valid_w),
+	// output
+    .phv_out				(stg1_phv_out),
+    .phv_out_valid			(stg1_phv_out_valid)
+);
+
+stage #(
+	.STAGE(2)
+)
+stage2
+(
+	.axis_clk				(clk),
+    .aresetn				(aresetn),
+
+	// input
+    .phv_in					(stg1_phv_out),
+    .phv_in_valid			(stg1_phv_out_valid_w),
+	// output
+    .phv_out				(stg2_phv_out),
+    .phv_out_valid			(stg2_phv_out_valid)
+);
+
+stage #(
+	.STAGE(3)
+)
+stage3
+(
+	.axis_clk				(clk),
+    .aresetn				(aresetn),
+
+	// input
+    .phv_in					(stg2_phv_out),
+    .phv_in_valid			(stg2_phv_out_valid_w),
+	// output
+    .phv_out				(stg3_phv_out),
+    .phv_out_valid			(stg3_phv_out_valid)
+);
+
+stage #(
+	.STAGE(4)
+)
+stage4
+(
+	.axis_clk				(clk),
+    .aresetn				(aresetn),
+
+	// input
+    .phv_in					(stg3_phv_out),
+    .phv_in_valid			(stg3_phv_out_valid_w),
+	// output
+    .phv_out				(stg4_phv_out),
+    .phv_out_valid			(stg4_phv_out_valid)
+);
+
+always @(posedge clk) begin
+	if (~aresetn) begin
+		stg0_phv_in_valid_r <= 0;
+		stg0_phv_out_valid_r <= 0;
+		stg1_phv_out_valid_r <= 0;
+		stg2_phv_out_valid_r <= 0;
+		stg3_phv_out_valid_r <= 0;
+		stg4_phv_out_valid_r <= 0;
+	end
+	else begin
+		stg0_phv_in_valid_r <= stg0_phv_in_valid;
+		stg0_phv_out_valid_r <= stg0_phv_out_valid;
+		stg1_phv_out_valid_r <= stg1_phv_out_valid;
+		stg2_phv_out_valid_r <= stg2_phv_out_valid;
+		stg3_phv_out_valid_r <= stg3_phv_out_valid;
+		stg4_phv_out_valid_r <= stg4_phv_out_valid;
+	end
+end
+
+assign stg0_phv_in_valid_w = stg0_phv_in_valid & ~stg0_phv_in_valid_r;
+assign stg0_phv_out_valid_w = stg0_phv_out_valid & ~stg0_phv_out_valid_r;
+assign stg1_phv_out_valid_w = stg1_phv_out_valid & ~stg1_phv_out_valid_r;
+assign stg2_phv_out_valid_w = stg2_phv_out_valid & ~stg2_phv_out_valid_r;
+assign stg3_phv_out_valid_w = stg3_phv_out_valid & ~stg3_phv_out_valid_r;
+assign stg4_phv_out_valid_w = stg4_phv_out_valid & ~stg4_phv_out_valid_r;
 
 //=====================================deparser part
 localparam WAIT_TILL_PARSE_DONE = 0; 
