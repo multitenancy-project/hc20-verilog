@@ -99,10 +99,6 @@ always @(posedge clk or negedge rst_n) begin
 
             //wait a cycle for action to come out;
             WAIT2_S: begin
-                if(match_addr[1] == match_addr[0]) begin // Tao: what's this?
-                    lookup_state <= IDLE_S;
-                end
-
                 lookup_state <= TRANS_S;
             end
 
