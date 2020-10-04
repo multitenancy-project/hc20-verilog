@@ -53,7 +53,7 @@ reg  [7:0]             com_op_1;
 reg  [7:0]             com_op_2;
 
 //vlan_id extracted from metadata
-wire  [3:0]             vlan_id; 
+wire  [11:0]             vlan_id; 
 
 wire [KEY_OFF-1:0]      key_offset;
 
@@ -221,7 +221,11 @@ end
 
 //ram for key extract
 //blk_mem_gen_2 act_ram_18w_16d
-blk_mem_gen_2 act_ram_18w_16d
+blk_mem_gen_2 #(
+	.C_INIT_FILE_NAME	("./key_extract.mif"),
+	.C_LOAD_INIT_FILE	(1)
+)
+act_ram_18w_16d
 (
     .addra(key_off_entry_addr),
     .clka(clk),
@@ -230,7 +234,7 @@ blk_mem_gen_2 act_ram_18w_16d
     .wea(key_off_entry_in_valid),
 
     //only [3:0] is needed for addressing
-    .addrb(vlan_id[3:0]),
+	.addrb(vlan_id[7:4]), // TODO: we may need to change this logic due to big/little endian
     .clkb(clk),
     .doutb(key_offset),
     .enb(1'b1)

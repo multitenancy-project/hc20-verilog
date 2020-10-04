@@ -57,7 +57,8 @@ generate_target all [get_ips nf_10g_interface_shared_ip]
 #Add a clock wizard
 create_ip -name clk_wiz -vendor xilinx.com -library ip -version 5.3 -module_name clk_wiz_ip
 # set_property -dict [list   CONFIG.NUM_OUT_CLKS {3} CONFIG.CLKOUT2_USED {true} CONFIG.CLKOUT3_USED {true} CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {156.250} CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {100.000} CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {100.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.RESET_PORT {resetn} ] [get_ips clk_wiz_ip]
-set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {200.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKFBOUT_MULT_F {5.000} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.MMCM_CLKOUT0_DIVIDE_F {5.000} CONFIG.RESET_PORT {resetn} CONFIG.CLKOUT1_JITTER {98.146} CONFIG.CLKOUT1_PHASE_ERROR {89.971}] [get_ips clk_wiz_ip]
+# set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {200.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKFBOUT_MULT_F {5.000} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.MMCM_CLKOUT0_DIVIDE_F {5.000} CONFIG.RESET_PORT {resetn} CONFIG.CLKOUT1_JITTER {98.146} CONFIG.CLKOUT1_PHASE_ERROR {89.971}] [get_ips clk_wiz_ip]
+set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {156.250} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.RESET_PORT {resetn} ] [get_ips clk_wiz_ip]
 set_property generate_synth_checkpoint false [get_files clk_wiz_ip.xci]
 reset_target all [get_ips clk_wiz_ip]
 generate_target all [get_ips clk_wiz_ip]
@@ -76,19 +77,30 @@ set_property generate_synth_checkpoint false [get_files identifier_ip.xci]
 reset_target all [get_ips identifier_ip]
 generate_target all [get_ips identifier_ip]
 
-#block mem
+#Add Parser Action RAM IP
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name parse_act_ram_ip
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../TProj.src/parse_act_ram_init_file.coe} CONFIG.Write_Width_A {260} CONFIG.Read_Width_A {260} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {260} CONFIG.Read_Width_B {260} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips parse_act_ram_ip]
+set_property generate_synth_checkpoint false [get_files parse_act_ram_ip.xci]
+reset_target all [get_ips parse_act_ram_ip]
+generate_target all [get_ips parse_act_ram_ip]
+
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name blk_mem_gen_0
-set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Write_Width_A {25} CONFIG.Read_Width_A {25} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {25} CONFIG.Read_Width_B {25} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_0]
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../TProj.src/alu_1.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {32} CONFIG.Read_Width_A {32} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {32} CONFIG.Read_Width_B {32} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_0]
 set_property generate_synth_checkpoint false [get_files blk_mem_gen_0.xci]
 reset_target all [get_ips blk_mem_gen_0]
 generate_target all [get_ips blk_mem_gen_0]
 
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name blk_mem_gen_1
-set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Write_Width_A {32} CONFIG.Write_Depth_A {32} CONFIG.Read_Width_A {32} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {32} CONFIG.Read_Width_B {32} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_1]
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../TProj.src/lkup.coe} CONFIG.Write_Depth_A {16} CONFIG.Write_Width_A {625} CONFIG.Read_Width_A {625} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {625} CONFIG.Read_Width_B {625} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_1]
 set_property generate_synth_checkpoint false [get_files blk_mem_gen_1.xci]
 reset_target all [get_ips blk_mem_gen_1]
 generate_target all [get_ips blk_mem_gen_1]
 
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name blk_mem_gen_2
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../TProj.src/key_extract.coe} CONFIG.Write_Depth_A {16} CONFIG.Write_Width_A {18} CONFIG.Read_Width_A {18} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {18} CONFIG.Read_Width_B {18} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_2]
+set_property generate_synth_checkpoint false [get_files blk_mem_gen_2.xci]
+reset_target all [get_ips blk_mem_gen_2]
+generate_target all [get_ips blk_mem_gen_2]
 
 # create_ip -name axi_clock_converter -module_name axi_clock_converter_0
 # set_property -dict [list CONFIG.PROTOCOL {AXI4LITE} CONFIG.DATA_WIDTH {32} CONFIG.ID_WIDTH {0} CONFIG.AWUSER_WIDTH {0} CONFIG.ARUSER_WIDTH {0} CONFIG.RUSER_WIDTH {0} CONFIG.WUSER_WIDTH {0} CONFIG.BUSER_WIDTH {0}] [get_ips axi_clock_converter_0]
@@ -100,8 +112,8 @@ generate_target all [get_ips blk_mem_gen_1]
 # create_ip -name axis_data_fifo -module_name axis_data_fifo_0
 # set_property -dict [list CONFIG.TDATA_NUM_BYTES {32} CONFIG.TUSER_WIDTH {128} CONFIG.HAS_TKEEP {1} CONFIG.HAS_TLAST {1}] [get_ips axis_data_fifo_0]
 # 
-read_vhdl -library cam  TProj.src/dmem.vhd
-read_vhdl -library cam  [glob TProj.src/cam*.vhd]
+read_vhdl -library cam  TProj.src/xilinx_cam/dmem.vhd
+read_vhdl -library cam  [glob TProj.src/xilinx_cam/cam*.vhd]
 
 
 #create ip for simulation
@@ -162,12 +174,17 @@ generate_target all [get_ips axi_sim_transactor_ip]
 update_ip_catalog
 
 add_files [glob TProj.src/*.v]
-add_files [glob TProj.src/*.vhd]
+add_files [glob TProj.src/*.v]
+add_files [glob TProj.src/rmtv2/*.v]
+add_files [glob TProj.src/rmtv2/action/*.v]
+add_files [glob TProj.src/rmtv2/extract/*.v]
+add_files [glob TProj.src/rmtv2/lookup/*.v]
+# add_files [glob TProj.src/*.vhd]
 add_files [glob TProj.src/*.coe]
 add_files [glob TProj.src/*.mif]
-read_verilog TProj.src/action_engine/action_engine.v
-read_verilog TProj.src/key_extract/key_extract.v
-read_verilog TProj.src/lookup/lookup_engine.v
+# read_verilog TProj.src/action_engine/action_engine.v
+# read_verilog TProj.src/key_extract/key_extract.v
+# read_verilog TProj.src/lookup/lookup_engine.v
 
 add_files [glob TProj.src/input_files/*.axi]
 # generic_bit.xdc, nf_sume_general.xdc, nf_sume_10g.xdc
