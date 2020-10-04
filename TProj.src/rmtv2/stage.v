@@ -21,11 +21,11 @@ module stage #(
     input  [PHV_LEN-1:0]         phv_in,
     input                        phv_in_valid,
     output [PHV_LEN-1:0]         phv_out,
-    output                       phv_out_valid,
+    output                       phv_out_valid
 
     //input for the key extractor RAM
-    input  [KEY_OFF-1:0]         key_offset_in,
-    input                        key_offset_valid_in
+    // input  [KEY_OFF-1:0]         key_offset_in,
+    // input                        key_offset_valid_in
 
     //TODO need control channel
 );
@@ -74,7 +74,7 @@ key_extract_2 #(
     .clk(axis_clk),
     .rst_n(aresetn),
     .phv_in(phv_in),
-    .phv_valid_in(phv_valid_in),
+    .phv_valid_in(phv_in_valid),
 
     //signals used to config key extract offset
     .key_off_entry_in(),
@@ -104,7 +104,7 @@ lookup_engine #(
     //output to the action engine
     .action(lookup2action_action),
     .action_valid(lookup2action_action_valid),
-    .pkt_hdr_vec_out(lookup2action_phv),
+    .phv_out(lookup2action_phv),
 
     //control channel
     .lookup_din(),
