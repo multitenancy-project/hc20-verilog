@@ -52,10 +52,11 @@ initial begin
     /*
         extract values from PHV
     */
-    phv_in <= {48'h111111111111,48'h222222222222,672'b0,356'b0};
+    phv_in <= {48'h111111111111,48'h222222222222,172'b1,100'hfffffffffffffffffffffffff,400'b0,356'b0};
     phv_valid_in <= 1'b1;
     //switch the con_6B_7 with con_6B_6
-    action_in <= {4'b0001, 5'd6, 5'd7, 11'b0, 600'b0};
+    // action_in <= {4'b0001, 5'd6, 5'd7, 11'b0, 600'b0};
+    action_in <= 625'b0;
     action_valid_in <= 1'b1;
     #(CYCLE)
     phv_in <= 1124'b0;

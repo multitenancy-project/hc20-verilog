@@ -66,6 +66,8 @@ always @(posedge clk or negedge rst_n) begin
         phv_reg <= 0;
         action_valid <= 1'b0;
         lookup_state <= IDLE_S;
+        action <= 0;
+        phv_out <= 0;
     end
 
     else begin

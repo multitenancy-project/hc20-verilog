@@ -84,6 +84,8 @@ always @(posedge clk or negedge rst_n) begin
         action_type <= 4'b0;
         store_en <= 1'b0;
         store_addr <= 5'b0;
+        container_reg <= 0;
+        store_din <= 0;
 
         alu_state <= IDLE_S;
     end

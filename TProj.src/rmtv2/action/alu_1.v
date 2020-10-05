@@ -59,6 +59,7 @@ always @(posedge clk or negedge rst_n) begin
     if(~rst_n) begin
         container_out_delay <= 0;
         container_out <= 0;
+        container_out_valid_delay <= 0;
     end
 
     else begin
