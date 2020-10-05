@@ -118,6 +118,7 @@ always @(posedge clk or negedge rst_n) begin
                             store_din <= operand_1_in;
                             alu_state <= OTHER_S;
                         end
+                        //load op (interact with RAM)
                         4'b1011: begin
                             //load_addr <= operand_2_in[4:0];
                             alu_state <= LOAD_S;
