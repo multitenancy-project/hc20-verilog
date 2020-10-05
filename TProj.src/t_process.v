@@ -170,8 +170,10 @@ phv_fifo
 (
 	// .din			(phv_fifo_in),
 	// .wr_en			(phv_valid),
-	.din			(stg4_phv_out),
-	.wr_en			(stg4_phv_out_valid_w),
+	// .din			(stg4_phv_out),
+	// .wr_en			(stg4_phv_out_valid_w),
+	.din			(stg0_phv_out),
+	.wr_en			(stg0_phv_out_valid_w),
 
 	.rd_en			(phv_fifo_rd_en),
 	.dout			(phv_fifo_out_w),
@@ -219,6 +221,7 @@ stage0
     .phv_out_valid			(stg0_phv_out_valid)
 );
 
+/*
 stage #(
 	.STAGE(1)
 )
@@ -281,7 +284,7 @@ stage4
 	// output
     .phv_out				(stg4_phv_out),
     .phv_out_valid			(stg4_phv_out_valid)
-);
+);*/
 
 always @(posedge clk) begin
 	if (~aresetn) begin
@@ -596,18 +599,17 @@ parse_act_ram
 	.enb		(1'b1) // always set to 1
 );
 
-// ila_0 
 // debug
-// (
-// 	.clk		(clk),
-// 
-// 
-// 	.probe0		(state),
-// 	.probe1		(m_axis_tuser),
-// 	.probe2		(m_axis_tlast)
-// );
+ila_0 
+debug(
+	.clk		(clk),
 
-// signals for debug
-// [END]
+
+	.probe0		(stg0_phv_in_valid_w),
+	.probe1		(stg0_phv_out_valid),
+	.probe2		(state),
+	.probe3		(stg0_phv_out[(PKT_VEC_WIDTH-1)-:96]),
+	.probe4		(stg0_phv_out[0+:32])
+);
 
 endmodule

@@ -179,4 +179,16 @@ alu_3 #(
     .comp_meta_data_valid_out()
 );
 
+
+ila_1
+debug (
+	.clk		(clk),
+
+	.probe0		(phv_valid_in),
+	.probe1		(phv_in[(PHV_LEN-1)-:48]),
+	.probe2		(phv_valid_out),
+	.probe3		(phv_out[(PHV_LEN-1)-:48]),
+	.probe4		(action_in[624-:25])
+);
+
 endmodule
