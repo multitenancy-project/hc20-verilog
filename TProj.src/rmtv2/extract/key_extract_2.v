@@ -175,6 +175,8 @@ always @(posedge clk or negedge rst_n) begin
         key_valid_out <= 1'b0;
         phv_out <= 0;
         phv_valid_out <= 1'b0;
+        phv_out_delay <= 0;
+        phv_valid_out_delay <= 1'b0;
     end
     else begin
         //output PHV
