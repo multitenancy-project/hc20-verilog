@@ -16,7 +16,7 @@ module alu_3 #(
     //the input data shall be metadata & com_ins
     input [META_LEN+COMP_LEN-1:0]       comp_meta_data_in,
     input                               comp_meta_data_valid_in,
-    input [ACTION_LEN-1:0]                 action_in,
+    input [ACTION_LEN-1:0]              action_in,
     input                               action_valid_in,
 
     //output is the modified metadata plus comp_ins

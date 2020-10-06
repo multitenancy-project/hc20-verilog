@@ -7,7 +7,7 @@
 
 `timescale 1ns / 1ps
 
-module lookup_engine#(
+module lookup_engine #(
     parameter STAGE = 0,
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
     parameter KEY_LEN = 48*2+32*2+16*2+5,
@@ -139,6 +139,7 @@ cam_0
 	.CLK				(clk),
 	.CMP_DIN			({59'b0,extract_key}),
 	// .CMP_DATA_MASK		(256'h0),
+	//.CMP_DATA_MASK		({256'b0}),
 	.CMP_DATA_MASK		(),
 	.BUSY				(busy),
 	.MATCH				(match),
@@ -158,8 +159,6 @@ cam_0
 
 //ram for action
 blk_mem_gen_1 #(
-	.C_INIT_FILE_NAME	("./lkup.coe"),
-	.C_LOAD_INIT_FILE	(1)
 )
 act_ram_625w_16d
 (
@@ -170,12 +169,9 @@ act_ram_625w_16d
     .wea(action_en),
 
     .addrb(match_addr),
-    // .addrb(4'h2),
     .clkb(clk),
     .doutb(action_wire),
-    // .enb(match)
-    .enb(1'b1)
+    .enb(match)
 );
-
 
 endmodule

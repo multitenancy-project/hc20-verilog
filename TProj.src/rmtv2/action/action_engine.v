@@ -119,6 +119,7 @@ generate
             .container_out(phv_out[356+width_2B*(gen_i+1) -1 -: width_2B]),
             .container_out_valid()
         );
+        
         if(gen_i == 7) begin
             alu_2 #(
                 .STAGE(STAGE),
@@ -138,6 +139,7 @@ generate
                 .container_out_valid()
             );
         end
+
         else begin
             alu_1 #(
                 .STAGE(STAGE),
@@ -178,5 +180,17 @@ alu_3 #(
     .comp_meta_data_out(phv_out[355:0]),
     .comp_meta_data_valid_out()
 );
+
+
+// ila_1
+// debug (
+// 	.clk		(clk),
+
+// 	.probe0		(phv_valid_in),
+// 	.probe1		(phv_in[(PHV_LEN-1)-:48]),
+// 	.probe2		(phv_valid_out),
+// 	.probe3		(phv_out[(PHV_LEN-1)-:48]),
+// 	.probe4		(action_in[624-:25])
+// );
 
 endmodule
