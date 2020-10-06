@@ -94,7 +94,7 @@ always @(posedge clk or negedge rst_n) begin
         case(alu_state)
 
             IDLE_S: begin
-                container_out <= 32'b0;
+                // container_out <= 32'b0;
                 container_out_valid <= 1'b0;
                 if(action_valid) begin
                     action_type <= action_in[24:21];

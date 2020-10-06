@@ -255,25 +255,25 @@ alu_1 #(
     .operand_1_in(alu_in_6B_1[8 * width_6B -1 -: width_6B]),
     .operand_2_in(alu_in_6B_2[8 * width_6B -1 -: width_6B]),
     .container_out(output_6B[7]),
-    .container_out_valid()
+    .container_out_valid(phv_valid_bit)
 );
 
-alu_1 #(
-    .STAGE(STAGE),
-    .ACTION_LEN(),
-    .DATA_WIDTH(width_6B)
-)alu_1_6B_6(
-    .clk(clk),
-    .rst_n(rst_n),
-    .action_in(alu_in_action[(6+8+8+1+1)*ACT_LEN-1 -: ACT_LEN]),
-    .action_valid(alu_in_action_valid),
-    .operand_1_in(alu_in_6B_1[7 * width_6B -1 -: width_6B]),
-    .operand_2_in(alu_in_6B_2[7 * width_6B -1 -: width_6B]),
-    .container_out(output_6B[6]),
-    .container_out_valid()
-);
+// alu_1 #(
+//     .STAGE(STAGE),
+//     .ACTION_LEN(),
+//     .DATA_WIDTH(width_6B)
+// )alu_1_6B_6(
+//     .clk(clk),
+//     .rst_n(rst_n),
+//     .action_in(alu_in_action[(6+8+8+1+1)*ACT_LEN-1 -: ACT_LEN]),
+//     .action_valid(alu_in_action_valid),
+//     .operand_1_in(alu_in_6B_1[7 * width_6B -1 -: width_6B]),
+//     .operand_2_in(alu_in_6B_2[7 * width_6B -1 -: width_6B]),
+//     .container_out(output_6B[6]),
+//     .container_out_valid()
+// );
 
-// assign output_6B[6] = alu_in_6B_1[7 * width_6B-1 -: width_6B];
+assign output_6B[6] = alu_in_6B_1[7 * width_6B-1 -: width_6B];
 assign output_6B[5] = alu_in_6B_1[6 * width_6B-1 -: width_6B];
 assign output_6B[4] = alu_in_6B_1[5 * width_6B-1 -: width_6B];
 assign output_6B[3] = alu_in_6B_1[4 * width_6B-1 -: width_6B];
@@ -298,34 +298,31 @@ assign output_2B[3] = alu_in_2B_1[4 * width_2B-1 -: width_2B];
 assign output_2B[2] = alu_in_2B_1[3 * width_2B-1 -: width_2B];
 assign output_2B[1] = alu_in_2B_1[2 * width_2B-1 -: width_2B];
 assign output_2B[0] = alu_in_2B_1[1 * width_2B-1 -: width_2B];
+assign output_md = alu_in_phv_remain_data; 
 
 //initialize ALU_3 for matedata
 
-alu_3 #(
-    .STAGE(STAGE),
-    .ACTION_LEN(),
-    .META_LEN(),
-    .COMP_LEN()
-)alu_3_0(
-    .clk(clk),
-    .rst_n(rst_n),
-    //input data shall be metadata & com_ins
-    .comp_meta_data_in(alu_in_phv_remain_data),
-    .comp_meta_data_valid_in(alu_in_valid),
-    .action_in(alu_in_action[24:0]),
-    .action_valid_in(alu_in_action_valid),
+// alu_3 #(
+//     .STAGE(STAGE),
+//     .ACTION_LEN(),
+//     .META_LEN(),
+//     .COMP_LEN()
+// )alu_3_0(
+//     .clk(clk),
+//     .rst_n(rst_n),
+//     //input data shall be metadata & com_ins
+//     .comp_meta_data_in(alu_in_phv_remain_data),
+//     .comp_meta_data_valid_in(alu_in_valid),
+//     .action_in(alu_in_action[24:0]),
+//     .action_valid_in(alu_in_action_valid),
+// 
+//     //output is the modified metadata plus comp_ins
+//     // .comp_meta_data_out(phv_out[355:0]),
+//     .comp_meta_data_out(output_md),
+//     .comp_meta_data_valid_out(phv_valid_bit)
+// );
 
-    //output is the modified metadata plus comp_ins
-    // .comp_meta_data_out(phv_out[355:0]),
-    .comp_meta_data_out(output_md),
-    .comp_meta_data_valid_out(phv_valid_bit)
-);
-
-// assign phv_out = {output_6B[7], output_6B[6], output_6B[5], output_6B[4], output_6B[3], output_6B[2], output_6B[1], output_6B[0],
-// 					output_4B[7], output_4B[6], output_4B[5], output_4B[4], output_4B[3], output_4B[2], output_4B[1], output_4B[0],
-// 					output_2B[7], output_2B[6], output_2B[5], output_2B[4], output_2B[3], output_2B[2], output_2B[1], output_2B[0], output_md};
-
-reg [PHV_LEN-1:0] phv_out_r;
+reg [PHV_LEN-1:0]	phv_out_r;
 reg					phv_valid_out_r;
 
 always @(*) begin
@@ -352,17 +349,13 @@ always @(posedge clk) begin
 	end
 end
 
-ila_0
-debug (
+ila_1 
+debug1 (
 	.clk		(clk),
-
 	.probe0		(phv_valid_in),
-	.probe1		(phv_in[(PHV_LEN-1)-:48]),
+	.probe1		(action_valid_in),
 	.probe2		(phv_valid_out),
-	.probe3		(output_6B[7]),
-	.probe4		(output_6B[6]),
-	.probe5		(alu_in_6B_1[48*7+:48]),
-	.probe6		(alu_in_6B_1[0+:48])
+	.probe3		(phv_out[1123 -: 48])
 );
 
 endmodule

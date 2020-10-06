@@ -60,37 +60,51 @@ end
 always @(posedge clk or negedge rst_n) begin
     if(~rst_n) begin
         container_out_delay[0] <= 0;
-		container_out_delay[1] <= 0;
+		// container_out_delay[1] <= 0;
         container_out <= 0;
 		container_out_valid <= 0;
         container_out_valid_delay[0] <= 0;
-        container_out_valid_delay[1] <= 0;
+        // container_out_valid_delay[1] <= 0;
     end
 
     else begin
         if(action_valid) begin
-            case(action_in[24:21])
-                4'b0001, 4'b1001: begin
-                    container_out_delay[0] <= operand_1_in + operand_2_in;
-                    container_out_valid_delay[0] <= action_valid;
-                end
-                4'b0010, 4'b1010: begin
-                    container_out_delay[0] <= operand_1_in - operand_2_in;
-                    container_out_valid_delay[0] <= action_valid;
-                end
-                //if its an empty (default) action
-                default: begin
-                    container_out_delay[0] <= operand_1_in;
-                    container_out_valid_delay[0] <= action_valid;
-                end
-            endcase
+			container_out_valid_delay[0] <= action_valid;
+			container_out_delay[0] <= operand_1_in + operand_2_in + 1;
+
+            // case(action_in[24:21])
+            //     4'b0001, 4'b1001: begin
+            //         container_out_delay[0] <= operand_1_in + operand_2_in;
+            //         // container_out_valid_delay[0] <= action_valid;
+            //     end
+            //     4'b0010, 4'b1010: begin
+            //         container_out_delay[0] <= operand_1_in - operand_2_in;
+            //         // container_out_valid_delay[0] <= action_valid;
+            //     end
+            //     //if its an empty (default) action
+            //     default: begin
+            //         container_out_delay[0] <= operand_1_in;
+            //         // container_out_valid_delay[0] <= action_valid;
+            //     end
+            // endcase
         end
 
         else begin
             container_out_valid_delay[0] <= 1'b0;
-            container_out_delay[0] <= 0;
+            // container_out_delay[0] <= 0;
         end
     end
 end
+
+ila_0
+debug (
+	.clk		(clk),
+	.probe0		(action_valid),
+	.probe1		(action_in),
+	.probe2		(operand_1_in),
+	.probe3		(operand_2_in),
+	.probe4		(container_out_valid),
+	.probe5		(container_out)
+);
 
 endmodule
