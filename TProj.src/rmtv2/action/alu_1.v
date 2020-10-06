@@ -57,14 +57,55 @@ end
               extract op1 from pkt header, op2 from action, add(sub) and write back.
 */
 
+/*
+localparam IDLE=0, OP_1=1, OP_2=2;
+
+reg [1:0]					state, state_next;
+reg [DATA_WIDTH-1:0]		container_out_r;
+reg							container_out_valid_next;
+
+always @(*) begin
+	state_next = state;
+	container_out_r = 0;
+	container_out_valid_next = 0;
+
+	case (state)
+		IDLE: begin
+			if (action_valid) begin
+				state_next = OP_1;
+			end
+		end
+		OP_1: begin
+			// empty cycle
+			state_next = OP_2;
+		end
+		OP_2: begin
+			container_out_r = 
+		end
+	endcase
+end
+
+always @(posedge clk) begin
+	if (~rst_n) begin
+		container_out <= 0;
+		container_out_valid <= 0;
+		state <= 0;
+	end
+	else begin
+		state <= state_next;
+		container_out_valid <= container_out_valid_next;
+		container_out <= container_out_r;
+	end
+end*/
+
 always @(posedge clk or negedge rst_n) begin
     if(~rst_n) begin
         container_out_delay[0] <= 0;
-		// container_out_delay[1] <= 0;
+		container_out_delay[1] <= 0;
         container_out <= 0;
 		container_out_valid <= 0;
         container_out_valid_delay[0] <= 0;
-        // container_out_valid_delay[1] <= 0;
+        container_out_valid_delay[1] <= 0;
     end
 
     else begin
@@ -91,7 +132,7 @@ always @(posedge clk or negedge rst_n) begin
 
         else begin
             container_out_valid_delay[0] <= 1'b0;
-            // container_out_delay[0] <= 0;
+            container_out_delay[0] <= 0;
         end
     end
 end

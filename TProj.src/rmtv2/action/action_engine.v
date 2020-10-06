@@ -349,13 +349,13 @@ always @(posedge clk) begin
 	end
 end
 
-ila_1 
-debug1 (
-	.clk		(clk),
-	.probe0		(phv_valid_in),
-	.probe1		(action_valid_in),
-	.probe2		(phv_valid_out),
-	.probe3		(phv_out[1123 -: 48])
-);
+// ila_1 
+// debug1 (
+// 	.clk		(clk),
+// 	.probe0		(phv_valid_in),
+// 	.probe1		(action_valid_in),
+// 	.probe2		(phv_valid_out),
+// 	.probe3		(phv_out[1123 -: 48])
+// );
 
 endmodule
