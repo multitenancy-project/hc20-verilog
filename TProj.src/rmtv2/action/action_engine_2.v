@@ -47,7 +47,27 @@ wire [ACT_LEN*25-1:0]       alu_in_action;
 wire                        alu_in_action_valid;
 
 
-assign phv_valid_out = phv_valid_bit[7];
+//bypass alu_3 with 3 extra delays (below)
+reg [355:0] comp_meta_data_delay[0:2];
+reg         comp_meta_data_valid_delay[0:2];
+
+assign phv_out[355:0] = comp_meta_data_delay[2];
+assign phv_valid_out = comp_meta_data_valid_delay[2];
+
+always @(posedge clk) begin
+    comp_meta_data_delay[2] <= comp_meta_data_delay[1];
+    comp_meta_data_delay[1] <= comp_meta_data_delay[0];
+    comp_meta_data_delay[0] <= alu_in_phv_remain_data;
+
+    comp_meta_data_valid_delay[2] <= comp_meta_data_valid_delay[1];
+    comp_meta_data_valid_delay[1] <= comp_meta_data_valid_delay[0];
+    comp_meta_data_valid_delay[0] <= alu_in_action_valid;
+end
+//bypass alu_3 with 3 extra delays (above)
+
+//TODO need recomment it.
+//assign phv_valid_out = phv_valid_bit[7];
+
 /********intermediate variables declared here********/
 
 /********IPs instancilzed here*********/
@@ -534,23 +554,23 @@ alu_2 #(
 
 //initialize ALU_3 for matedata
 
-alu_3 #(
-    .STAGE(STAGE),
-    .ACTION_LEN(),
-    .META_LEN(),
-    .COMP_LEN()
-)alu_3_0(
-    .clk(clk),
-    .rst_n(rst_n),
-    //input data shall be metadata & com_ins
-    .comp_meta_data_in(alu_in_phv_remain_data),
-    .comp_meta_data_valid_in(alu_in_valid),
-    .action_in(alu_in_action[24:0]),
-    .action_valid_in(alu_in_action_valid),
+// alu_3 #(
+//     .STAGE(STAGE),
+//     .ACTION_LEN(),
+//     .META_LEN(),
+//     .COMP_LEN()
+// )alu_3_0(
+//     .clk(clk),
+//     .rst_n(rst_n),
+//     //input data shall be metadata & com_ins
+//     .comp_meta_data_in(alu_in_phv_remain_data),
+//     .comp_meta_data_valid_in(alu_in_valid),
+//     .action_in(alu_in_action[24:0]),
+//     .action_valid_in(alu_in_action_valid),
 
-    //output is the modified metadata plus comp_ins
-    .comp_meta_data_out(phv_out[355:0]),
-    .comp_meta_data_valid_out()
-);
+//     //output is the modified metadata plus comp_ins
+//     .comp_meta_data_out(phv_out[355:0]),
+//     .comp_meta_data_valid_out()
+// );
 
 endmodule

@@ -123,7 +123,7 @@ lookup_engine #(
     .action_addr()
 );
 
-action_engine #(
+action_engine_2 #(
     .STAGE(STAGE),
     .PHV_LEN(),
     .ACT_LEN()
