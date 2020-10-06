@@ -83,9 +83,10 @@ assign cont_2B[2] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-5*width_2B -: width_2
 assign cont_2B[1] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-6*width_2B -: width_2B];
 assign cont_2B[0] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-7*width_2B -: width_2B];
 
-assign sub_action[24] = action_in[ACT_LEN*25-1-:ACT_LEN];
-assign sub_action[23] = action_in[ACT_LEN*25-1 -  ACT_LEN-:ACT_LEN];
-assign sub_action[22] = action_in[ACT_LEN*25-1 -2*ACT_LEN-:ACT_LEN];
+// Tao: get action for each PHV container
+assign sub_action[24] = action_in[ACT_LEN*25-1-:ACT_LEN];					// 1st action
+assign sub_action[23] = action_in[ACT_LEN*25-1 -  ACT_LEN-:ACT_LEN];		// 2nd action
+assign sub_action[22] = action_in[ACT_LEN*25-1 -2*ACT_LEN-:ACT_LEN];		// 3rd action
 assign sub_action[21] = action_in[ACT_LEN*25-1 -3*ACT_LEN-:ACT_LEN];
 assign sub_action[20] = action_in[ACT_LEN*25-1 -4*ACT_LEN-:ACT_LEN];
 assign sub_action[19] = action_in[ACT_LEN*25-1 -5*ACT_LEN-:ACT_LEN];

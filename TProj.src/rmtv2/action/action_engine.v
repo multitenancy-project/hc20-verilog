@@ -5,6 +5,56 @@
 //	Function outline: the action execution engine in RMT
 /****************************************************/
 
+`define CREATE_ALU_1(idx, byte_size, ind) \
+        alu_1 #( \
+            .STAGE(STAGE), \
+            .ACTION_LEN(), \
+            .DATA_WIDTH((byte_size*8)) \
+        )alu_1_``byte_size``B_``idx( \
+            .clk(clk), \
+            .rst_n(rst_n), \
+            .action_in(alu_in_action[((idx)+(ind)+1+1)*ACT_LEN-1 -: ACT_LEN]), \
+            .action_valid(alu_in_action_valid), \
+            .operand_1_in(alu_in_``byte_size``B_1[(idx+1) * byte_size * 8-1 -: byte_size*8]), \
+            .operand_2_in(alu_in_``byte_size``B_2[(idx+1) * byte_size * 8-1 -: byte_size*8]), \
+            .container_out(output_``byte_size``B[idx]), \
+            .container_out_valid() \
+        ); \
+
+`define CREATE_ALU_1_VALID(idx, byte_size, ind) \
+        alu_1 #( \
+            .STAGE(STAGE), \
+            .ACTION_LEN(), \
+            .DATA_WIDTH((byte_size*8)) \
+        )alu_1_``byte_size``B_``idx( \
+            .clk(clk), \
+            .rst_n(rst_n), \
+            .action_in(alu_in_action[((idx)+(ind)+1+1)*ACT_LEN-1 -: ACT_LEN]), \
+            .action_valid(alu_in_action_valid), \
+            .operand_1_in(alu_in_``byte_size``B_1[(idx+1) * byte_size * 8-1 -: byte_size*8]), \
+            .operand_2_in(alu_in_``byte_size``B_2[(idx+1) * byte_size * 8-1 -: byte_size*8]), \
+            .container_out(output_``byte_size``B[idx]), \
+            .container_out_valid(phv_valid_bit[idx]) \
+        ); \
+
+`define CREATE_ALU_2(idx, byte_size, ind) \
+        alu_2 #( \
+            .STAGE(STAGE), \
+            .ACTION_LEN(), \
+            .DATA_WIDTH((byte_size*8)) \
+        )alu_2_``byte_size``B_``idx( \
+            .clk(clk), \
+            .rst_n(rst_n), \
+            .action_in(alu_in_action[((idx)+(ind)+1+1)*ACT_LEN-1 -: ACT_LEN]), \
+            .action_valid(alu_in_action_valid), \
+            .operand_1_in(alu_in_``byte_size``B_1[(idx+1) * byte_size * 8-1 -: byte_size*8]), \
+            .operand_2_in(alu_in_``byte_size``B_2[(idx+1) * byte_size * 8-1 -: byte_size*8]), \
+            .operand_3_in(alu_in_``byte_size``B_3[(idx+1) * byte_size * 8-1 -: byte_size*8]), \
+            .container_out(output_``byte_size``B[idx]), \
+            .container_out_valid() \
+        ); \
+
+
 module action_engine #(
     parameter STAGE = 0,
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
@@ -20,8 +70,8 @@ module action_engine #(
     input                     action_valid_in,
 
     //signals output from ALUs
-    output [PHV_LEN-1:0]      phv_out,
-    output                    phv_valid_out
+    output reg [PHV_LEN-1:0]      phv_out,
+    output reg                    phv_valid_out
 );
 
 /********intermediate variables declared here********/
@@ -41,16 +91,21 @@ wire [width_2B*8-1:0]       alu_in_2B_1;
 wire [width_2B*8-1:0]       alu_in_2B_2;
 wire [355:0]                alu_in_phv_remain_data;
 
-wire [7:0]                  phv_valid_bit;
+wire		                phv_valid_bit;
 
 wire [ACT_LEN*25-1:0]       alu_in_action;
 wire                        alu_in_action_valid;
 
 
-assign phv_valid_out = phv_valid_bit[7];
+// assign phv_valid_out = phv_valid_bit[7];
 /********intermediate variables declared here********/
 
 /********IPs instancilzed here*********/
+
+wire [width_6B-1:0]			output_6B[0:7];
+wire [width_4B-1:0]			output_4B[0:7];
+wire [width_2B-1:0]			output_2B[0:7];
+wire [355:0]				output_md;
 
 //crossbar
 crossbar #(
@@ -84,8 +139,34 @@ crossbar #(
 );
 
 
+/*
+`CREATE_ALU_1_VALID(7, 6, 16)
+`CREATE_ALU_1_VALID(6, 6, 16)
+`CREATE_ALU_1_VALID(5, 6, 16)
+`CREATE_ALU_1_VALID(4, 6, 16)
+`CREATE_ALU_1_VALID(3, 6, 16)
+`CREATE_ALU_1_VALID(2, 6, 16)
+`CREATE_ALU_1_VALID(1, 6, 16)
+`CREATE_ALU_1_VALID(0, 6, 16)
+`CREATE_ALU_2(7, 4, 8)
+`CREATE_ALU_1(6, 4, 8)
+`CREATE_ALU_1(5, 4, 8)
+`CREATE_ALU_1(4, 4, 8)
+`CREATE_ALU_1(3, 4, 8)
+`CREATE_ALU_1(2, 4, 8)
+`CREATE_ALU_1(1, 4, 8)
+`CREATE_ALU_1(0, 4, 8)
+`CREATE_ALU_1(7, 2, 0)
+`CREATE_ALU_1(6, 2, 0)
+`CREATE_ALU_1(5, 2, 0)
+`CREATE_ALU_1(4, 2, 0)
+`CREATE_ALU_1(3, 2, 0)
+`CREATE_ALU_1(2, 2, 0)
+`CREATE_ALU_1(1, 2, 0)
+`CREATE_ALU_1(0, 2, 0)*/
 
 //ALU_1
+/*
 genvar gen_i;
 generate
     //initialize 8 6B containers 
@@ -101,7 +182,8 @@ generate
             .action_valid(alu_in_action_valid),
             .operand_1_in(alu_in_6B_1[(gen_i+1) * width_6B -1 -: width_6B]),
             .operand_2_in(alu_in_6B_2[(gen_i+1) * width_6B -1 -: width_6B]),
-            .container_out(phv_out[width_4B*8+width_2B*8+356+width_6B*(gen_i+1)-1 -: width_6B]),
+            // .container_out(phv_out[width_4B*8+width_2B*8+356+width_6B*(gen_i+1)-1 -: width_6B]),
+            .container_out(output_6B[gen_i]),
             .container_out_valid(phv_valid_bit[gen_i])
         );
 
@@ -116,7 +198,8 @@ generate
             .action_valid(alu_in_action_valid),
             .operand_1_in(alu_in_2B_1[(gen_i+1) * width_2B -1 -: width_2B]),
             .operand_2_in(alu_in_2B_2[(gen_i+1) * width_2B -1 -: width_2B]),
-            .container_out(phv_out[356+width_2B*(gen_i+1) -1 -: width_2B]),
+            // .container_out(phv_out[356+width_2B*(gen_i+1) -1 -: width_2B]),
+            .container_out(output_4B[gen_i]),
             .container_out_valid()
         );
         if(gen_i == 7) begin
@@ -134,7 +217,8 @@ generate
                 .operand_2_in(alu_in_4B_2[(gen_i+1) * width_4B -1 -: width_4B]),
                 .operand_3_in(alu_in_4B_3[(gen_i+1) * width_4B -1 -: width_4B]),
                 //output to form PHV
-                .container_out(phv_out[width_2B*8+356+width_4B*(gen_i+1)-1 -: width_4B]),
+                // .container_out(phv_out[width_2B*8+356+width_4B*(gen_i+1)-1 -: width_4B]),
+                .container_out(output_4B[gen_i]),
                 .container_out_valid()
             );
         end
@@ -150,13 +234,70 @@ generate
                 .action_valid(alu_in_action_valid),
                 .operand_1_in(alu_in_4B_1[(gen_i+1) * width_4B -1 -: width_4B]),
                 .operand_2_in(alu_in_4B_2[(gen_i+1) * width_4B -1 -: width_4B]),
-                .container_out(phv_out[width_2B*8+356+width_4B*(gen_i+1) -1 -: width_4B]),
+                // .container_out(phv_out[width_2B*8+356+width_4B*(gen_i+1) -1 -: width_4B]),
+                .container_out(output_2B[gen_i]),
                 .container_out_valid()
              );
         end
     
     end
-endgenerate
+endgenerate*/
+
+alu_1 #(
+    .STAGE(STAGE),
+    .ACTION_LEN(),
+    .DATA_WIDTH(width_6B)
+)alu_1_6B_7(
+    .clk(clk),
+    .rst_n(rst_n),
+    .action_in(alu_in_action[(7+8+8+1+1)*ACT_LEN-1 -: ACT_LEN]),
+    .action_valid(alu_in_action_valid),
+    .operand_1_in(alu_in_6B_1[8 * width_6B -1 -: width_6B]),
+    .operand_2_in(alu_in_6B_2[8 * width_6B -1 -: width_6B]),
+    .container_out(output_6B[7]),
+    .container_out_valid()
+);
+
+alu_1 #(
+    .STAGE(STAGE),
+    .ACTION_LEN(),
+    .DATA_WIDTH(width_6B)
+)alu_1_6B_6(
+    .clk(clk),
+    .rst_n(rst_n),
+    .action_in(alu_in_action[(6+8+8+1+1)*ACT_LEN-1 -: ACT_LEN]),
+    .action_valid(alu_in_action_valid),
+    .operand_1_in(alu_in_6B_1[7 * width_6B -1 -: width_6B]),
+    .operand_2_in(alu_in_6B_2[7 * width_6B -1 -: width_6B]),
+    .container_out(output_6B[6]),
+    .container_out_valid()
+);
+
+// assign output_6B[6] = alu_in_6B_1[7 * width_6B-1 -: width_6B];
+assign output_6B[5] = alu_in_6B_1[6 * width_6B-1 -: width_6B];
+assign output_6B[4] = alu_in_6B_1[5 * width_6B-1 -: width_6B];
+assign output_6B[3] = alu_in_6B_1[4 * width_6B-1 -: width_6B];
+assign output_6B[2] = alu_in_6B_1[3 * width_6B-1 -: width_6B];
+assign output_6B[1] = alu_in_6B_1[2 * width_6B-1 -: width_6B];
+assign output_6B[0] = alu_in_6B_1[1 * width_6B-1 -: width_6B];
+
+assign output_4B[7] = alu_in_4B_1[8 * width_4B-1 -: width_4B];
+assign output_4B[6] = alu_in_4B_1[7 * width_4B-1 -: width_4B];
+assign output_4B[5] = alu_in_4B_1[6 * width_4B-1 -: width_4B];
+assign output_4B[4] = alu_in_4B_1[5 * width_4B-1 -: width_4B];
+assign output_4B[3] = alu_in_4B_1[4 * width_4B-1 -: width_4B];
+assign output_4B[2] = alu_in_4B_1[3 * width_4B-1 -: width_4B];
+assign output_4B[1] = alu_in_4B_1[2 * width_4B-1 -: width_4B];
+assign output_4B[0] = alu_in_4B_1[1 * width_4B-1 -: width_4B];
+
+assign output_2B[7] = alu_in_2B_1[8 * width_2B-1 -: width_2B];
+assign output_2B[6] = alu_in_2B_1[7 * width_2B-1 -: width_2B];
+assign output_2B[5] = alu_in_2B_1[6 * width_2B-1 -: width_2B];
+assign output_2B[4] = alu_in_2B_1[5 * width_2B-1 -: width_2B];
+assign output_2B[3] = alu_in_2B_1[4 * width_2B-1 -: width_2B];
+assign output_2B[2] = alu_in_2B_1[3 * width_2B-1 -: width_2B];
+assign output_2B[1] = alu_in_2B_1[2 * width_2B-1 -: width_2B];
+assign output_2B[0] = alu_in_2B_1[1 * width_2B-1 -: width_2B];
 
 //initialize ALU_3 for matedata
 
@@ -175,20 +316,53 @@ alu_3 #(
     .action_valid_in(alu_in_action_valid),
 
     //output is the modified metadata plus comp_ins
-    .comp_meta_data_out(phv_out[355:0]),
-    .comp_meta_data_valid_out()
+    // .comp_meta_data_out(phv_out[355:0]),
+    .comp_meta_data_out(output_md),
+    .comp_meta_data_valid_out(phv_valid_bit)
 );
 
+// assign phv_out = {output_6B[7], output_6B[6], output_6B[5], output_6B[4], output_6B[3], output_6B[2], output_6B[1], output_6B[0],
+// 					output_4B[7], output_4B[6], output_4B[5], output_4B[4], output_4B[3], output_4B[2], output_4B[1], output_4B[0],
+// 					output_2B[7], output_2B[6], output_2B[5], output_2B[4], output_2B[3], output_2B[2], output_2B[1], output_2B[0], output_md};
 
-ila_1
+reg [PHV_LEN-1:0] phv_out_r;
+reg					phv_valid_out_r;
+
+always @(*) begin
+
+	phv_out_r = phv_out;
+	phv_valid_out_r = 0;
+
+	if (phv_valid_bit) begin
+		phv_valid_out_r = 1;
+		phv_out_r = {output_6B[7], output_6B[6], output_6B[5], output_6B[4], output_6B[3], output_6B[2], output_6B[1], output_6B[0],
+				output_4B[7], output_4B[6], output_4B[5], output_4B[4], output_4B[3], output_4B[2], output_4B[1], output_4B[0],
+				output_2B[7], output_2B[6], output_2B[5], output_2B[4], output_2B[3], output_2B[2], output_2B[1], output_2B[0], output_md};
+	end
+end
+
+always @(posedge clk) begin
+	if (~rst_n) begin
+		phv_out <= 0;
+		phv_valid_out <= 0;
+	end
+	else begin
+		phv_out <= phv_out_r;
+		phv_valid_out <= phv_valid_out_r;
+	end
+end
+
+ila_0
 debug (
 	.clk		(clk),
 
 	.probe0		(phv_valid_in),
 	.probe1		(phv_in[(PHV_LEN-1)-:48]),
 	.probe2		(phv_valid_out),
-	.probe3		(phv_out[(PHV_LEN-1)-:48]),
-	.probe4		(action_in[624-:25])
+	.probe3		(output_6B[7]),
+	.probe4		(output_6B[6]),
+	.probe5		(alu_in_6B_1[48*7+:48]),
+	.probe6		(alu_in_6B_1[0+:48])
 );
 
 endmodule
