@@ -21,7 +21,9 @@ module stage #(
     input  [PHV_LEN-1:0]         phv_in,
     input                        phv_in_valid,
     output [PHV_LEN-1:0]         phv_out,
-    output                       phv_out_valid
+    output                       phv_out_valid,
+	//
+	output reg					stg_ready
 
     //input for the key extractor RAM
     // input  [KEY_OFF-1:0]         key_offset_in,
@@ -87,6 +89,7 @@ key_extract_2 #(
     .key_valid_out(key2lookup_key_valid)
 );
 
+
 lookup_engine #(
     .STAGE(STAGE),
     .PHV_LEN(),
@@ -105,6 +108,8 @@ lookup_engine #(
     .action(lookup2action_action),
     .action_valid(lookup2action_action_valid),
     .phv_out(lookup2action_phv),
+    // .action_valid(phv_out_valid),
+    // .phv_out(phv_out),
 
     //control channel
     .lookup_din(),
@@ -137,5 +142,38 @@ action_engine #(
     .phv_valid_out(phv_out_valid)
 );
 
+/*
+localparam IDLE=0, IN_PROCESSING=1;
+
+reg state, state_next;
+reg stg_ready_next;
+
+always @(*) begin
+	state_next = state;
+	stg_ready_next = stg_ready;
+
+	case (state)
+		IDLE: begin
+			if (phv_in_valid) begin
+				state_next = IN_PROCESSING;
+				stg_ready_next = 0;
+			end
+		end
+		IN_PROCESSING: begin
+			if (phv_out_valid) begin
+			end
+		end
+	endcase
+end
+
+always @(posedge axis_clk) begin
+	if (~aresetn) begin
+		stg_ready <= 1;
+	end
+	else begin
+		state <= state_next;
+		stg_ready <= stg_ready_next;
+	end
+end*/
 
 endmodule
