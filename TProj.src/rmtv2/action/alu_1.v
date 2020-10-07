@@ -29,23 +29,23 @@ module alu_1 #(
 );
 
 /********intermediate variables declared here********/
-integer i;
-
-localparam width_6B = 48;
-localparam width_4B = 32;
-localparam width_2B = 16;
-
-reg [DATA_WIDTH-1:0]  container_out_delay [0:1];
-reg                   container_out_valid_delay [0:1];
+// integer i;
+// 
+// localparam width_6B = 48;
+// localparam width_4B = 32;
+// localparam width_2B = 16;
+// 
+// reg [DATA_WIDTH-1:0]  container_out_delay [0:1];
+// reg                   container_out_valid_delay [0:1];
 
 /********intermediate variables declared here********/
 
-always @(posedge clk) begin
-    container_out <= container_out_delay[1];
-    container_out_valid <= container_out_valid_delay[1];
-    container_out_delay[1] <= container_out_delay[0];
-    container_out_valid_delay[1] <= container_out_valid_delay[0];
-end
+// always @(posedge clk) begin
+//     container_out <= container_out_delay[1];
+//     container_out_valid <= container_out_valid_delay[1];
+//     container_out_delay[1] <= container_out_delay[0];
+//     container_out_valid_delay[1] <= container_out_valid_delay[0];
+// end
 
 /*
 8 operations to support:
@@ -57,7 +57,7 @@ end
               extract op1 from pkt header, op2 from action, add(sub) and write back.
 */
 
-/*
+
 localparam IDLE=0, OP_1=1, OP_2=2;
 
 reg [1:0]					state, state_next;
@@ -66,13 +66,14 @@ reg							container_out_valid_next;
 
 always @(*) begin
 	state_next = state;
-	container_out_r = 0;
+	container_out_r = container_out;
 	container_out_valid_next = 0;
 
 	case (state)
 		IDLE: begin
 			if (action_valid) begin
 				state_next = OP_1;
+				container_out_r = operand_1_in + operand_2_in + 1;
 			end
 		end
 		OP_1: begin
@@ -80,7 +81,8 @@ always @(*) begin
 			state_next = OP_2;
 		end
 		OP_2: begin
-			container_out_r = 
+			container_out_valid_next = 1;
+			state_next = IDLE;
 		end
 	endcase
 end
@@ -96,8 +98,9 @@ always @(posedge clk) begin
 		container_out_valid <= container_out_valid_next;
 		container_out <= container_out_r;
 	end
-end*/
+end
 
+/*
 always @(posedge clk or negedge rst_n) begin
     if(~rst_n) begin
         container_out_delay[0] <= 0;
@@ -135,17 +138,14 @@ always @(posedge clk or negedge rst_n) begin
             container_out_delay[0] <= 0;
         end
     end
-end
+end*/
 
 ila_0
 debug (
 	.clk		(clk),
 	.probe0		(action_valid),
-	.probe1		(container_out_delay[0]),
-	.probe2		(container_out_delay[1]),
-	.probe3		(container_out_valid_delay[0]),
-	.probe4		(container_out_valid_delay[1]),
-	.probe5		(container_out_valid)
+	.probe1		(state),
+	.probe2		(container_out_valid)
 );
 
 endmodule
