@@ -141,11 +141,11 @@ ila_0
 debug (
 	.clk		(clk),
 	.probe0		(action_valid),
-	.probe1		(action_in),
-	.probe2		(operand_1_in),
-	.probe3		(operand_2_in),
-	.probe4		(container_out_valid),
-	.probe5		(container_out)
+	.probe1		(container_out_delay[0]),
+	.probe2		(container_out_delay[1]),
+	.probe3		(container_out_valid_delay[0]),
+	.probe4		(container_out_valid_delay[1]),
+	.probe5		(container_out_valid)
 );
 
 endmodule
