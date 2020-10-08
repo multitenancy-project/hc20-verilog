@@ -24,14 +24,6 @@ module alu_3 #(
     output reg                          comp_meta_data_valid_out     
 );
 
-/********intermediate variables declared here********/
-integer i;
-
-reg [META_LEN+COMP_LEN-1:0]  comp_meta_data_delay [0:1];
-reg                          comp_meta_data_valid_delay [0:1];
-
-/********intermediate variables declared here********/
-
 //need delay for one cycle before the result pushed out
 /*
 action format:
@@ -50,43 +42,61 @@ metadata fields that are related:
     [127:0]:   copied from NetFPGA's md;
     
 */
-always @(posedge clk) begin
-    comp_meta_data_out <= comp_meta_data_delay[1];
-    comp_meta_data_valid_out <= comp_meta_data_valid_delay[1];
-    comp_meta_data_delay[1] <= comp_meta_data_delay[0];
-    comp_meta_data_valid_delay[1] <= comp_meta_data_valid_delay[0];    
+
+localparam IDLE=0, OP_1=1, OP_2=2;
+
+reg [1:0]						state, state_next;
+reg [META_LEN+COMP_LEN-1:0]		comp_meta_data_out_r;
+reg								comp_meta_data_valid_next;
+
+always @(*) begin
+	state_next = state;
+	comp_meta_data_out_r = comp_meta_data_out;
+	comp_meta_data_valid_next = 0;
+
+	case (state)
+		IDLE: begin
+			if (action_valid_in) begin
+				state_next = OP_1;
+				case(action_in[24:21])
+            	    4'b1100: begin
+            	        comp_meta_data_out_r[355:32] = {action_in[10:5],comp_meta_data_in[349:32]};
+            	        comp_meta_data_out_r[31:24]  = action_in[20:13];
+            	        comp_meta_data_out_r[23:0]   = comp_meta_data_in[23:0];
+            	    end
+            	    4'b1101: begin
+            	        comp_meta_data_out_r[355:129] = {action_in[10:5],comp_meta_data_in[349:129]};
+            	        comp_meta_data_out_r[128] = action_in[12];
+            	        comp_meta_data_out_r[127:0] = comp_meta_data_in[127:0];
+            	    end
+            	    default: begin
+            	        comp_meta_data_out_r = comp_meta_data_in;
+            	    end
+            	endcase
+			end
+		end
+		OP_1: begin
+			// empty cycle
+			state_next = OP_2;
+		end
+		OP_2: begin
+			comp_meta_data_valid_next = 1;
+			state_next = IDLE;
+		end
+	endcase
 end
 
-always @(posedge clk or negedge rst_n) begin
-    if(~rst_n) begin
-        comp_meta_data_delay[0] <= 0;
-        comp_meta_data_valid_delay[0] <= 1'b0;
-    end
-
-    else begin
-        if(action_valid_in) begin
-            comp_meta_data_valid_delay[0] <= comp_meta_data_valid_in;
-            case(action_in[24:21])
-                4'b1100: begin
-                    comp_meta_data_delay[0][355:32] <= {action_in[10:5],comp_meta_data_in[349:32]};
-                    comp_meta_data_delay[0][31:24]  <= action_in[20:13];
-                    comp_meta_data_delay[0][23:0]   <= comp_meta_data_in[23:0];
-                end
-                4'b1101: begin
-                    comp_meta_data_delay[0][355:129] <= {action_in[10:5],comp_meta_data_in[349:129]};
-                    comp_meta_data_delay[0][128] <= action_in[12];
-                    comp_meta_data_delay[0][127:0] <= comp_meta_data_in[127:0];
-                end
-                default: begin
-                    comp_meta_data_delay[0] <= comp_meta_data_in;
-                end
-            endcase
-        end
-
-        else begin
-            comp_meta_data_valid_delay[0] <= 1'b0;
-        end
-    end
+always @(posedge clk) begin
+	if (~rst_n) begin
+		comp_meta_data_out <= 0;
+		comp_meta_data_valid_out <= 0;
+		state <= IDLE;
+	end
+	else begin
+		state <= state_next;
+		comp_meta_data_out <= comp_meta_data_out_r;
+		comp_meta_data_valid_out <= comp_meta_data_valid_next;
+	end
 end
 
 endmodule

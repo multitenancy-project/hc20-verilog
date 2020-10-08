@@ -160,7 +160,7 @@ cam_0
 
 //ram for action
 blk_mem_gen_1 #(
-	.C_INIT_FILE_NAME	("./lkup.coe"),
+	.C_INIT_FILE_NAME	("./lkup.mif"),
 	.C_LOAD_INIT_FILE	(1)
 )
 act_ram_625w_16d

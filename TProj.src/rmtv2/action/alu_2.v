@@ -34,18 +34,19 @@ localparam width_4B = 32;
 localparam width_2B = 16;
 
 
-reg  [3:0]           action_type;
-reg  [31:0]          container_reg;
+reg  [3:0]           action_type, action_type_r;
 
 //regs for RAM access
-reg                  store_en;
-reg  [4:0]           store_addr;
-reg  [31:0]          store_din;
+reg                  store_en, store_en_r;
+reg  [4:0]           store_addr, store_addr_r;
+reg  [31:0]          store_din,	 store_din_r;
 
 wire [31:0]          load_data;
 wire [4:0]           load_addr;
 
-reg  [2:0]           alu_state;
+reg  [2:0]           alu_state, alu_state_next;
+reg [DATA_WIDTH-1:0]		container_out_r;
+reg							container_out_valid_next;
 
 
 /********intermediate variables declared here********/
@@ -69,120 +70,106 @@ assign load_addr = operand_2_in[4:0];
 */
 
 localparam  IDLE_S = 3'd0,
-            OTHER_S = 3'd1,
-            LOAD_S = 3'd2,
-            OUTPUT_S = 3'd3;
+            EMPTY_S = 3'd1,
+            OUTPUT_S = 3'd2;
 
-always @(posedge clk or negedge rst_n) begin
-    if(~rst_n) begin
-        //initialize outputs
-        container_out_valid <= 1'b0;
-        container_out <= 0;
+always @(*) begin
+	alu_state_next = alu_state;
 
-        //initialize regs
-        //container_valid_reg <= 1'b0;
-        action_type <= 4'b0;
-        store_en <= 1'b0;
-        store_addr <= 5'b0;
-        container_reg <= 0;
-        store_din <= 0;
+	action_type_r = action_type;
+	container_out_r = container_out;
+	container_out_valid_next = 0;
 
-        alu_state <= IDLE_S;
-    end
-
-    else begin
-        case(alu_state)
-
-            IDLE_S: begin
-                // container_out <= 32'b0;
-                container_out_valid <= 1'b0;
-                if(action_valid) begin
-                    action_type <= action_in[24:21];
-                    case(action_in[24:21])
-                        
-                        //add/addi ops 
-                        4'b0001, 4'b1001: begin
-                            container_reg <= operand_1_in + operand_2_in;
-                            alu_state <= OTHER_S;
-                        end 
-                        //sub/subi ops
-                        4'b0010, 4'b1010: begin
-                            container_reg <= operand_1_in - operand_2_in;
-                            alu_state <= OTHER_S;
-                        end
-                        //store op (interact with RAM)
-                        4'b1000: begin
-                            container_reg <= operand_3_in;
-                            store_en <= 1'b1;
-                            store_addr <= operand_2_in[4:0];
-                            store_din <= operand_1_in;
-                            alu_state <= OTHER_S;
-                        end
-                        //load op (interact with RAM)
-                        4'b1011: begin
-                            //load_addr <= operand_2_in[4:0];
-                            alu_state <= LOAD_S;
-                        end
-                        //cannot go back to IDLE since this
-                        //might be a legal action.
-                        default: begin
-                            container_reg <= operand_3_in;
-                            alu_state <= OTHER_S;
-                        end
-
-                    endcase
-                end
-
-                else begin
-                    alu_state <= IDLE_S;
-                    //flush all the regs
-                end
+	store_en_r = store_en;
+	store_addr_r = store_addr;
+	store_din_r = store_din;
+	
+	case (alu_state_next)
+		IDLE_S: begin
+			if (action_valid) begin
+				action_type_r = action_in[24:21];
+				alu_state_next = EMPTY_S;
+                case(action_in[24:21])
+                    //add/addi ops 
+                    4'b0001, 4'b1001: begin
+                        container_out_r = operand_1_in + operand_2_in;
+                    end 
+                    //sub/subi ops
+                    4'b0010, 4'b1010: begin
+                        container_out_r = operand_1_in - operand_2_in;
+                    end
+                    //store op (interact with RAM)
+                    4'b1000: begin
+                        container_out_r = operand_3_in;
+                        store_en_r = 1;
+                        store_addr_r = operand_2_in[4:0];
+                        store_din_r = operand_1_in;
+                    end
+                    //load op (interact with RAM)
+                    4'b1011: begin
+						// do nothing now
+                    end
+                    //cannot go back to IDLE since this
+                    //might be a legal action.
+                    default: begin
+                        container_out_r = operand_3_in;
+                    end
+				endcase
+			end
+		end
+		EMPTY_S: begin
+			// an empty cycle
+            alu_state_next = OUTPUT_S;
+        end
+        OUTPUT_S: begin
+			// load data is ready
+            // output the value
+			container_out_valid_next = 1;
+            if(action_type == 4'b1011) begin
+                container_out_r = load_data;
             end
 
-            OTHER_S: begin
-                //container_out_valid <= 1'b1;
-                //container_out <= container_valid_reg;
-                store_en <= 1'b0;
-                alu_state <= OUTPUT_S;
-            end
+            alu_state_next = IDLE_S;
 
-            LOAD_S: begin
-                //do nothing and wait 1 cycle
-                //load_addr <= 5'b0;
-                //container_out_valid <= 1'b1;
-                //container_out <= load_data;
-                alu_state <= OUTPUT_S;
-            end
-
-
-            OUTPUT_S: begin
-                //output the value
-                container_out_valid <= 1'b1;
-                if(action_type == 4'b1011) begin
-                    container_out <= load_data;
-                end
-                else begin
-                    container_out <= container_reg;
-                end
-                
-                action_type <= 4'b0;
-                container_reg <= 32'b0;
-                store_en <= 1'b0;
-                store_addr <= 5'b0;
-                alu_state <= IDLE_S;
-            end
-
-        endcase
-    end
-
+			// clear out store signals
+			store_en_r = 0;
+			store_addr_r = 0;
+			store_din_r = 0;
+        end
+	endcase
 end
+
+always @(posedge clk) begin
+	if (~rst_n) begin
+		alu_state <= IDLE_S;
+
+		action_type <= 0;
+		container_out <= 0;
+		container_out_valid <= 0;
+
+		store_en <= 0;
+		store_addr <= 0;
+		store_din <= 0;
+	end
+	else begin
+		alu_state <= alu_state_next;
+		action_type <= action_type_r;
+		container_out <= container_out_r;
+		container_out_valid <= container_out_r;
+
+		store_en <= store_en_r;
+		store_addr <= store_addr_r;
+		store_din <= store_din_r;
+	end
+end
+
 
 //ram for key-value
 //2 cycles to get value
 // blk_mem_gen_0 # (
 blk_mem_gen_0 # (
-	//.RAM_INIT_FILE ("parse_act_ram_init_file.mif")
-    .RAM_INIT_FILE ()
+	.C_INIT_FILE_NAME	("./alu_2.mif"),
+	.C_LOAD_INIT_FILE	(1)
 )
 data_ram_32w_32d
 (
