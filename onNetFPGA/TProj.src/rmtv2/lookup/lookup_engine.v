@@ -7,7 +7,7 @@
 
 `timescale 1ns / 1ps
 
-module lookup_engine#(
+module lookup_engine #(
     parameter STAGE = 0,
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
     parameter KEY_LEN = 48*2+32*2+16*2+5,
@@ -128,9 +128,8 @@ end
 
 cam_top # ( 
 	.C_DEPTH			(16),
-	// .C_WIDTH			(256),
-	.C_WIDTH			(197),
-	// .C_MEM_INIT			(1),
+	.C_WIDTH			(256),
+	.C_MEM_INIT			(1),
 	.C_MEM_INIT_FILE	("./cam_init_file.mif")
 	//.C_MEM_INIT_FILE	(F:/NYC/project_1/cam_init_file.mif) //currently there is no mem_init
 )
@@ -138,11 +137,11 @@ cam_top # (
 cam_0
 (
 	.CLK				(clk),
-	.CMP_DIN			(extract_key),
+	.CMP_DIN			({59'b0,extract_key}),
 	// .CMP_DATA_MASK		(256'h0),
-	.CMP_DATA_MASK		({197{1'b0}}),
-	// .CMP_DATA_MASK		(),
-	.BUSY				(),
+	//.CMP_DATA_MASK		({256'b0}),
+	.CMP_DATA_MASK		(),
+	.BUSY				(busy),
 	.MATCH				(match),
 	.MATCH_ADDR			(match_addr),
 	//.WE				(lookup_din_en),
