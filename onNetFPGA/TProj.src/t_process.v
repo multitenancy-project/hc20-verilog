@@ -600,16 +600,5 @@ parse_act_ram
 );
 
 // debug
-ila_0 
-debug(
-	.clk		(clk),
-
-
-	.probe0		(stg0_phv_in_valid_w),
-	.probe1		(stg0_phv_out_valid),
-	.probe2		(state),
-	.probe3		(stg0_phv_out[(PKT_VEC_WIDTH-1)-:96]),
-	.probe4		(stg0_phv_out[0+:32])
-);
 
 endmodule
