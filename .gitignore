@@ -7,6 +7,8 @@ TProj.xpr
 TProj.sim/
 TProj.ip_user_files/
 
+xsim.dir/
+
 *.bit
 *.log
 *.jou
