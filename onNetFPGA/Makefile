@@ -62,3 +62,4 @@ clean:
 	rm -rfv  firmware.elf
 	rm -rfv xsim.dir
 	rm -rfv xvlog.pb
+	rm -rfv TProj.hbs
