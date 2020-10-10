@@ -1,73 +1,89 @@
-set design TProj
+#
+# Copyright (c) 2015 Georgina Kalogeridou
+# All rights reserved.
+#
+# This software was developed by Stanford University and the University of Cambridge Computer Laboratory 
+# under National Science Foundation under Grant No. CNS-0855268,
+# the University of Cambridge Computer Laboratory under EPSRC INTERNET Project EP/H040536/1 and
+# by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"), 
+# as part of the DARPA MRC research programme.
+#
+# @NETFPGA_LICENSE_HEADER_START@
+#
+# Licensed to NetFPGA C.I.C. (NetFPGA) under one or more contributor
+# license agreements.  See the NOTICE file distributed with this work for
+# additional information regarding copyright ownership.  NetFPGA licenses this
+# file to you under the NetFPGA Hardware-Software License, Version 1.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at:
+#
+#   http://www.netfpga-cic.org
+#
+# Unless required by applicable law or agreed to in writing, Work distributed
+# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations under the License.
+#
+# @NETFPGA_LICENSE_HEADER_END@
+#
+
+# Set variables.
+set design proj_sim
 set top top_sim
 set sim_top top_tb
-set device xc7vx690t-3-ffg1761
+set device  xc7vx690t-3-ffg1761
 set proj_dir ./project_sim
-set repo_dir ./ip_repo
-set axi_files_dir /home/twang/workspace/hc20-verilog/onNetFPGA/TProj.src/input_files
 set public_repo_dir $::env(SUME_FOLDER)/lib/hw/
 set xilinx_repo_dir $::env(XILINX_PATH)/data/ip/xilinx/
+set axi_files_dir /home/twang/workspace/hc20-verilog/onNetFPGA/TProj.src/input_files
 set bit_settings ./TProj.src/generic_bit.xdc 
 set project_constraints ./TProj.src/nf_sume_general.xdc
 set nf_10g_constraints ./TProj.src/nf_sume_10g.xdc
 
+
+
 #####################################
-# Project Settings
+# Read IP Addresses and export registers
 #####################################
+
+# Build project.
 create_project -name ${design} -force -dir "${proj_dir}" -part ${device}
-set_property source_mgmt_mode DisplayOnly [current_project]
+set_property source_mgmt_mode DisplayOnly [current_project]  
 set_property top ${top} [current_fileset]
 puts "Creating User Datapath reference project"
 
-
-#####################################
-# Constraints
-#####################################
-#
 create_fileset -constrset -quiet constraints
-file copy ${public_repo_dir}/ ${repo_dir}
-set_property ip_repo_paths ${repo_dir} [current_fileset]
+set_property ip_repo_paths ${public_repo_dir} [current_fileset]
 add_files -fileset constraints -norecurse ${bit_settings}
 add_files -fileset constraints -norecurse ${project_constraints}
 add_files -fileset constraints -norecurse ${nf_10g_constraints}
 set_property is_enabled true [get_files ${project_constraints}]
 set_property is_enabled true [get_files ${bit_settings}]
-set_property is_enabled true [get_files ${nf_10g_constraints}]
+set_property is_enabled true [get_files ${project_constraints}]
 
-#####################################
-# Project
-#####################################
 update_ip_catalog
-
-# input arbiter
 create_ip -name input_arbiter -vendor NetFPGA -library NetFPGA -module_name input_arbiter_ip
 set_property generate_synth_checkpoint false [get_files input_arbiter_ip.xci]
 reset_target all [get_ips input_arbiter_ip]
 generate_target all [get_ips input_arbiter_ip]
 
-# output queues
 create_ip -name output_queues -vendor NetFPGA -library NetFPGA -module_name output_queues_ip
 set_property generate_synth_checkpoint false [get_files output_queues_ip.xci]
 reset_target all [get_ips output_queues_ip]
 generate_target all [get_ips output_queues_ip]
 
-
-#Add a clock wizard
-# create_ip -name clk_wiz -vendor xilinx.com -library ip -version 5.3 -module_name clk_wiz_ip
-create_ip -name clk_wiz -vendor xilinx.com -library ip -version 6.0 -module_name clk_wiz_ip
-# set_property -dict [list   CONFIG.NUM_OUT_CLKS {3} CONFIG.CLKOUT2_USED {true} CONFIG.CLKOUT3_USED {true} CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {156.250} CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {100.000} CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {100.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.RESET_PORT {resetn} ] [get_ips clk_wiz_ip]
-# set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {200.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKFBOUT_MULT_F {5.000} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.MMCM_CLKOUT0_DIVIDE_F {5.000} CONFIG.RESET_PORT {resetn} CONFIG.CLKOUT1_JITTER {98.146} CONFIG.CLKOUT1_PHASE_ERROR {89.971}] [get_ips clk_wiz_ip]
-set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {156.250} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.RESET_PORT {resetn} ] [get_ips clk_wiz_ip]
-set_property generate_synth_checkpoint false [get_files clk_wiz_ip.xci]
-reset_target all [get_ips clk_wiz_ip]
-generate_target all [get_ips clk_wiz_ip]
-
 #Add ID block
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name identifier_ip
-set_property -dict [list CONFIG.Interface_Type {AXI4} CONFIG.AXI_Type {AXI4_Lite} CONFIG.AXI_Slave_Type {Memory_Slave} CONFIG.Use_AXI_ID {false} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/id_rom16x32.coe} CONFIG.Fill_Remaining_Memory_Locations {true} CONFIG.Remaining_Memory_Locations {DEADDEAD} CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Use_Byte_Write_Enable {true} CONFIG.Byte_Size {8} CONFIG.Assume_Synchronous_Clk {true} CONFIG.Write_Width_A {32} CONFIG.Write_Depth_A {4096} CONFIG.Read_Width_A {32} CONFIG.Operating_Mode_A {READ_FIRST} CONFIG.Write_Width_B {32} CONFIG.Read_Width_B {32} CONFIG.Operating_Mode_B {READ_FIRST} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {false} CONFIG.Use_RSTB_Pin {true} CONFIG.Reset_Type {ASYNC} CONFIG.Port_A_Write_Rate {50} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips identifier_ip]
+set_property -dict [list CONFIG.Interface_Type {AXI4} CONFIG.AXI_Type {AXI4_Lite} CONFIG.AXI_Slave_Type {Memory_Slave} CONFIG.Use_AXI_ID {false} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/id_rom16x32.coe} CONFIG.Fill_Remaining_Memory_Locations {true} CONFIG.Remaining_Memory_Locations {DEADDEAD} CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Use_Byte_Write_Enable {true} CONFIG.Byte_Size {8} CONFIG.Assume_Synchronous_Clk {true} CONFIG.Write_Width_A {32} CONFIG.Write_Depth_A {1024} CONFIG.Read_Width_A {32} CONFIG.Operating_Mode_A {READ_FIRST} CONFIG.Write_Width_B {32} CONFIG.Read_Width_B {32} CONFIG.Operating_Mode_B {READ_FIRST} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {false} CONFIG.Use_RSTB_Pin {true} CONFIG.Reset_Type {ASYNC} CONFIG.Port_A_Write_Rate {50} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips identifier_ip]
 set_property generate_synth_checkpoint false [get_files identifier_ip.xci]
 reset_target all [get_ips identifier_ip]
 generate_target all [get_ips identifier_ip]
+
+create_ip -name clk_wiz -vendor xilinx.com -library ip -version 6.0 -module_name clk_wiz_ip
+set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {200.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKFBOUT_MULT_F {5.000} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.MMCM_CLKOUT0_DIVIDE_F {5.000} CONFIG.RESET_PORT {resetn} CONFIG.CLKOUT1_JITTER {98.146} CONFIG.CLKOUT1_PHASE_ERROR {89.971}] [get_ips clk_wiz_ip]
+set_property generate_synth_checkpoint false [get_files clk_wiz_ip.xci]
+reset_target all [get_ips clk_wiz_ip]
+generate_target all [get_ips clk_wiz_ip]
 
 #Add Parser Action RAM IP
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name parse_act_ram_ip
@@ -94,13 +110,6 @@ set_property generate_synth_checkpoint false [get_files blk_mem_gen_2.xci]
 reset_target all [get_ips blk_mem_gen_2]
 generate_target all [get_ips blk_mem_gen_2]
 
-
-
-# add_files [glob TProj.src/*.coe]
-# add_files [glob TProj.src/*.mif]
-add_files "./TProj.src/cam_init_file.mif"
-# add_files [glob TProj.src/input_files/*.axi]
-#create ip for simulation
 create_ip -name barrier -vendor NetFPGA -library NetFPGA -module_name barrier_ip
 reset_target all [get_ips barrier_ip]
 generate_target all [get_ips barrier_ip]
@@ -157,99 +166,12 @@ generate_target all [get_ips axi_sim_transactor_ip]
 
 update_ip_catalog
 
-source tcl/control_sub_sim.tcl
+source ./tcl/control_sub_sim.tcl
 
-# set_property used_in_synthesis false [get_files top_tb.v]
-# set_property used_in_implementation false [get_files top_tb.v]
-# 
-# set_property used_in_synthesis false [get_files top_sim.v]
-# set_property used_in_implementation false [get_files top_sim.v]
-# 
-# set_property used_in_synthesis false [get_files barrier_ip.xci]
-# set_property used_in_implementation false [get_files barrier_ip.xci]
-# set_property generate_synth_checkpoint false [get_files barrier_ip.xci]
-# 
-# set_property used_in_synthesis false [get_files axi_sim_transactor_ip.xci]
-# set_property used_in_implementation false [get_files axi_sim_transactor_ip.xci]
-# set_property generate_synth_checkpoint false [get_files axi_sim_transactor_ip.xci]
-# 
-# set_property used_in_synthesis false [get_files axis_sim_stim_ip0.xci]
-# set_property used_in_implementation false [get_files axis_sim_stim_ip0.xci]
-# set_property generate_synth_checkpoint false [get_files axis_sim_stim_ip0.xci]
-# 
-# set_property used_in_synthesis false [get_files axis_sim_stim_ip1.xci]
-# set_property used_in_implementation false [get_files axis_sim_stim_ip1.xci]
-# set_property generate_synth_checkpoint false [get_files axis_sim_stim_ip1.xci]
-# 
-# set_property used_in_synthesis false [get_files axis_sim_stim_ip2.xci]
-# set_property used_in_implementation false [get_files axis_sim_stim_ip2.xci]
-# set_property generate_synth_checkpoint false [get_files axis_sim_stim_ip2.xci]
-# 
-# set_property used_in_synthesis false [get_files axis_sim_stim_ip3.xci]
-# set_property used_in_implementation false [get_files axis_sim_stim_ip3.xci]
-# set_property generate_synth_checkpoint false [get_files axis_sim_stim_ip3.xci]
-# 
-# set_property used_in_synthesis false [get_files axis_sim_stim_ip4.xci]
-# set_property used_in_implementation false [get_files axis_sim_stim_ip4.xci]
-# set_property generate_synth_checkpoint false [get_files axis_sim_stim_ip4.xci]
-# 
-# set_property used_in_synthesis false [get_files axis_sim_record_ip0.xci]
-# set_property used_in_implementation false [get_files axis_sim_record_ip0.xci]
-# set_property generate_synth_checkpoint false [get_files axis_sim_record_ip0.xci]
-# 
-# set_property used_in_synthesis false [get_files axis_sim_record_ip1.xci]
-# set_property used_in_implementation false [get_files axis_sim_record_ip1.xci]
-# set_property generate_synth_checkpoint false [get_files axis_sim_record_ip1.xci]
-# 
-# set_property used_in_synthesis false [get_files axis_sim_record_ip2.xci]
-# set_property used_in_implementation false [get_files axis_sim_record_ip2.xci]
-# set_property generate_synth_checkpoint false [get_files axis_sim_record_ip2.xci]
-# 
-# set_property used_in_synthesis false [get_files axis_sim_record_ip3.xci]
-# set_property used_in_implementation false [get_files axis_sim_record_ip3.xci]
-# set_property generate_synth_checkpoint false [get_files axis_sim_record_ip3.xci]
-# 
-# set_property used_in_synthesis false [get_files axis_sim_record_ip4.xci]
-# set_property used_in_implementation false [get_files axis_sim_record_ip4.xci]
-# set_property generate_synth_checkpoint false [get_files axis_sim_record_ip4.xci]
-
-#Setting Simulation options
-# set_property top top_tb [get_filesets sim_1]
-# set_property top_lib xil_defaultlib [get_filesets sim_1]
-
-##set file order for cam library
-#reorder_files -before [get_files dmem.vhd ] [get_files cam_init_file_pack_xst.vhd]
-#reorder_files -before [get_files dmem.vhd ] [get_files cam_pkg.vhd]
-#reorder_files -after  [get_files cam_mem_srl16_ternwrcomp.vhd] [get_files cam_mem_srl16.vhd]
-#reorder_files -before [get_files cam_mem_srl16.vhd] [get_files cam_mem_srl16_wrcomp.vhd]
-#reorder_files -before [get_files cam_top.vhd] [get_files cam_rtl.vhd]
-#reorder_files -after  [get_files cam_mem_blk.vhd] [get_files cam_top.vhd]
-#reorder_files -before [get_files cam_top.vhd] [get_files cam_rtl.vhd]
-#reorder_files -after  [get_files cam_input_ternary.vhd] [get_files cam_input.vhd]
-#reorder_files -after  [get_files cam_mem_blk.vhd] [get_files cam_mem.vhd]
-#
-#
-##set file order for main library
-#reorder_files -before [get_files cuckoo.vhd] [get_files hash_pkg.vhd]
-#reorder_files -before [get_files test_flowblaze.vhd] [get_files delayer_axi.vhd]
-#reorder_files -before [get_files pipealu.vhd] [get_files rams.vhd]
-#reorder_files -after [get_files TProj_core.vhd] [get_files FlowBlaze156.vhd]
-#reorder_files -after [get_files TProj156.vhd] [get_files FlowBlaze156_2.vhd]
-#reorder_files -after [get_files TProj156.vhd] [get_files FlowBlaze156_5.vhd]
-#reorder_files -before [get_files rams.vhd] [get_files salutil.vhd]
-#reorder_files -after [get_files salutil.vhd] [get_files hash_pkg.vhd]
-#reorder_files -after [get_files rams.vhd] [get_files sam.vhd]
-#reorder_files -after [get_files sam.vhd] [get_files alu.vhd]
-#reorder_files -before [get_files cam_mem_srl16_block_word.vhd] [get_files cam_decoder.vhd]
-
-# set_property USED_IN {simulation} [get_files test0.axi]
-# set_property USED_IN_SIMULATION 0 [get_files control_sub_nf_riffa_dma_1_0.xci]
-# set_property file_type {Memory File} [get_files  {reg_exp.axi reg_stim.axi test0.axi test1.axi test2.axi test3.axi test4.axi}]
-
+add_files "./TProj.src/cam_init_file.mif"
 
 read_vhdl -library cam  TProj.src/xilinx_cam/dmem.vhd
 read_vhdl -library cam  [glob TProj.src/xilinx_cam/cam*.vhd]
-
 
 read_verilog "./TProj.src/axi_clocking.v"
 read_verilog "./TProj.src/rmtv2/stage.v"
@@ -266,7 +188,6 @@ read_verilog "./TProj.src/t_process.v"
 read_verilog "./TProj.src/packet_header_parser.v"
 read_verilog "./TProj.src/top_sim.v"
 read_verilog "./TProj.src/top_tb.v"
-# read_verilog "./TProj.src/.v"
 
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
@@ -276,12 +197,20 @@ set_property include_dirs ${proj_dir} [get_filesets sim_1]
 set_property simulator_language Mixed [current_project]
 set_property verilog_define { {SIMULATION=1} } [get_filesets sim_1]
 set_property -name xsim.more_options -value {-testplusarg TESTNAME=basic_test} -objects [get_filesets sim_1]
-set_property runtime {10us} [get_filesets sim_1]
+set_property runtime {} [get_filesets sim_1]
 set_property target_simulator xsim [current_project]
 set_property compxlib.compiled_library_dir {} [current_project]
 set_property top_lib xil_defaultlib [get_filesets sim_1]
 update_compile_order -fileset sim_1
 
+# workaround to avoid invoking default python2 in vivado
+# unset env(PYTHONHOME)
+# set output [exec python3 $::env(NF_DESIGN_DIR)/test/${test_name}/run.py]
+# puts $output
 
 launch_simulation -simset sim_1 -mode behavioral
 run 10us
+
+
+
+

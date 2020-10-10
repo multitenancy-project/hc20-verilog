@@ -77,4 +77,5 @@ clean:
 	rm -rfv xvlog.pb
 	rm -rfv TProj.hbs
 	rm -rfv project_sim
+	rm -rfv project_synth
 	rm -rfv ip_repo

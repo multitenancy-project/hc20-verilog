@@ -16,6 +16,8 @@ record2.axi
 record3.axi
 record4.axi
 
+project_sim/
+
 *.bit
 *.log
 *.jou
