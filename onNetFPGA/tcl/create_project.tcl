@@ -55,7 +55,8 @@ reset_target all [get_ips nf_10g_interface_shared_ip]
 generate_target all [get_ips nf_10g_interface_shared_ip]
 
 #Add a clock wizard
-create_ip -name clk_wiz -vendor xilinx.com -library ip -version 5.3 -module_name clk_wiz_ip
+# create_ip -name clk_wiz -vendor xilinx.com -library ip -version 5.3 -module_name clk_wiz_ip
+create_ip -name clk_wiz -vendor xilinx.com -library ip -version 6.0 -module_name clk_wiz_ip
 # set_property -dict [list   CONFIG.NUM_OUT_CLKS {3} CONFIG.CLKOUT2_USED {true} CONFIG.CLKOUT3_USED {true} CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {156.250} CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {100.000} CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {100.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.RESET_PORT {resetn} ] [get_ips clk_wiz_ip]
 # set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {200.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKFBOUT_MULT_F {5.000} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.MMCM_CLKOUT0_DIVIDE_F {5.000} CONFIG.RESET_PORT {resetn} CONFIG.CLKOUT1_JITTER {98.146} CONFIG.CLKOUT1_PHASE_ERROR {89.971}] [get_ips clk_wiz_ip]
 set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {156.250} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.RESET_PORT {resetn} ] [get_ips clk_wiz_ip]
@@ -71,32 +72,32 @@ reset_target all [get_ips proc_sys_reset_ip]
 generate_target all [get_ips proc_sys_reset_ip]
 
 #Add ID block
-create_ip -name blk_mem_gen -vendor xilinx.com -library ip -module_name identifier_ip
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name identifier_ip
 set_property -dict [list CONFIG.Interface_Type {AXI4} CONFIG.AXI_Type {AXI4_Lite} CONFIG.AXI_Slave_Type {Memory_Slave} CONFIG.Use_AXI_ID {false} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../TProj.src/id_rom16x32.coe} CONFIG.Fill_Remaining_Memory_Locations {true} CONFIG.Remaining_Memory_Locations {DEADDEAD} CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Use_Byte_Write_Enable {true} CONFIG.Byte_Size {8} CONFIG.Assume_Synchronous_Clk {true} CONFIG.Write_Width_A {32} CONFIG.Write_Depth_A {4096} CONFIG.Read_Width_A {32} CONFIG.Operating_Mode_A {READ_FIRST} CONFIG.Write_Width_B {32} CONFIG.Read_Width_B {32} CONFIG.Operating_Mode_B {READ_FIRST} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {false} CONFIG.Use_RSTB_Pin {true} CONFIG.Reset_Type {ASYNC} CONFIG.Port_A_Write_Rate {50} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips identifier_ip]
 set_property generate_synth_checkpoint false [get_files identifier_ip.xci]
 reset_target all [get_ips identifier_ip]
 generate_target all [get_ips identifier_ip]
 
 #Add Parser Action RAM IP
-create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name parse_act_ram_ip
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name parse_act_ram_ip
 set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../TProj.src/parse_act_ram_init_file.coe} CONFIG.Write_Width_A {260} CONFIG.Read_Width_A {260} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {260} CONFIG.Read_Width_B {260} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips parse_act_ram_ip]
 set_property generate_synth_checkpoint false [get_files parse_act_ram_ip.xci]
 reset_target all [get_ips parse_act_ram_ip]
 generate_target all [get_ips parse_act_ram_ip]
 
-create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name blk_mem_gen_0
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name blk_mem_gen_0
 set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../TProj.src/alu_2.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {32} CONFIG.Read_Width_A {32} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {32} CONFIG.Read_Width_B {32} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_0]
 set_property generate_synth_checkpoint false [get_files blk_mem_gen_0.xci]
 reset_target all [get_ips blk_mem_gen_0]
 generate_target all [get_ips blk_mem_gen_0]
 
-create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name blk_mem_gen_1
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name blk_mem_gen_1
 set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../TProj.src/lkup.coe} CONFIG.Write_Depth_A {16} CONFIG.Write_Width_A {625} CONFIG.Read_Width_A {625} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {625} CONFIG.Read_Width_B {625} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_1]
 set_property generate_synth_checkpoint false [get_files blk_mem_gen_1.xci]
 reset_target all [get_ips blk_mem_gen_1]
 generate_target all [get_ips blk_mem_gen_1]
 
-create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name blk_mem_gen_2
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name blk_mem_gen_2
 set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../TProj.src/key_extract.coe} CONFIG.Write_Depth_A {16} CONFIG.Write_Width_A {18} CONFIG.Read_Width_A {18} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {18} CONFIG.Read_Width_B {18} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_2]
 set_property generate_synth_checkpoint false [get_files blk_mem_gen_2.xci]
 reset_target all [get_ips blk_mem_gen_2]
@@ -273,16 +274,16 @@ set_property top_lib xil_defaultlib [get_filesets sim_1]
 #reorder_files -after [get_files sam.vhd] [get_files alu.vhd]
 #reorder_files -before [get_files cam_mem_srl16_block_word.vhd] [get_files cam_decoder.vhd]
 
-set_property USED_IN {simulation} [get_files test0.axi]
-set_property USED_IN_SIMULATION 0 [get_files control_sub_nf_riffa_dma_1_0.xci]
-set_property file_type {Memory File} [get_files  {reg_exp.axi reg_stim.axi test0.axi test1.axi test2.axi test3.axi test4.axi}]
+# set_property USED_IN {simulation} [get_files test0.axi]
+# set_property USED_IN_SIMULATION 0 [get_files control_sub_nf_riffa_dma_1_0.xci]
+# set_property file_type {Memory File} [get_files  {reg_exp.axi reg_stim.axi test0.axi test1.axi test2.axi test3.axi test4.axi}]
 
 
 #Setting Synthesis options
 
-create_run -flow {Vivado Synthesis 2016} synth
+create_run -flow {Vivado Synthesis 2020} synth
 #Setting Implementation options
-create_run impl -parent_run synth -flow {Vivado Implementation 2016}
+create_run impl -parent_run synth -flow {Vivado Implementation 2020}
 set_property strategy Performance_Explore [get_runs impl_1]
 set_property steps.phys_opt_design.is_enabled true [get_runs impl_1]
 #set_property STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]

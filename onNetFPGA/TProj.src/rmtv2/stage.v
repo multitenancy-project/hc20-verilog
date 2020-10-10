@@ -72,7 +72,8 @@ key_extract_2 #(
     .KEY_OFF(),
     .AXIL_WIDTH(),
     .KEY_OFF_ADDR_WIDTH()    
-)key_extract(
+)
+key_extract(
     .clk(axis_clk),
     .rst_n(aresetn),
     .phv_in(phv_in),
@@ -95,7 +96,8 @@ lookup_engine #(
     .PHV_LEN(),
     .KEY_LEN(),
     .ACT_LEN()
-) lookup_engine(
+) 
+lookup_engine(
     .clk(axis_clk),
     .rst_n(aresetn),
 
@@ -123,11 +125,12 @@ lookup_engine #(
     .action_addr()
 );
 
-action_engine_2 #(
+action_engine #(
     .STAGE(STAGE),
     .PHV_LEN(),
     .ACT_LEN()
-)action_engine(
+)
+action_engine(
     .clk(axis_clk),
     .rst_n(aresetn),
 

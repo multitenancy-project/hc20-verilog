@@ -224,6 +224,8 @@ end
 //ram for key extract
 //blk_mem_gen_2 act_ram_18w_16d
 blk_mem_gen_2 #(
+	.C_INIT_FILE_NAME    ("./key_extract.mif"),
+	.C_LOAD_INIT_FILE    (1)
 )
 act_ram_18w_16d
 (
