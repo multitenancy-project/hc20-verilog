@@ -6,8 +6,15 @@ TProj.src/xsim.dir
 TProj.xpr
 TProj.sim/
 TProj.ip_user_files/
+ip_repo/
 
 xsim.dir/
+
+record0.axi
+record1.axi
+record2.axi
+record3.axi
+record4.axi
 
 *.bit
 *.log

@@ -5,44 +5,54 @@ set top top
 set device xc7vx690t-3-ffg1761
 set public_repo_dir $::env(SUME_FOLDER)/lib/hw/
 set xilinx_repo_dir $::env(XILINX_PATH)/data/ip/xilinx/
+set bit_settings ./TProj.src/generic_bit.xdc 
+set project_constraints ./TProj.src/nf_sume_general.xdc
+set nf_10g_constraints ./TProj.src/nf_sume_10g.xdc
 
 #####################################
 # Project Settings
 #####################################
-create_project -name ${design} -part ${device}
+create_project -name ${design} -force -part ${device}
 set_property source_mgmt_mode DisplayOnly [current_project]
 set_property top ${top} [current_fileset]
-set_property ip_repo_paths ${public_repo_dir} [current_fileset]
 puts "Creating User Datapath reference project"
 
 
+#####################################
+# Constraints
+#####################################
+#
+create_fileset -constrset -quiet constraints
+set_property ip_repo_paths ${public_repo_dir} [current_fileset]
+add_files -fileset constraints -norecurse ${bit_settings}
+add_files -fileset constraints -norecurse ${project_constraints}
+add_files -fileset constraints -norecurse ${nf_10g_constraints}
+set_property is_enabled true [get_files ${project_constraints}]
+set_property is_enabled true [get_files ${bit_settings}]
+set_property is_enabled true [get_files ${nf_10g_constraints}]
+set_property constrset constraints [get_runs synth_1]
+set_property constrset constraints [get_runs impl_1]
 
 #####################################
 # Project
 #####################################
 update_ip_catalog
 
-# create_ip -name switch_output_port_lookup -vendor NetFPGA -library NetFPGA -module_name output_port_lookup_ip
-# set_property generate_synth_checkpoint false [get_files output_port_lookup_ip.xci]
-# reset_target all [get_ips output_port_lookup_ip]
-# generate_target all [get_ips output_port_lookup_ip]
-
+# input arbiter
 create_ip -name input_arbiter -vendor NetFPGA -library NetFPGA -module_name input_arbiter_ip
 set_property generate_synth_checkpoint false [get_files input_arbiter_ip.xci]
 reset_target all [get_ips input_arbiter_ip]
 generate_target all [get_ips input_arbiter_ip]
 
+# output queues
 create_ip -name output_queues -vendor NetFPGA -library NetFPGA -module_name output_queues_ip
 set_property generate_synth_checkpoint false [get_files output_queues_ip.xci]
 reset_target all [get_ips output_queues_ip]
 generate_target all [get_ips output_queues_ip]
 
-# source tcl/axilite_interconnect.tcl
-# source tcl/axilite_interconnect_5.tcl
 source tcl/control_sub.tcl
-source tcl/control_sub_sim.tcl
-
 source tcl/nf_10ge_interface.tcl
+
 create_ip -name nf_10ge_interface -vendor NetFPGA -library NetFPGA -module_name nf_10g_interface_ip
 set_property generate_synth_checkpoint false [get_files nf_10g_interface_ip.xci]
 reset_target all [get_ips nf_10g_interface_ip]
@@ -103,201 +113,43 @@ set_property generate_synth_checkpoint false [get_files blk_mem_gen_2.xci]
 reset_target all [get_ips blk_mem_gen_2]
 generate_target all [get_ips blk_mem_gen_2]
 
-# create_ip -name axi_clock_converter -module_name axi_clock_converter_0
-# set_property -dict [list CONFIG.PROTOCOL {AXI4LITE} CONFIG.DATA_WIDTH {32} CONFIG.ID_WIDTH {0} CONFIG.AWUSER_WIDTH {0} CONFIG.ARUSER_WIDTH {0} CONFIG.RUSER_WIDTH {0} CONFIG.WUSER_WIDTH {0} CONFIG.BUSER_WIDTH {0}] [get_ips axi_clock_converter_0]
-# 
-# create_ip -name axis_clock_converter -module_name axis_clock_converter_0
-# set_property -dict [list CONFIG.TDATA_NUM_BYTES {32} CONFIG.TUSER_WIDTH {128} CONFIG.HAS_TKEEP {1} CONFIG.HAS_TLAST {1}] [get_ips axis_clock_converter_0]
-# 
-# 
-# create_ip -name axis_data_fifo -module_name axis_data_fifo_0
-# set_property -dict [list CONFIG.TDATA_NUM_BYTES {32} CONFIG.TUSER_WIDTH {128} CONFIG.HAS_TKEEP {1} CONFIG.HAS_TLAST {1}] [get_ips axis_data_fifo_0]
-# 
+
 read_vhdl -library cam  TProj.src/xilinx_cam/dmem.vhd
 read_vhdl -library cam  [glob TProj.src/xilinx_cam/cam*.vhd]
 
 
-#create ip for simulation
-create_ip -name barrier -vendor NetFPGA -library NetFPGA -module_name barrier_ip
-reset_target all [get_ips barrier_ip]
-generate_target all [get_ips barrier_ip]
+read_verilog "./TProj.src/axi_clocking.v"
+read_verilog "./TProj.src/rmtv2/stage.v"
+read_verilog "./TProj.src/rmtv2/action/crossbar.v"
+read_verilog "./TProj.src/rmtv2/action/alu_1.v"
+read_verilog "./TProj.src/rmtv2/action/alu_2.v"
+read_verilog "./TProj.src/rmtv2/action/alu_3.v"
+read_verilog "./TProj.src/rmtv2/action/action_engine.v"
+read_verilog "./TProj.src/rmtv2/extract/key_extract_2.v"
+read_verilog "./TProj.src/rmtv2/lookup/lookup_engine.v"
+read_verilog "./TProj.src/pkt_filter.v"
+read_verilog "./TProj.src/nf_datapath.v"
+read_verilog "./TProj.src/t_process.v"
+read_verilog "./TProj.src/packet_header_parser.v"
+read_verilog "./TProj.src/top.v"
+# read_verilog "./TProj.src/.v"
 
-create_ip -name axis_sim_record -vendor NetFPGA -library NetFPGA -module_name axis_sim_record_ip0
-set_property -dict [list CONFIG.OUTPUT_FILE record0.axi] [get_ips axis_sim_record_ip0]
-reset_target all [get_ips axis_sim_record_ip0]
-generate_target all [get_ips axis_sim_record_ip0]
-
-create_ip -name axis_sim_record -vendor NetFPGA -library NetFPGA -module_name axis_sim_record_ip1
-set_property -dict [list CONFIG.OUTPUT_FILE record1.axi] [get_ips axis_sim_record_ip1]
-reset_target all [get_ips axis_sim_record_ip1]
-generate_target all [get_ips axis_sim_record_ip1]
-
-create_ip -name axis_sim_record -vendor NetFPGA -library NetFPGA -module_name axis_sim_record_ip2
-set_property -dict [list CONFIG.OUTPUT_FILE record2.axi] [get_ips axis_sim_record_ip2]
-reset_target all [get_ips axis_sim_record_ip2]
-generate_target all [get_ips axis_sim_record_ip2]
-
-create_ip -name axis_sim_record -vendor NetFPGA -library NetFPGA -module_name axis_sim_record_ip3
-set_property -dict [list CONFIG.OUTPUT_FILE record3.axi] [get_ips axis_sim_record_ip3]
-reset_target all [get_ips axis_sim_record_ip3]
-generate_target all [get_ips axis_sim_record_ip3]
-
-create_ip -name axis_sim_record -vendor NetFPGA -library NetFPGA -module_name axis_sim_record_ip4
-set_property -dict [list CONFIG.OUTPUT_FILE record4.axi] [get_ips axis_sim_record_ip4]
-reset_target all [get_ips axis_sim_record_ip4]
-generate_target all [get_ips axis_sim_record_ip4]
-
-create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis_sim_stim_ip0
-set_property -dict [list CONFIG.input_file test0.axi] [get_ips axis_sim_stim_ip0]
-generate_target all [get_ips axis_sim_stim_ip0]
-
-create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis_sim_stim_ip1
-set_property -dict [list CONFIG.input_file test1.axi] [get_ips axis_sim_stim_ip1]
-generate_target all [get_ips axis_sim_stim_ip1]
-
-create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis_sim_stim_ip2
-set_property -dict [list CONFIG.input_file test2.axi] [get_ips axis_sim_stim_ip2]
-generate_target all [get_ips axis_sim_stim_ip2]
-
-create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis_sim_stim_ip3
-set_property -dict [list CONFIG.input_file test3.axi] [get_ips axis_sim_stim_ip3]
-generate_target all [get_ips axis_sim_stim_ip3]
-
-create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis_sim_stim_ip4
-set_property -dict [list CONFIG.input_file test4.axi] [get_ips axis_sim_stim_ip4]
-generate_target all [get_ips axis_sim_stim_ip4]
-
-create_ip -name axi_sim_transactor -vendor NetFPGA -library NetFPGA -module_name axi_sim_transactor_ip
-set_property -dict [list CONFIG.STIM_FILE reg_stim.axi CONFIG.EXPECT_FILE reg_exp.axi CONFIG.LOG_FILE reg_stim.log] [get_ips axi_sim_transactor_ip]
-reset_target all [get_ips axi_sim_transactor_ip]
-generate_target all [get_ips axi_sim_transactor_ip]
-
-update_ip_catalog
-
-add_files [glob TProj.src/*.v]
-add_files [glob TProj.src/*.v]
-add_files [glob TProj.src/rmtv2/*.v]
-add_files [glob TProj.src/rmtv2/action/*.v]
-add_files [glob TProj.src/rmtv2/extract/*.v]
-add_files [glob TProj.src/rmtv2/lookup/*.v]
+# add_files [glob TProj.src/*.v]
+# add_files [glob TProj.src/*.v]
+# add_files [glob TProj.src/rmtv2/*.v]
+# add_files [glob TProj.src/rmtv2/action/*.v]
+# add_files [glob TProj.src/rmtv2/extract/*.v]
+# add_files [glob TProj.src/rmtv2/lookup/*.v]
 # add_files [glob TProj.src/*.vhd]
 add_files [glob TProj.src/*.coe]
 add_files [glob TProj.src/*.mif]
+add_files [glob TProj.src/input_files/*.axi]
 # read_verilog TProj.src/action_engine/action_engine.v
 # read_verilog TProj.src/key_extract/key_extract.v
 # read_verilog TProj.src/lookup/lookup_engine.v
 
-add_files [glob TProj.src/input_files/*.axi]
 # generic_bit.xdc, nf_sume_general.xdc, nf_sume_10g.xdc
-add_files -fileset constrs_1 [glob TProj.src/*.xdc]
+# add_files -fileset constrs_1 [glob TProj.src/*.xdc]
 
-set_property used_in_synthesis false [get_files top_tb.v]
-set_property used_in_implementation false [get_files top_tb.v]
-
-set_property used_in_synthesis false [get_files top_sim.v]
-set_property used_in_implementation false [get_files top_sim.v]
-
-set_property used_in_synthesis false [get_files barrier_ip.xci]
-set_property used_in_implementation false [get_files barrier_ip.xci]
-set_property generate_synth_checkpoint false [get_files barrier_ip.xci]
-
-set_property used_in_synthesis false [get_files axi_sim_transactor_ip.xci]
-set_property used_in_implementation false [get_files axi_sim_transactor_ip.xci]
-set_property generate_synth_checkpoint false [get_files axi_sim_transactor_ip.xci]
-
-set_property used_in_synthesis false [get_files axis_sim_stim_ip0.xci]
-set_property used_in_implementation false [get_files axis_sim_stim_ip0.xci]
-set_property generate_synth_checkpoint false [get_files axis_sim_stim_ip0.xci]
-
-set_property used_in_synthesis false [get_files axis_sim_stim_ip1.xci]
-set_property used_in_implementation false [get_files axis_sim_stim_ip1.xci]
-set_property generate_synth_checkpoint false [get_files axis_sim_stim_ip1.xci]
-
-set_property used_in_synthesis false [get_files axis_sim_stim_ip2.xci]
-set_property used_in_implementation false [get_files axis_sim_stim_ip2.xci]
-set_property generate_synth_checkpoint false [get_files axis_sim_stim_ip2.xci]
-
-set_property used_in_synthesis false [get_files axis_sim_stim_ip3.xci]
-set_property used_in_implementation false [get_files axis_sim_stim_ip3.xci]
-set_property generate_synth_checkpoint false [get_files axis_sim_stim_ip3.xci]
-
-set_property used_in_synthesis false [get_files axis_sim_stim_ip4.xci]
-set_property used_in_implementation false [get_files axis_sim_stim_ip4.xci]
-set_property generate_synth_checkpoint false [get_files axis_sim_stim_ip4.xci]
-
-set_property used_in_synthesis false [get_files axis_sim_record_ip0.xci]
-set_property used_in_implementation false [get_files axis_sim_record_ip0.xci]
-set_property generate_synth_checkpoint false [get_files axis_sim_record_ip0.xci]
-
-set_property used_in_synthesis false [get_files axis_sim_record_ip1.xci]
-set_property used_in_implementation false [get_files axis_sim_record_ip1.xci]
-set_property generate_synth_checkpoint false [get_files axis_sim_record_ip1.xci]
-
-set_property used_in_synthesis false [get_files axis_sim_record_ip2.xci]
-set_property used_in_implementation false [get_files axis_sim_record_ip2.xci]
-set_property generate_synth_checkpoint false [get_files axis_sim_record_ip2.xci]
-
-set_property used_in_synthesis false [get_files axis_sim_record_ip3.xci]
-set_property used_in_implementation false [get_files axis_sim_record_ip3.xci]
-set_property generate_synth_checkpoint false [get_files axis_sim_record_ip3.xci]
-
-set_property used_in_synthesis false [get_files axis_sim_record_ip4.xci]
-set_property used_in_implementation false [get_files axis_sim_record_ip4.xci]
-set_property generate_synth_checkpoint false [get_files axis_sim_record_ip4.xci]
-
-#Setting Simulation options
-set_property top top_tb [get_filesets sim_1]
-set_property top_lib xil_defaultlib [get_filesets sim_1]
-
-##set file order for cam library
-#reorder_files -before [get_files dmem.vhd ] [get_files cam_init_file_pack_xst.vhd]
-#reorder_files -before [get_files dmem.vhd ] [get_files cam_pkg.vhd]
-#reorder_files -after  [get_files cam_mem_srl16_ternwrcomp.vhd] [get_files cam_mem_srl16.vhd]
-#reorder_files -before [get_files cam_mem_srl16.vhd] [get_files cam_mem_srl16_wrcomp.vhd]
-#reorder_files -before [get_files cam_top.vhd] [get_files cam_rtl.vhd]
-#reorder_files -after  [get_files cam_mem_blk.vhd] [get_files cam_top.vhd]
-#reorder_files -before [get_files cam_top.vhd] [get_files cam_rtl.vhd]
-#reorder_files -after  [get_files cam_input_ternary.vhd] [get_files cam_input.vhd]
-#reorder_files -after  [get_files cam_mem_blk.vhd] [get_files cam_mem.vhd]
-#
-#
-##set file order for main library
-#reorder_files -before [get_files cuckoo.vhd] [get_files hash_pkg.vhd]
-#reorder_files -before [get_files test_flowblaze.vhd] [get_files delayer_axi.vhd]
-#reorder_files -before [get_files pipealu.vhd] [get_files rams.vhd]
-#reorder_files -after [get_files TProj_core.vhd] [get_files FlowBlaze156.vhd]
-#reorder_files -after [get_files TProj156.vhd] [get_files FlowBlaze156_2.vhd]
-#reorder_files -after [get_files TProj156.vhd] [get_files FlowBlaze156_5.vhd]
-#reorder_files -before [get_files rams.vhd] [get_files salutil.vhd]
-#reorder_files -after [get_files salutil.vhd] [get_files hash_pkg.vhd]
-#reorder_files -after [get_files rams.vhd] [get_files sam.vhd]
-#reorder_files -after [get_files sam.vhd] [get_files alu.vhd]
-#reorder_files -before [get_files cam_mem_srl16_block_word.vhd] [get_files cam_decoder.vhd]
-
-# set_property USED_IN {simulation} [get_files test0.axi]
-# set_property USED_IN_SIMULATION 0 [get_files control_sub_nf_riffa_dma_1_0.xci]
-# set_property file_type {Memory File} [get_files  {reg_exp.axi reg_stim.axi test0.axi test1.axi test2.axi test3.axi test4.axi}]
-
-
-#Setting Synthesis options
-
-create_run -flow {Vivado Synthesis 2020} synth
-#Setting Implementation options
-create_run impl -parent_run synth -flow {Vivado Implementation 2020}
-set_property strategy Performance_Explore [get_runs impl_1]
-set_property steps.phys_opt_design.is_enabled true [get_runs impl_1]
-#set_property STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
-#set_property STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
-#set_property STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE AlternateFlowWithRetiming [get_runs impl_1]
-set_property STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE ExploreWithHoldFix [get_runs impl_1]
-set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
-set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.is_enabled true [get_runs impl_1]
-#set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
-set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
-# The following implementation options will increase runtime, but get the best timing results
-#set_property strategy Performance_Explore [get_runs impl_1]
-### Solves synthesis crash in 2013.2
-##set_param synth.filterSetMaxDelayWithDataPathOnly true
-set_property SEVERITY {Warning} [get_drc_checks UCIO-1]
 
 exit

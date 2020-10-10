@@ -2,6 +2,8 @@
 # Vivado Launch Script
 ################################################################################
 
+JOBS=$(shell nproc)
+
 .PHONY: clean all
 
 all:
@@ -36,8 +38,19 @@ compile:
         fi
 	@cp ./SDK_Workspace/flowblaze/app/Debug/app.elf firmware.elf
 
-project: 
-	vivado -mode tcl -source tcl/create_project.tcl
+project: create_project run_synth run_impl
+
+create_project: 
+	vivado -mode batch -source tcl/create_project.tcl
+
+run_synth:
+	vivado -mode batch -source tcl/run_synth.tcl -tclargs ${JOBS}
+
+run_impl:
+	vivado -mode batch -source tcl/run_impl.tcl -tclargs ${JOBS}
+
+run_sim:
+	vivado -mode gui -source tcl/proj_sim.tcl 
 
 wipe:   clean	
 	rm -rfv  firmware/
@@ -63,3 +76,5 @@ clean:
 	rm -rfv xsim.dir
 	rm -rfv xvlog.pb
 	rm -rfv TProj.hbs
+	rm -rfv project_sim
+	rm -rfv ip_repo
