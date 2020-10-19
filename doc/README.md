@@ -3,6 +3,18 @@
   ![data_flow](data_flow.png)
 
   ---
+  
+  ### Parse Action
+  
+  one parse action is a 16-bit configuration, 
+  
+  * `[15:13]` reserved
+  * `[12:6]`  byte nubmer from 0
+  * `[5:4]` container type number, `01` for 2B, `10` for 4B, `11` for 6B
+  * `[3:1]` container index
+  * `[0]` validity bit
+  
+  ---
 
   #### Packet Header Vector
 
