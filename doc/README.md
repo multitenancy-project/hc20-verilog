@@ -149,11 +149,11 @@
 
   ![control_method](control_method.png)
   
-  We designed a stateless method to modify the table enties in the pipeline. Specifically, we use a specialized group of packets (called control packets) to modify the table entries in the RMT pipeline. The packet can be generated from the SW side and contains the info about which table its going to change and how the table will be changed.
+  We designed a stateless method to modify the table enties in the pipeline. Specifically, we use a specialized group of packets (i.e. control packets) to modify the table entries. The packet can be generated from the SW side and contains the info about which table is going to be changed and how the table will be changed.
   
   In the packet header field, there are fields indicating which module (using module ID) the packets is targetting. the content of the table entry is contained in the payload field. when the packet is received by the RMT pipeline, it will recgnized by the RMT modules and will travel all the way through the pipeline.
   
-  Each module will check whether it is the target of the packet: if so, the module will read out the payload and modify the table entry accordingly. Otherwise, it will pass the packet to the next module.If no former module matches the packet's target, before the packet come out of the pipeline, the deparser module will drop it no matter it matches or not.
+  Each module will check whether it is the target of the packet: if so, the module will read out the payload and modify the table entry accordingly. Otherwise, it will pass the packet to the next module. If no former module matches the packet's target, before the packet comes out of the pipeline, the deparser module will drop it no matter it matches or not.
 
   #### Table Types
 
@@ -171,7 +171,7 @@
     
       We use a two-layer indexing for the modules in RMT pipeline: Except the parser and deparser, who occur only once in the pipeline, all other modules (Key Extractors, Lookup Engines, Action Engines) indicate themselve with a **8b Module ID** -> |--5b--|--3b--|. The higher 5b tells which stage it belongs to, the lower 3b tells if it is a Key Extractor, Lookup Engine or Action Engine.
 
-      With this module ID, we will be able to indexing the modules correctly.
+      With this module ID, we will be able to index the modules precisely.
 
   2. Control Packet Header
 
@@ -191,7 +191,7 @@
 
       f. `payload`: the content of the table entry, its flexible in length.
 
-      **We use `0xf1` as the protocol type in the IP header for RMT control packets.**
+      **We use `0xf1f2` as the destination port in the UDP header for RMT control packets.**
 
 
   3. Control Packet Payload
@@ -200,9 +200,9 @@
 
   #### Implementation Details
 
-  1. We made each table dual-port RAM or CAM, thus making sure that the control packet will have no influence to the data path in all the modules. The entries will be modified using the write port.
+  1. We made each table dual-port RAM or CAM, thus making sure that the control packet will have no influence on the data path in all the modules. The entries will be modified using the write port.
 
-  2. The 2nd layer index of the Module ID is: **0x1** for Key Extractor, **0x2** for Lookup Engine, **0x3** for Action Engine.
+  2. The 2nd layer index (lowest 3b) of the Module ID is: **0x1** for Key Extractor, **0x2** for Lookup Engine, **0x3** for Action Engine.
 
   3. In order to have better isolation between control and data path, we will **add a module in front of the RMT pipeline to filter out control packets**, and feed the control packets to the pipeline using a different AXIS channel.
 
