@@ -1,3 +1,6 @@
 [submodule "corundum"]
 	path = corundum
 	url = git@github.com:wtao0221/corundum.git
+[submodule "corundum-forked"]
+	path = corundum-forked
+	url = git@github.com:wtao0221/corundum-forked.git
