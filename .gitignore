@@ -24,6 +24,17 @@ project_sim/
 *.pb
 *.wdb
 
+record0.axi
+record1.axi
+record2.axi
+record3.axi
+record4.axi
+
+project_sim/
+project_synth/
+
+xsim.dir/
+
 .root
 .project
 .Xil/
