@@ -30,7 +30,7 @@
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2016.4
+set scripts_vivado_version 2020.1
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
@@ -177,7 +177,7 @@ proc create_hier_cell_microblaze_0_local_memory { parentCell nameHier } {
   set ilmb_v10 [ create_bd_cell -type ip -vlnv xilinx.com:ip:lmb_v10:3.0 ilmb_v10 ]
 
   # Create instance: lmb_bram, and set properties
-  set lmb_bram [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.3 lmb_bram ]
+  set lmb_bram [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.4 lmb_bram ]
   set_property -dict [ list CONFIG.Memory_Type {True_Dual_Port_RAM} CONFIG.use_bram_block {BRAM_Controller}  ] $lmb_bram
 
   # Create interface connections
@@ -244,7 +244,7 @@ proc create_hier_cell_mbsys { parentCell nameHier } {
   set mdm_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:mdm:3.2 mdm_1 ]
 
   # Create instance: microblaze_0, and set properties
-  set microblaze_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:microblaze:10.0 microblaze_0 ]
+  set microblaze_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:microblaze:11.0 microblaze_0 ]
   set_property -dict [ list CONFIG.C_DEBUG_ENABLED {1} CONFIG.C_D_AXI {1} CONFIG.C_D_LMB {1} CONFIG.C_I_LMB {1}  ] $microblaze_0
 
   # Create instance: microblaze_0_axi_intc, and set properties
@@ -341,7 +341,7 @@ proc create_hier_cell_nf_mbsys { parentCell nameHier } {
   set_property -dict [ list CONFIG.C_BAUDRATE {115200}  ] $axi_uartlite_0
 
   # Create instance: clk_wiz_1, and set properties
-  set clk_wiz_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:5.3 clk_wiz_1 ]
+  set clk_wiz_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 clk_wiz_1 ]
 #  set_property -dict [ list CONFIG.PRIM_IN_FREQ {200.000} CONFIG.PRIM_SOURCE {No_buffer}  ] $clk_wiz_1
   
   # config 100MHz input clk
@@ -485,11 +485,11 @@ proc create_hier_cell_dma_sub { parentCell nameHier } {
 	     CONFIG.HAS_TKEEP {1} CONFIG.HAS_MI_TKEEP {1}] $axis_dwidth_dma_rx
 
  # Create instance: axis_fifo_10g_rx, and set properties
- set axis_fifo_10g_rx [create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo:1.1 axis_fifo_10g_rx]
+ set axis_fifo_10g_rx [create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo:2.0 axis_fifo_10g_rx]
  set_property -dict [list CONFIG.TDATA_NUM_BYTES {16} CONFIG.TUSER_WIDTH {128} CONFIG.IS_ACLK_ASYNC {1} CONFIG.FIFO_DEPTH {32}] $axis_fifo_10g_rx
 
   # Create instance: axis_fifo_10g_tx, and set properties
- set axis_fifo_10g_tx [create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo:1.1 axis_fifo_10g_tx]
+ set axis_fifo_10g_tx [create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo:2.0 axis_fifo_10g_tx]
  set_property -dict [list CONFIG.TDATA_NUM_BYTES {16} CONFIG.TUSER_WIDTH {128} CONFIG.IS_ACLK_ASYNC {1} CONFIG.FIFO_DEPTH {32}] $axis_fifo_10g_tx	 
   
   # Create instance: nf_riffa_dma_1, and set properties
@@ -499,7 +499,7 @@ proc create_hier_cell_dma_sub { parentCell nameHier } {
   set axi_clock_converter_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_clock_converter:2.1 axi_clock_converter_0 ] 
 
   # Create instance: pcie3_7x_1, and set properties
-  set pcie3_7x_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:pcie3_7x:4.2 pcie3_7x_1 ]
+  set pcie3_7x_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:pcie3_7x:4.3 pcie3_7x_1 ]
   set_property -dict [ list CONFIG.PF0_DEVICE_ID {7028} \
 CONFIG.PF0_INTERRUPT_PIN {NONE} CONFIG.PF1_DEVICE_ID {7011} \
 CONFIG.PL_LINK_CAP_MAX_LINK_SPEED {5.0_GT/s} CONFIG.PL_LINK_CAP_MAX_LINK_WIDTH {X8} \

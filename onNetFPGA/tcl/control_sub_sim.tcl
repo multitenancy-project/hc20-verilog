@@ -30,7 +30,7 @@
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2016.4
+set scripts_vivado_version 2020.1
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
@@ -236,25 +236,6 @@ assign_bd_address [get_bd_addr_segs {M03_AXI/Reg }]
   set_property offset $M03_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M03_AXI_Reg}]
   set_property range $M03_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M03_AXI_Reg}] 
 
-assign_bd_address [get_bd_addr_segs {M03_AXI/Reg }]  
-  set_property offset $M03_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M03_AXI_Reg}]
-  set_property range $M03_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M03_AXI_Reg}] 
- 
-assign_bd_address [get_bd_addr_segs {M04_AXI/Reg }]  
-  set_property offset $M04_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M04_AXI_Reg}]
-  set_property range $M04_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M04_AXI_Reg}] 
-
-assign_bd_address [get_bd_addr_segs {M05_AXI/Reg }]  
-  set_property offset $M05_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M05_AXI_Reg}]
-  set_property range $M05_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M05_AXI_Reg}] 
- 
-assign_bd_address [get_bd_addr_segs {M06_AXI/Reg }]  
-  set_property offset $M06_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M06_AXI_Reg}]
-  set_property range $M06_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M06_AXI_Reg}] 
- 
-assign_bd_address [get_bd_addr_segs {M07_AXI/Reg }]  
-  set_property offset $M07_BASEADDR [get_bd_addr_segs {S00_AXI/SEG_M06_AXI_Reg}]
-  set_property range $M07_SIZEADDR [get_bd_addr_segs {S00_AXI/SEG_M06_AXI_Reg}] 
  
   # Restore current instance
   current_bd_instance $oldCurInst
