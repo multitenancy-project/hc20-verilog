@@ -202,20 +202,6 @@ module nf_datapath #(
     wire                                     s_axis_opl_tready;
     wire                                     s_axis_opl_tlast;
    
-    wire [C_M_AXIS_DATA_WIDTH - 1:0]         m_axis_rmt_tdata;
-    wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_rmt_tkeep;
-    wire [C_M_AXIS_TUSER_WIDTH-1:0]          m_axis_rmt_tuser;
-    wire                                     m_axis_rmt_tvalid;
-    wire                                     m_axis_rmt_tready;
-    wire                                     m_axis_rmt_tlast;
-     
-    wire [C_M_AXIS_DATA_WIDTH - 1:0]         s_axis_rmt_tdata;
-    wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_rmt_tkeep;
-    wire [C_M_AXIS_TUSER_WIDTH-1:0]          s_axis_rmt_tuser;
-    wire                                     s_axis_rmt_tvalid;
-    wire                                     s_axis_rmt_tready;
-    wire                                     s_axis_rmt_tlast;
-   
   //Input Arbiter
   input_arbiter_ip 
  input_arbiter_v1_0 (
@@ -279,35 +265,18 @@ module nf_datapath #(
       .pkt_fwd() 
     );
     
-pkt_filter
-pkt_filter_1 (
+    
+rmt_wrapper
+rmt_pipeline (
 .clk						(axis_aclk),
 .aresetn					(axis_resetn),
-.s_axis_tdata               (s_axis_opl_tdata), // input from arbiter
+.s_axis_tdata               (s_axis_opl_tdata),
 .s_axis_tkeep               (s_axis_opl_tkeep),
 .s_axis_tuser               (s_axis_opl_tuser),
 .s_axis_tvalid              (s_axis_opl_tvalid),
 .s_axis_tready              (s_axis_opl_tready),
 .s_axis_tlast               (s_axis_opl_tlast),
-.m_axis_tdata               (m_axis_rmt_tdata), // output to rmt module
-.m_axis_tkeep               (m_axis_rmt_tkeep),
-.m_axis_tuser               (m_axis_rmt_tuser),
-.m_axis_tvalid              (m_axis_rmt_tvalid),
-.m_axis_tready              (m_axis_rmt_tready),
-.m_axis_tlast               (m_axis_rmt_tlast)
-);
 
-    
-t_process
-t_process_1 (
-.clk						(axis_aclk),
-.aresetn					(axis_resetn),
-.s_axis_tdata               (m_axis_rmt_tdata),
-.s_axis_tkeep               (m_axis_rmt_tkeep),
-.s_axis_tuser               (m_axis_rmt_tuser),
-.s_axis_tvalid              (m_axis_rmt_tvalid),
-.s_axis_tready              (m_axis_rmt_tready),
-.s_axis_tlast               (m_axis_rmt_tlast),
 .m_axis_tdata               (m_axis_opl_tdata),
 .m_axis_tkeep               (m_axis_opl_tkeep),
 .m_axis_tuser               (m_axis_opl_tuser),
