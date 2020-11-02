@@ -11,7 +11,7 @@
   one parse action is a 16-bit configuration, 
   
   * `[15:13]` reserved
-  * `[12:6]`  byte nubmer from 0
+  * `[12:6]`  byte number from 0
   * `[5:4]` container type number, `01` for 2B, `10` for 4B, `11` for 6B
   * `[3:1]` container index
   * `[0]` validity bit
@@ -136,7 +136,7 @@
 
   #### Deparser
 
-  Deparser is used to recombine the packet header using info from the orginal packet header and PHV. Generally, it reverses the process executed in Parser.
+  Deparser is used to recombine the packet header using info from the original packet header and PHV. Generally, it reverses the process executed in Parser.
 
 ---
 
@@ -148,11 +148,11 @@
   #### The Method
 
   ![control_method](control_method.png)
-  
+
   We designed a stateless method to modify the table enties in the pipeline. Specifically, we use a specialized group of packets (i.e. control packets) to modify the table entries. The packet can be generated from the SW side and contains the info about which table is going to be changed and how the table will be changed.
-  
+
   In the packet header field, there are fields indicating which module (using module ID) the packets is targetting. the content of the table entry is contained in the payload field. when the packet is received by the RMT pipeline, it will recgnized by the RMT modules and will travel all the way through the pipeline.
-  
+
   Each module will check whether it is the target of the packet: if so, the module will read out the payload and modify the table entry accordingly. Otherwise, it will pass the packet to the next module. If no former module matches the packet's target, before the packet comes out of the pipeline, the deparser module will drop it no matter it matches or not.
 
   #### Table Types
@@ -168,8 +168,8 @@
   #### Data Structures
 
   1. Module ID
-    
-      We use a two-layer indexing for the modules in RMT pipeline: Except the parser and deparser, who occur only once in the pipeline, all other modules (Key Extractors, Lookup Engines, Action Engines) indicate themselve with a **8b Module ID** -> |--5b--|--3b--|. The higher 5b tells which stage it belongs to, the lower 3b tells if it is a Key Extractor, Lookup Engine or Action Engine.
+        
+      We use a two-layer indexing for the modules in RMT pipeline: Except the parser and deparser, who occur only once in the pipeline, all other modules (Key Extractors, Lookup Engines, Action Engines) indicate themselves with a **8b Module ID** -> |--5b--|--3b--|. The higher 5b tells which stage it belongs to, the lower 3b tells if it is a Key Extractor, Lookup Engine or Action Engine.
 
       With this module ID, we will be able to index the modules precisely.
 
@@ -187,7 +187,7 @@
 
       d. `index`: the index of the table entry.
 
-      e. `padding`: used to make sure the payload starts in the 2nd 512b of the packet (for better engineering).
+      e. `padding`: used to make sure the payload starts in **the 2nd 512b** of the packet (for better engineering).
 
       f. `payload`: the content of the table entry, its flexible in length.
 
@@ -208,7 +208,7 @@
 
   #### Benefits over AXIL [TODO]
 
-  
+
 ---
   #### Note 
 
