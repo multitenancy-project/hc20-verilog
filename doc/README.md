@@ -191,7 +191,7 @@
 
       f. `payload`: the content of the table entry, its flexible in length.
 
-      **We use `0xf1f2` as the destination port in the UDP header for RMT control packets.**
+      **We use `0xf2f1` (Big Endian) as the destination port in the UDP header for RMT control packets.**
 
 
   3. Control Packet Payload
