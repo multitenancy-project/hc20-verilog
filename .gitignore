@@ -10,11 +10,7 @@ ip_repo/
 
 xsim.dir/
 
-record0.axi
-record1.axi
-record2.axi
-record3.axi
-record4.axi
+vivado_pid*
 
 project_sim/
 
