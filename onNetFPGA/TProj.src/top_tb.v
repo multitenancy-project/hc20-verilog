@@ -118,10 +118,10 @@
     .pcie_7x_mgt_txp(pcie_7x_mgt_txp),
   //10G Interface
   
-    //.sfp0_rx_p(rxp),
-    //.sfp0_rx_n(rxn),
-    //.sfp0_tx_p(txp),
-    //.sfp0_tx_n(txn),
+    // .sfp0_rx_p(rxp),
+    // .sfp0_rx_n(rxn),
+    // .sfp0_tx_p(txp),
+    // .sfp0_tx_n(txn),
     
   // PCIe Clock
     .sys_clkp(sys_clkp),

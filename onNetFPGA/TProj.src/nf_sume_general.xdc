@@ -73,8 +73,7 @@ set_property IOSTANDARD LVDS [get_ports fpga_sysclk_n]
 create_clock -period 5.000 -name fpga_sysclk_p -waveform {0.000 2.500} [get_ports fpga_sysclk_p]
 
 ## -- 200MHz & 100MHz clks
-# create_clock -period 5.000 -name clk_200 -add [get_pins -hier -filter name=~*axi_clocking_i*clk_wiz_i/clk_out1]
-create_clock -period 6.400 -name clk_200 -add [get_pins -hier -filter name=~*axi_clocking_i*clk_wiz_i/clk_out1]
+create_clock -period 5.000 -name clk_200 -add [get_pins -hier -filter name=~*axi_clocking_i*clk_wiz_i/clk_out1]
 create_clock -period 10.000 -name axi_clk -add [get_pins -hier -filter name=~*axi_lite_bufg0/O]
 
 # Main I2C Bus - 100KHz - SUME
