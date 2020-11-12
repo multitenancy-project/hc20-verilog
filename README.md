@@ -1,7 +1,7 @@
 # hc20-verilog
 
 TODOs:
-- add BRAM for mask in key extractor module
+- --add BRAM for mask in key extractor module--
 
 - add VLAN id as part of comparison in lookup engine
 
