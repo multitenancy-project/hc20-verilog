@@ -157,13 +157,14 @@
 
   #### Table Types
 
-  There are 5 types of tables that need to be mentained using control plane.
+  There are 6 types of tables that need to be mentained using control plane.
 
   1. **Parsing Table**: This is a ***260x16 RAM*** that stores the info about how to extract containers out of the 1st 1024b of the packet. This table is duplicated in both **Parser** and **Deparser**.
   2. **Extracting Table**: This is a ***18x16 RAM*** that indicates how the KEYs are generated from PHV. This table is in **Key Extractor**. Be noted that each entry of the table should be used cocurrently with a mask entry, indicating which bit should be masked (ignored).
-  3. **Lookup Table** (TCAM): This is a ***197x16 TCAM*** that serves as the lookup engine in the RMT pipeline. It is in **Lookup Engine**.
-  4. **Action Table**: This is a ***625x16 RAM*** that stores VLIW instruction sets. It is also in **Lookup Engine**.
-  5. **Key-Value Table**: This is a ***32x32 RAM*** that supports the key-value store in RMT pipeline. It is in **Action Engine**.
+  3. **Mask Table**: This is a ***197x16 RAM*** that masks certain bits in the key field. It is also in **Key Extractor**. 
+  4. **Lookup Table** (TCAM): This is a ***197x16 TCAM*** that serves as the lookup engine in the RMT pipeline. It is in **Lookup Engine**.
+  5. **Action Table**: This is a ***625x16 RAM*** that stores VLIW instruction sets. It is also in **Lookup Engine**.
+  6. **Key-Value Table**: This is a ***32x32 RAM*** that supports the key-value store in RMT pipeline. It is in **Action Engine**.
 
   #### Data Structures
 
@@ -191,20 +192,21 @@
 
       f. `payload`: the content of the table entry, its flexible in length.
 
-      **We use `0xf2f1` (Big Endian) as the destination port in the UDP header for RMT control packets.**
+      **We use `0xf1f2` (Big Endian) as the destination port in the UDP header for RMT control packets.**
 
 
   3. Control Packet Payload
   
       To make things easy, we want each packet to be able to modify a whole table entry at a time. In order to achieve the goal. the packet length is flexible according to which table it is targeting. For example, if we are going to modify the entry of lookup table, we will only use the highest 197 bits of the payload field.
+      Another design choice we made was: the control packet suports write multiple table entries with a single packet. This is enabled by adding more payload after the 1st entry.
 
   #### Implementation Details
 
   1. We made each table dual-port RAM or CAM, thus making sure that the control packet will have no influence on the data path in all the modules. The entries will be modified using the write port.
 
-  2. The 2nd layer index (lowest 3b) of the Module ID is: **0x1** for Key Extractor, **0x2** for Lookup Engine, **0x3** for Action Engine.
+  2. The 2nd layer index (lowest 3b) of the Module ID is: **0x0** for Parser, **0x1** for Key Extractor, **0x2** for Lookup Engine, **0x3** for Action Engine, **0x5** for Deparser.
 
-  3. In order to have better isolation between control and data path, we will **add a module in front of the RMT pipeline to filter out control packets**, and feed the control packets to the pipeline using a different AXIS channel.
+  3. In order to have better isolation between control and data path, we **added a module (pkt_filter) in front of the RMT pipeline to filter out control packets**, and feed the control packets to the pipeline using a different AXIS channel.
 
   #### Benefits over AXIL [TODO]
 
