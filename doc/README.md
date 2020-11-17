@@ -70,22 +70,24 @@
 
   #### Lookup engine
 
-  Lookup Engine takes the key generated from Parser, conducts a matching operation and outputs an VLIW-style `action` which determines the actions that need to execute in the Action Engine.
+  Lookup Engine takes the key generated from Key Extractor, conducts a matching operation and outputs an VLIW-style `action` which determines the actions that need to execute in the Action Engine.
 
 
   * Format of the lookup table entry
   
-    each entry consists of one 261b entry and one 261b mask to support ternary match. (256b for the key and 5b for conditional flags)
+    each entry is one 197b match entry to support ternary match. (192b for the key and 5b for conditional flags)
   
-    For example: entry1: `10011001...1001` mask1:  `111111111...1000` would avoid the match of the lowest 3 bits.
+  * VLIW-style action table entry
+  
+    each entry contains 25x25b (625b in total) sub-actions, indicating how the PHV is going to be modified in the Action Engine.
   
   * Lookup elements
   
-    Lookup Engine consists of 1 TCAM engine which is 271b wide.
+    Lookup Engine consists of 1 TCAM engine which is 197b wide.
   
   * Control plane
   
-    both lookup table entry and action ram wil be configured using AXI-Lite. 
+    both lookup table entry and action table wil be configured using our proposed control path. 
 
 ---
 
