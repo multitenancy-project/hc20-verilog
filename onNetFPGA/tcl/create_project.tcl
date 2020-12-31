@@ -75,8 +75,8 @@ generate_target all [get_ips nf_10g_interface_shared_ip]
 # reset_target all [get_ips clk_wiz_ip]
 # generate_target all [get_ips clk_wiz_ip]
 create_ip -name clk_wiz -vendor xilinx.com -library ip -version 6.0 -module_name clk_wiz_ip
-set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {50.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.RESET_PORT {resetn} ] [get_ips clk_wiz_ip]
-# set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {156.250} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.RESET_PORT {resetn} ] [get_ips clk_wiz_ip]
+# set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {50.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.RESET_PORT {resetn} ] [get_ips clk_wiz_ip]
+set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {160.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.RESET_PORT {resetn} ] [get_ips clk_wiz_ip]
 # set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {200.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKFBOUT_MULT_F {5.000} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.MMCM_CLKOUT0_DIVIDE_F {5.000} CONFIG.RESET_PORT {resetn} CONFIG.CLKOUT1_JITTER {98.146} CONFIG.CLKOUT1_PHASE_ERROR {89.971}] [get_ips clk_wiz_ip]
 set_property generate_synth_checkpoint false [get_files clk_wiz_ip.xci]
 reset_target all [get_ips clk_wiz_ip]
@@ -150,6 +150,53 @@ set_property -dict [list \
 set_property generate_synth_checkpoint false [get_files page_tbl_16w_16d.xci]
 reset_target all [get_ips page_tbl_16w_16d]
 generate_target all [get_ips page_tbl_16w_16d]
+
+###
+
+# create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name key_mask_ram_101w_16d
+# 
+# set_property -dict [list \
+# 	CONFIG.Memory_Type {Simple_Dual_Port_RAM} \
+# 	CONFIG.Load_Init_File {false} \
+# 	CONFIG.Write_Depth_A {16} \
+# 	CONFIG.Write_Width_A {101} \
+# 	CONFIG.Read_Width_A {101} \
+# 	CONFIG.Operating_Mode_A {NO_CHANGE} \
+# 	CONFIG.Write_Width_B {101} \
+# 	CONFIG.Read_Width_B {101} \
+# 	CONFIG.Enable_B {Use_ENB_Pin} \
+# 	CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
+# 	CONFIG.Register_PortB_Output_of_Memory_Primitives {true} \
+# 	CONFIG.Port_B_Clock {100} \
+# 	CONFIG.Port_B_Enable_Rate {100} \
+# 	] [get_ips key_mask_ram_101w_16d]
+# 
+# set_property generate_synth_checkpoint false [get_files key_mask_ram_101w_16d.xci]
+# reset_target all [get_ips key_mask_ram_101w_16d]
+# generate_target all [get_ips key_mask_ram_101w_16d]
+# 
+# 
+# create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name key_offset_ram_9w_16d
+# 
+# set_property -dict [list \
+# 	CONFIG.Memory_Type {Simple_Dual_Port_RAM} \
+# 	CONFIG.Load_Init_File {false} \
+# 	CONFIG.Write_Depth_A {16} \
+# 	CONFIG.Write_Width_A {9} \
+# 	CONFIG.Read_Width_A {9} \
+# 	CONFIG.Operating_Mode_A {NO_CHANGE} \
+# 	CONFIG.Write_Width_B {9} \
+# 	CONFIG.Read_Width_B {9} \
+# 	CONFIG.Enable_B {Use_ENB_Pin} \
+# 	CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
+# 	CONFIG.Register_PortB_Output_of_Memory_Primitives {true} \
+# 	CONFIG.Port_B_Clock {100} \
+# 	CONFIG.Port_B_Enable_Rate {100} \
+# 	] [get_ips key_offset_ram_9w_16d]
+
+# set_property generate_synth_checkpoint false [get_files key_offset_ram_9w_16d.xci]
+# reset_target all [get_ips key_offset_ram_9w_16d]
+# generate_target all [get_ips key_offset_ram_9w_16d]
 
 #########
 

@@ -12,10 +12,10 @@
 #        Location constraints for 4x 10GbE SFP+ interface used in reference
 #        projects.
 #
-# This software was developed by Stanford University and the University of Cambridge Computer Laboratory 
+# This software was developed by Stanford University and the University of Cambridge Computer Laboratory
 # under National Science Foundation under Grant No. CNS-0855268,
 # the University of Cambridge Computer Laboratory under EPSRC INTERNET Project EP/H040536/1 and
-# by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"), 
+# by the University of Cambridge Computer Laboratory under DARPA/AFRL contract FA8750-11-C-0249 ("MRC2"),
 # as part of the DARPA MRC research programme.
 #
 # @NETFPGA_LICENSE_HEADER_START@
@@ -111,14 +111,14 @@ set_property IOSTANDARD LVCMOS15 [get_ports sfp?_?x_led]
 #set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets nf_10g_shared_i/inst/refclk]
 
 ## Timing Constraints
-create_clock -period 3.103  [get_pins -hier -filter name=~*interface_0*gthe2_i/RXOUTCLK]
-create_clock -period 3.103  [get_pins -hier -filter name=~*interface_0*gthe2_i/TXOUTCLK]
-create_clock -period 3.103  [get_pins -hier -filter name=~*interface_1*gthe2_i/RXOUTCLK]
-create_clock -period 3.103  [get_pins -hier -filter name=~*interface_1*gthe2_i/TXOUTCLK]
-create_clock -period 3.103  [get_pins -hier -filter name=~*interface_2*gthe2_i/RXOUTCLK]
-create_clock -period 3.103  [get_pins -hier -filter name=~*interface_2*gthe2_i/TXOUTCLK]
-create_clock -period 3.103  [get_pins -hier -filter name=~*interface_3*gthe2_i/RXOUTCLK]
-create_clock -period 3.103  [get_pins -hier -filter name=~*interface_3*gthe2_i/TXOUTCLK]
+create_clock -period 3.103 [get_pins -hier -filter name=~*interface_0*gthe2_i/RXOUTCLK]
+create_clock -period 3.103 [get_pins -hier -filter name=~*interface_0*gthe2_i/TXOUTCLK]
+create_clock -period 3.103 [get_pins -hier -filter name=~*interface_1*gthe2_i/RXOUTCLK]
+create_clock -period 3.103 [get_pins -hier -filter name=~*interface_1*gthe2_i/TXOUTCLK]
+create_clock -period 3.103 [get_pins -hier -filter name=~*interface_2*gthe2_i/RXOUTCLK]
+create_clock -period 3.103 [get_pins -hier -filter name=~*interface_2*gthe2_i/TXOUTCLK]
+create_clock -period 3.103 [get_pins -hier -filter name=~*interface_3*gthe2_i/RXOUTCLK]
+create_clock -period 3.103 [get_pins -hier -filter name=~*interface_3*gthe2_i/TXOUTCLK]
 
 
 
@@ -136,20 +136,28 @@ set_false_path -from [get_clocks clk_200] -to [get_clocks xphy_refclk_p]
 
 # set_false_path -from [get_clocks userclk1] -to [get_clocks clk_200]
 # set_false_path -from [get_clocks clk_200] -to [get_clocks userclk1]
-# 
+#
 # set_false_path -from [get_clocks userclk1] -to [get_clocks sys_clk]
 # set_false_path -from [get_clocks sys_clk] -to [get_clocks userclk1]
-# 
+#
 # set_false_path -from [get_clocks userclk1] -to [get_clocks axi_clk]
 # set_false_path -from [get_clocks axi_clk] -to [get_clocks userclk1]
-# 
+#
 # set_false_path -from [get_clocks userclk1] -to [get_clocks xphy_refclk_p]
 # set_false_path -from [get_clocks xphy_refclk_p] -to [get_clocks userclk1]
 
 set_false_path -from [get_clocks -filter name=~*interface_*gthe2_i/RXOUTCLK] -to [get_clocks xphy_refclk_p]
 set_false_path -from [get_clocks xphy_refclk_p] -to [get_clocks -filter name=~*interface_*gthe2_i/RXOUTCLK]
 
-set_false_path -from [get_clocks  -filter name=~*interface_*gthe2_i/TXOUTCLK] -to [get_clocks xphy_refclk_p]
+set_false_path -from [get_clocks -filter name=~*interface_*gthe2_i/TXOUTCLK] -to [get_clocks xphy_refclk_p]
 set_false_path -from [get_clocks xphy_refclk_p] -to [get_clocks -filter name=~*interface_*gthe2_i/TXOUTCLK]
+
+
+
+
+
+
+
+
 
 
