@@ -98,31 +98,31 @@ generate_target all [get_ips identifier_ip]
 
 #Add Parser Action RAM IP
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name parse_act_ram_ip
-set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/parse_act_ram_init_file.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {160} CONFIG.Read_Width_A {160} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {160} CONFIG.Read_Width_B {160} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips parse_act_ram_ip]
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/memory_init_files/parse_act_ram_init_file.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {160} CONFIG.Read_Width_A {160} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {160} CONFIG.Read_Width_B {160} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips parse_act_ram_ip]
 set_property generate_synth_checkpoint false [get_files parse_act_ram_ip.xci]
 reset_target all [get_ips parse_act_ram_ip]
 generate_target all [get_ips parse_act_ram_ip]
 
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name blk_mem_gen_0
-set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/alu_2.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {32} CONFIG.Read_Width_A {32} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {32} CONFIG.Read_Width_B {32} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_0]
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/memory_init_files/alu_2.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {32} CONFIG.Read_Width_A {32} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {32} CONFIG.Read_Width_B {32} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_0]
 set_property generate_synth_checkpoint false [get_files blk_mem_gen_0.xci]
 reset_target all [get_ips blk_mem_gen_0]
 generate_target all [get_ips blk_mem_gen_0]
 
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name blk_mem_gen_1
-set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/lkup.coe} CONFIG.Write_Depth_A {16} CONFIG.Write_Width_A {625} CONFIG.Read_Width_A {625} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {625} CONFIG.Read_Width_B {625} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_1]
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/memory_init_files/lkup.coe} CONFIG.Write_Depth_A {16} CONFIG.Write_Width_A {625} CONFIG.Read_Width_A {625} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {625} CONFIG.Read_Width_B {625} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_1]
 set_property generate_synth_checkpoint false [get_files blk_mem_gen_1.xci]
 reset_target all [get_ips blk_mem_gen_1]
 generate_target all [get_ips blk_mem_gen_1]
 
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name blk_mem_gen_2
-set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/key_extract.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {38} CONFIG.Read_Width_A {38} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {38} CONFIG.Read_Width_B {38} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_2]
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/memory_init_files/key_extract.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {38} CONFIG.Read_Width_A {38} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {38} CONFIG.Read_Width_B {38} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_2]
 set_property generate_synth_checkpoint false [get_files blk_mem_gen_2.xci]
 reset_target all [get_ips blk_mem_gen_2]
 generate_target all [get_ips blk_mem_gen_2]
 
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name blk_mem_gen_3
-set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/key_mask.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {193} CONFIG.Read_Width_A {193} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {193} CONFIG.Read_Width_B {193} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_3]
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/memory_init_files/key_mask.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {193} CONFIG.Read_Width_A {193} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {193} CONFIG.Read_Width_B {193} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_3]
 set_property generate_synth_checkpoint false [get_files blk_mem_gen_3.xci]
 reset_target all [get_ips blk_mem_gen_3]
 generate_target all [get_ips blk_mem_gen_3]
@@ -133,7 +133,7 @@ create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_
 set_property -dict [list \
 	CONFIG.Memory_Type {Simple_Dual_Port_RAM} \
 	CONFIG.Load_Init_File {true} \
-	CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/page_tlb.coe} \
+	CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/memory_init_files/page_tlb.coe} \
 	CONFIG.Write_Depth_A {32} \
 	CONFIG.Write_Width_A {16} \
 	CONFIG.Read_Width_A {16} \
@@ -216,7 +216,7 @@ read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/alu_1.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/alu_2.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/alu_3.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/crossbar.v"
-read_verilog "./TProj.src/lib_rmt_256b/rmtv2/extract/key_extract_2.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2/extract/key_extract.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/lookup/lookup_engine.v"
 #
 read_verilog "./TProj.src/axi_clocking.v"
@@ -231,8 +231,8 @@ read_verilog "./TProj.src/top.v"
 # add_files [glob TProj.src/rmtv2/extract/*.v]
 # add_files [glob TProj.src/rmtv2/lookup/*.v]
 # add_files [glob TProj.src/*.vhd]
-add_files [glob TProj.src/lib_rmt_256b/rmtv2/*.coe]
-add_files [glob TProj.src/lib_rmt_256b/rmtv2/*.mif]
+add_files [glob TProj.src/lib_rmt_256b/rmtv2/memory_init_files/*.coe]
+add_files [glob TProj.src/lib_rmt_256b/rmtv2/memory_init_files/*.mif]
 # add_files [glob TProj.src/input_files/*.axi]
 # read_verilog TProj.src/action_engine/action_engine.v
 # read_verilog TProj.src/key_extract/key_extract.v
