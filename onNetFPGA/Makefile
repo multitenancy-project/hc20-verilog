@@ -40,6 +40,8 @@ compile:
 
 project: create_project run_synth run_impl
 
+gen_bit: run_synth run_impl
+
 create_project: 
 	vivado -mode batch -source tcl/create_project.tcl
 

@@ -75,7 +75,8 @@ generate_target all [get_ips nf_10g_interface_shared_ip]
 # reset_target all [get_ips clk_wiz_ip]
 # generate_target all [get_ips clk_wiz_ip]
 create_ip -name clk_wiz -vendor xilinx.com -library ip -version 6.0 -module_name clk_wiz_ip
-set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {156.250} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.RESET_PORT {resetn} ] [get_ips clk_wiz_ip]
+# set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {50.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.RESET_PORT {resetn} ] [get_ips clk_wiz_ip]
+set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {160.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.RESET_PORT {resetn} ] [get_ips clk_wiz_ip]
 # set_property -dict [list CONFIG.PRIM_IN_FREQ {200.00} CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {200.000} CONFIG.USE_SAFE_CLOCK_STARTUP {true} CONFIG.RESET_TYPE {ACTIVE_LOW} CONFIG.CLKIN1_JITTER_PS {50.0} CONFIG.CLKOUT1_DRIVES {BUFGCE} CONFIG.CLKOUT2_DRIVES {BUFGCE} CONFIG.CLKOUT3_DRIVES {BUFGCE} CONFIG.CLKOUT4_DRIVES {BUFGCE} CONFIG.CLKOUT5_DRIVES {BUFGCE} CONFIG.CLKOUT6_DRIVES {BUFGCE} CONFIG.CLKOUT7_DRIVES {BUFGCE} CONFIG.MMCM_CLKFBOUT_MULT_F {5.000} CONFIG.MMCM_CLKIN1_PERIOD {5.0} CONFIG.MMCM_CLKOUT0_DIVIDE_F {5.000} CONFIG.RESET_PORT {resetn} CONFIG.CLKOUT1_JITTER {98.146} CONFIG.CLKOUT1_PHASE_ERROR {89.971}] [get_ips clk_wiz_ip]
 set_property generate_synth_checkpoint false [get_files clk_wiz_ip.xci]
 reset_target all [get_ips clk_wiz_ip]
@@ -97,34 +98,107 @@ generate_target all [get_ips identifier_ip]
 
 #Add Parser Action RAM IP
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name parse_act_ram_ip
-set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/parse_act_ram_init_file.coe} CONFIG.Write_Width_A {260} CONFIG.Read_Width_A {260} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {260} CONFIG.Read_Width_B {260} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips parse_act_ram_ip]
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/memory_init_files/parse_act_ram_init_file.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {160} CONFIG.Read_Width_A {160} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {160} CONFIG.Read_Width_B {160} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips parse_act_ram_ip]
 set_property generate_synth_checkpoint false [get_files parse_act_ram_ip.xci]
 reset_target all [get_ips parse_act_ram_ip]
 generate_target all [get_ips parse_act_ram_ip]
 
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name blk_mem_gen_0
-set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/alu_2.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {32} CONFIG.Read_Width_A {32} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {32} CONFIG.Read_Width_B {32} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_0]
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/memory_init_files/alu_2.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {32} CONFIG.Read_Width_A {32} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {32} CONFIG.Read_Width_B {32} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_0]
 set_property generate_synth_checkpoint false [get_files blk_mem_gen_0.xci]
 reset_target all [get_ips blk_mem_gen_0]
 generate_target all [get_ips blk_mem_gen_0]
 
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name blk_mem_gen_1
-set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/lkup.coe} CONFIG.Write_Depth_A {16} CONFIG.Write_Width_A {625} CONFIG.Read_Width_A {625} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {625} CONFIG.Read_Width_B {625} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_1]
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/memory_init_files/lkup.coe} CONFIG.Write_Depth_A {16} CONFIG.Write_Width_A {625} CONFIG.Read_Width_A {625} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {625} CONFIG.Read_Width_B {625} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_1]
 set_property generate_synth_checkpoint false [get_files blk_mem_gen_1.xci]
 reset_target all [get_ips blk_mem_gen_1]
 generate_target all [get_ips blk_mem_gen_1]
 
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name blk_mem_gen_2
-set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/key_extract.coe} CONFIG.Write_Depth_A {16} CONFIG.Write_Width_A {18} CONFIG.Read_Width_A {18} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {18} CONFIG.Read_Width_B {18} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_2]
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/memory_init_files/key_extract.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {38} CONFIG.Read_Width_A {38} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {38} CONFIG.Read_Width_B {38} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_2]
 set_property generate_synth_checkpoint false [get_files blk_mem_gen_2.xci]
 reset_target all [get_ips blk_mem_gen_2]
 generate_target all [get_ips blk_mem_gen_2]
 
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name blk_mem_gen_3
-set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/key_mask.coe} CONFIG.Write_Depth_A {16} CONFIG.Write_Width_A {197} CONFIG.Read_Width_A {197} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {197} CONFIG.Read_Width_B {197} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_3]
+set_property -dict [list CONFIG.Memory_Type {Simple_Dual_Port_RAM} CONFIG.Load_Init_File {true} CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/memory_init_files/key_mask.coe} CONFIG.Write_Depth_A {32} CONFIG.Write_Width_A {193} CONFIG.Read_Width_A {193} CONFIG.Operating_Mode_A {NO_CHANGE} CONFIG.Write_Width_B {193} CONFIG.Read_Width_B {193} CONFIG.Enable_B {Use_ENB_Pin} CONFIG.Register_PortA_Output_of_Memory_Primitives {false} CONFIG.Register_PortB_Output_of_Memory_Primitives {true} CONFIG.Port_B_Clock {100} CONFIG.Port_B_Enable_Rate {100}] [get_ips blk_mem_gen_3]
 set_property generate_synth_checkpoint false [get_files blk_mem_gen_3.xci]
 reset_target all [get_ips blk_mem_gen_3]
 generate_target all [get_ips blk_mem_gen_3]
+
+
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name page_tbl_16w_32d
+
+set_property -dict [list \
+	CONFIG.Memory_Type {Simple_Dual_Port_RAM} \
+	CONFIG.Load_Init_File {true} \
+	CONFIG.Coe_File {/../../../../../../TProj.src/lib_rmt_256b/rmtv2/memory_init_files/page_tlb.coe} \
+	CONFIG.Write_Depth_A {32} \
+	CONFIG.Write_Width_A {16} \
+	CONFIG.Read_Width_A {16} \
+	CONFIG.Operating_Mode_A {NO_CHANGE} \
+	CONFIG.Write_Width_B {16} \
+	CONFIG.Read_Width_B {16} \
+	CONFIG.Enable_B {Use_ENB_Pin} \
+	CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
+	CONFIG.Register_PortB_Output_of_Memory_Primitives {true} \
+	CONFIG.Port_B_Clock {100} \
+	CONFIG.Port_B_Enable_Rate {100} \
+] [get_ips page_tbl_16w_32d]
+
+set_property generate_synth_checkpoint false [get_files page_tbl_16w_32d.xci]
+reset_target all [get_ips page_tbl_16w_32d]
+generate_target all [get_ips page_tbl_16w_32d]
+
+###
+
+# create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name key_mask_ram_101w_16d
+# 
+# set_property -dict [list \
+# 	CONFIG.Memory_Type {Simple_Dual_Port_RAM} \
+# 	CONFIG.Load_Init_File {false} \
+# 	CONFIG.Write_Depth_A {16} \
+# 	CONFIG.Write_Width_A {101} \
+# 	CONFIG.Read_Width_A {101} \
+# 	CONFIG.Operating_Mode_A {NO_CHANGE} \
+# 	CONFIG.Write_Width_B {101} \
+# 	CONFIG.Read_Width_B {101} \
+# 	CONFIG.Enable_B {Use_ENB_Pin} \
+# 	CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
+# 	CONFIG.Register_PortB_Output_of_Memory_Primitives {true} \
+# 	CONFIG.Port_B_Clock {100} \
+# 	CONFIG.Port_B_Enable_Rate {100} \
+# 	] [get_ips key_mask_ram_101w_16d]
+# 
+# set_property generate_synth_checkpoint false [get_files key_mask_ram_101w_16d.xci]
+# reset_target all [get_ips key_mask_ram_101w_16d]
+# generate_target all [get_ips key_mask_ram_101w_16d]
+# 
+# 
+# create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_name key_offset_ram_9w_16d
+# 
+# set_property -dict [list \
+# 	CONFIG.Memory_Type {Simple_Dual_Port_RAM} \
+# 	CONFIG.Load_Init_File {false} \
+# 	CONFIG.Write_Depth_A {16} \
+# 	CONFIG.Write_Width_A {9} \
+# 	CONFIG.Read_Width_A {9} \
+# 	CONFIG.Operating_Mode_A {NO_CHANGE} \
+# 	CONFIG.Write_Width_B {9} \
+# 	CONFIG.Read_Width_B {9} \
+# 	CONFIG.Enable_B {Use_ENB_Pin} \
+# 	CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
+# 	CONFIG.Register_PortB_Output_of_Memory_Primitives {true} \
+# 	CONFIG.Port_B_Clock {100} \
+# 	CONFIG.Port_B_Enable_Rate {100} \
+# 	] [get_ips key_offset_ram_9w_16d]
+
+# set_property generate_synth_checkpoint false [get_files key_offset_ram_9w_16d.xci]
+# reset_target all [get_ips key_offset_ram_9w_16d]
+# generate_target all [get_ips key_offset_ram_9w_16d]
+
+#########
 
 read_vhdl -library cam  TProj.src/lib_rmt_256b/xilinx_cam/dmem.vhd
 read_vhdl -library cam  [glob TProj.src/lib_rmt_256b/xilinx_cam/cam*.vhd]
@@ -142,7 +216,7 @@ read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/alu_1.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/alu_2.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/alu_3.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/crossbar.v"
-read_verilog "./TProj.src/lib_rmt_256b/rmtv2/extract/key_extract_2.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2/extract/key_extract.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/lookup/lookup_engine.v"
 #
 read_verilog "./TProj.src/axi_clocking.v"
@@ -157,8 +231,8 @@ read_verilog "./TProj.src/top.v"
 # add_files [glob TProj.src/rmtv2/extract/*.v]
 # add_files [glob TProj.src/rmtv2/lookup/*.v]
 # add_files [glob TProj.src/*.vhd]
-add_files [glob TProj.src/lib_rmt_256b/rmtv2/*.coe]
-add_files [glob TProj.src/lib_rmt_256b/rmtv2/*.mif]
+add_files [glob TProj.src/lib_rmt_256b/rmtv2/memory_init_files/*.coe]
+add_files [glob TProj.src/lib_rmt_256b/rmtv2/memory_init_files/*.mif]
 # add_files [glob TProj.src/input_files/*.axi]
 # read_verilog TProj.src/action_engine/action_engine.v
 # read_verilog TProj.src/key_extract/key_extract.v
