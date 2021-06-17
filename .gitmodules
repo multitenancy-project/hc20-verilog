@@ -1,0 +1,4 @@
+[submodule "corundum"]
+	path = corundum
+	url = git@github.com:multitenancy-project/corundum-forked-after-sigcomm.git
+	branch = master
