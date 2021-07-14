@@ -35,7 +35,7 @@ set device  xc7vx690t-3-ffg1761
 set proj_dir ./project_sim
 set public_repo_dir $::env(SUME_FOLDER)/lib/hw/
 set xilinx_repo_dir $::env(XILINX_PATH)/data/ip/xilinx/
-set axi_files_dir /home/twang/workspace/hc20-verilog/onNetFPGA/TProj.src/input_files
+set axi_files_dir /home/wtao/workspace/hc20-verilog/onNetFPGA/TProj.src/input_files
 set bit_settings ./TProj.src/generic_bit.xdc 
 set project_constraints ./TProj.src/nf_sume_general.xdc
 set nf_10g_constraints ./TProj.src/nf_sume_10g.xdc
@@ -248,19 +248,25 @@ update_ip_catalog
 
 source ./tcl/control_sub_sim.tcl
 
-add_files "./TProj.src/lib_rmt_256b/rmtv2/cam_init_file.mif"
+add_files "./TProj.src/lib_rmt_256b/rmtv2/memory_init_files/cam_init_file.mif"
 
 read_vhdl -library cam  TProj.src/lib_rmt_256b/xilinx_cam/dmem.vhd
 read_vhdl -library cam  [glob TProj.src/lib_rmt_256b/xilinx_cam/cam*.vhd]
 
 # rmt-related
-read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/deparser.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/sub_deparser.v"
-read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/parser.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/deparser_top.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/depar_wait_segs.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/depar_do_deparsing.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/parser_do_parsing.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/parser_wait_segs.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/sub_parser.v"
-read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/pkt_filter.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/parser_top.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/orig_pkt_filter.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/rmt_wrapper.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/stage.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2/last_stage.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2/output_arbiter.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/action_engine.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/alu_1.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/alu_2.v"

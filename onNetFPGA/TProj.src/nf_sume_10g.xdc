@@ -131,26 +131,29 @@ create_clock -period 3.103 [get_pins -hier -filter name=~*interface_3*gthe2_i/TX
 set_false_path -from [get_clocks xphy_refclk_p] -to [get_clocks clk_200]
 set_false_path -from [get_clocks clk_200] -to [get_clocks xphy_refclk_p]
 
-# set_false_path -from [get_clocks clk_250mhz_mux_x0y1] -to [get_clocks clk_125mhz_x0y1]
-# set_false_path -from [get_clocks clk_125mhz_x0y1] -to [get_clocks clk_250mhz_mux_x0y1]
+set_false_path -from [get_clocks clk_250mhz_mux_x0y1] -to [get_clocks clk_125mhz_x0y1]
+set_false_path -from [get_clocks clk_125mhz_x0y1] -to [get_clocks clk_250mhz_mux_x0y1]
 
-# set_false_path -from [get_clocks userclk1] -to [get_clocks clk_200]
-# set_false_path -from [get_clocks clk_200] -to [get_clocks userclk1]
-#
-# set_false_path -from [get_clocks userclk1] -to [get_clocks sys_clk]
-# set_false_path -from [get_clocks sys_clk] -to [get_clocks userclk1]
-#
-# set_false_path -from [get_clocks userclk1] -to [get_clocks axi_clk]
-# set_false_path -from [get_clocks axi_clk] -to [get_clocks userclk1]
-#
-# set_false_path -from [get_clocks userclk1] -to [get_clocks xphy_refclk_p]
-# set_false_path -from [get_clocks xphy_refclk_p] -to [get_clocks userclk1]
+set_false_path -from [get_clocks userclk1] -to [get_clocks clk_200]
+set_false_path -from [get_clocks clk_200] -to [get_clocks userclk1]
+
+set_false_path -from [get_clocks userclk1] -to [get_clocks sys_clk]
+set_false_path -from [get_clocks sys_clk] -to [get_clocks userclk1]
+
+set_false_path -from [get_clocks userclk1] -to [get_clocks axi_clk]
+set_false_path -from [get_clocks axi_clk] -to [get_clocks userclk1]
+
+set_false_path -from [get_clocks userclk1] -to [get_clocks xphy_refclk_p]
+set_false_path -from [get_clocks xphy_refclk_p] -to [get_clocks userclk1]
 
 set_false_path -from [get_clocks -filter name=~*interface_*gthe2_i/RXOUTCLK] -to [get_clocks xphy_refclk_p]
 set_false_path -from [get_clocks xphy_refclk_p] -to [get_clocks -filter name=~*interface_*gthe2_i/RXOUTCLK]
 
 set_false_path -from [get_clocks -filter name=~*interface_*gthe2_i/TXOUTCLK] -to [get_clocks xphy_refclk_p]
 set_false_path -from [get_clocks xphy_refclk_p] -to [get_clocks -filter name=~*interface_*gthe2_i/TXOUTCLK]
+
+
+
 
 
 

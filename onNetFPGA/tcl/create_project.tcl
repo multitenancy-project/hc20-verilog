@@ -204,13 +204,19 @@ read_vhdl -library cam  TProj.src/lib_rmt_256b/xilinx_cam/dmem.vhd
 read_vhdl -library cam  [glob TProj.src/lib_rmt_256b/xilinx_cam/cam*.vhd]
 
 # rmt-related
-read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/deparser.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/sub_deparser.v"
-read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/parser.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/deparser_top.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/depar_wait_segs.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/depar_do_deparsing.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/parser_do_parsing.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/parser_wait_segs.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/sub_parser.v"
-read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/pkt_filter.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/parser_top.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/orig_pkt_filter.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/rmt_wrapper.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/stage.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2/last_stage.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2/output_arbiter.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/action_engine.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/alu_1.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/alu_2.v"

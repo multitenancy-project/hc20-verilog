@@ -74,10 +74,11 @@ create_clock -period 5.000 -name fpga_sysclk_p -waveform {0.000 2.500} [get_port
 
 ## -- 200MHz & 100MHz clks
 # create_clock -period 5.000 -name clk_200 -add [get_pins -hier -filter name=~*axi_clocking_i*clk_wiz_i/clk_out1]
-# create_clock -period 6.400 -name clk_200 -add [get_pins -hier -filter name=~*axi_clocking_i*clk_wiz_i/clk_out1]
-create_clock -period 6.250 -name clk_200 -add [get_pins -hier -filter name=~*axi_clocking_i*clk_wiz_i/clk_out1]
+create_clock -period 6.400 -name clk_200 -add [get_pins -hier -filter name=~*axi_clocking_i*clk_wiz_i/clk_out1]
+# create_clock -period 6.250 -name clk_200 -add [get_pins -hier -filter name=~*axi_clocking_i*clk_wiz_i/clk_out1]
 # create_clock -period 20.000 -name clk_200 -add [get_pins -hier -filter name=~*axi_clocking_i*clk_wiz_i/clk_out1]
 create_clock -period 10.000 -name axi_clk -add [get_pins -hier -filter name=~*axi_lite_bufg0/O]
+# create_clock -period 12.500 -name axi_clk -add [get_pins -hier -filter name=~*axi_lite_bufg0/O]
 
 # Main I2C Bus - 100KHz - SUME
 set_property IOSTANDARD LVCMOS18 [get_ports i2c_clk]
@@ -125,6 +126,9 @@ set_false_path -from [get_clocks sys_clk] -to [get_clocks clk_200]
 
 set_false_path -from [get_clocks axi_clk] -to [get_clocks clk_200]
 set_false_path -from [get_clocks clk_200] -to [get_clocks axi_clk]
+
+
+
 
 
 
