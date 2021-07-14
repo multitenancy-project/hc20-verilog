@@ -34,3 +34,5 @@ xsim.dir/
 .root
 .project
 .Xil/
+
+.DS_Store
