@@ -36,7 +36,7 @@ one parse action is a 16-bit configuration, each user (i.e., identified by VLAN 
 
 #### Packet Header Vector (PHV)
 
-After parsing, the pipeline works on the PHV generated. In our design, the PHV contains **packet header** (defined by the user) and **metadata** (ingress port, length, etc.).
+After parsing, the pipeline works on the PHV generated. In our design, the PHV contains **packet header** (defined by the user) and **metadata** (ingress port, length, etc.). (NOTE: the order of container index is in decreasing order)
 
   ![phv](./imgs/phv.png)
 
