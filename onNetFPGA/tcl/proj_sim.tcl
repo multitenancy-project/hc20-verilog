@@ -273,7 +273,10 @@ read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/alu_2.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/alu_3.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/action/crossbar.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/extract/key_extract.v"
-read_verilog "./TProj.src/lib_rmt_256b/rmtv2/lookup/lookup_engine.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2/extract/key_extract_top.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2/lookup/lookup_engine_top.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2/lookup/lke_cam_part.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2/lookup/lke_ram_part.v"
 #
 read_verilog "./TProj.src/axi_clocking.v"
 read_verilog "./TProj.src/nf_datapath.v"
@@ -304,5 +307,5 @@ update_compile_order -fileset sources_1
 set_property -name {xsim.simulate.runtime} -value {10000ns} -objects [get_filesets sim_1]
 
 launch_simulation -simset sim_1 -mode behavioral
-run 10us
+run 15us
 
