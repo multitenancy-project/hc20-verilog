@@ -229,6 +229,7 @@ read_verilog "./TProj.src/lib_rmt_256b/rmtv2/lookup/lookup_engine_top.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/lookup/lke_cam_part.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/lookup/lke_ram_part.v"
 #
+read_verilog "./TProj.src/rmt_cpu_regs.v"
 read_verilog "./TProj.src/axi_clocking.v"
 read_verilog "./TProj.src/nf_datapath.v"
 read_verilog "./TProj.src/top.v"

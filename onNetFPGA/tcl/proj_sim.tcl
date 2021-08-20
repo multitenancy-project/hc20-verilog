@@ -35,7 +35,7 @@ set device  xc7vx690t-3-ffg1761
 set proj_dir ./project_sim
 set public_repo_dir $::env(SUME_FOLDER)/lib/hw/
 set xilinx_repo_dir $::env(XILINX_PATH)/data/ip/xilinx/
-set axi_files_dir /home/wtao/workspace/hc20-verilog/onNetFPGA/TProj.src/input_files
+set axi_files_dir /home/wtao/Downloads/test-netfpga/onNetFPGA/TProj.src/input_files
 set bit_settings ./TProj.src/generic_bit.xdc 
 set project_constraints ./TProj.src/nf_sume_general.xdc
 set nf_10g_constraints ./TProj.src/nf_sume_10g.xdc
@@ -262,7 +262,8 @@ read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/parser_do_parsing.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/parser_wait_segs.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/sub_parser.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/parser_top.v"
-read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/orig_pkt_filter.v"
+# read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/orig_pkt_filter.v"
+read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/pkt_filter.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2_256b/rmt_wrapper.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/stage.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/last_stage.v"
@@ -278,6 +279,8 @@ read_verilog "./TProj.src/lib_rmt_256b/rmtv2/lookup/lookup_engine_top.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/lookup/lke_cam_part.v"
 read_verilog "./TProj.src/lib_rmt_256b/rmtv2/lookup/lke_ram_part.v"
 #
+read_verilog "./TProj.src/rmt_cpu_regs.v"
+read_verilog "./TProj.src/rmt_cpu_regs_defines.v"
 read_verilog "./TProj.src/axi_clocking.v"
 read_verilog "./TProj.src/nf_datapath.v"
 read_verilog "./TProj.src/top_sim.v"
