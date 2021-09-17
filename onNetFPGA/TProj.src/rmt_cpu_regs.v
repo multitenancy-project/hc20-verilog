@@ -46,6 +46,22 @@
 `define  REG_CTRL_TOKEN_WIDTH				32
 `define  REG_CTRL_TOKEN_DEFAULT				32'h00000000
 `define  REG_CTRL_TOKEN_ADDR				32'h8
+
+`define  REG_VLAN_1_CNT_BITS				31:0
+`define  REG_VLAN_1_CNT_WIDTH				32
+`define  REG_VLAN_1_CNT_DEFAULT				32'h00000000
+`define  REG_VLAN_1_CNT_ADDR				32'hc
+
+`define  REG_VLAN_2_CNT_BITS				31:0
+`define  REG_VLAN_2_CNT_WIDTH				32
+`define  REG_VLAN_2_CNT_DEFAULT				32'h00000000
+`define  REG_VLAN_2_CNT_ADDR				32'h10
+
+`define  REG_VLAN_3_CNT_BITS				31:0
+`define  REG_VLAN_3_CNT_WIDTH				32
+`define  REG_VLAN_3_CNT_DEFAULT				32'h00000000
+`define  REG_VLAN_3_CNT_ADDR				32'h14
+
 module rmt_cpu_regs #
 (
 parameter C_BASE_ADDRESS        = 32'h00000000,
@@ -64,6 +80,9 @@ parameter C_S_AXI_ADDR_WIDTH    = 32
    // Register ports
     output reg [`REG_VLAN_DROP_FLAGS_BITS]    vlan_drop_flags_reg,
     input      [`REG_CTRL_TOKEN_BITS]    ctrl_token_reg,
+    input      [`REG_VLAN_1_CNT_BITS]    vlan_1_cnt_reg,
+    input      [`REG_VLAN_2_CNT_BITS]    vlan_2_cnt_reg,
+    input      [`REG_VLAN_3_CNT_BITS]    vlan_3_cnt_reg,
 
     // AXI Lite ports
     input                                     S_AXI_ACLK,
@@ -332,6 +351,18 @@ parameter C_S_AXI_ADDR_WIDTH    = 32
             //Ctrl_token Register
             `REG_CTRL_TOKEN_ADDR : begin
                 reg_data_out [`REG_CTRL_TOKEN_BITS] =  ctrl_token_reg;
+            end
+            //Vlan_1_cnt Register
+            `REG_VLAN_1_CNT_ADDR : begin
+                reg_data_out [`REG_VLAN_1_CNT_BITS] =  vlan_1_cnt_reg;
+            end
+            //Vlan_2_cnt Register
+            `REG_VLAN_2_CNT_ADDR : begin
+                reg_data_out [`REG_VLAN_2_CNT_BITS] =  vlan_2_cnt_reg;
+            end
+            //Vlan_3_cnt Register
+            `REG_VLAN_3_CNT_ADDR : begin
+                reg_data_out [`REG_VLAN_3_CNT_BITS] =  vlan_3_cnt_reg;
             end
             //Default return value
             default: begin

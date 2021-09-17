@@ -20,4 +20,7 @@
 
 
 uint32_t get_ctrl_token();
+uint32_t get_vlan_1_cnt();
+uint32_t get_vlan_2_cnt();
+uint32_t get_vlan_3_cnt();
 void set_vlan_drop_flags(uint32_t set_vlan_drop_flags);

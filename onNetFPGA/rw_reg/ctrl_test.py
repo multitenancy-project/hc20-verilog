@@ -9,7 +9,12 @@ so_dll = CDLL(so_file)
 
 print (type(so_dll.get_ctrl_token()))
 print (so_dll.get_ctrl_token())
+print (so_dll.get_vlan_1_cnt())
+print (so_dll.get_vlan_2_cnt())
+print (so_dll.get_vlan_3_cnt())
+'''
 print (so_dll.set_vlan_drop_flags(2))
 time.sleep(2.0)
 print (so_dll.set_vlan_drop_flags(0))
 time.sleep(2.0)
+'''
