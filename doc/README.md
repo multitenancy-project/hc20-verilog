@@ -10,6 +10,8 @@ In general, packets (i.e., AXIS segments) enter the pipeline. They are pushed in
 
 `module configuraiton` packets are used to update the table entries inside those different modules in different stages.
 
+**The meaning of module throughout this note is the self-contained program logic rather than the whole program as we indicate in the paper.**
+
 ------
 
 ### **Data Plane Design**
@@ -19,6 +21,8 @@ In general, packets (i.e., AXIS segments) enter the pipeline. They are pushed in
 Here, we simple assume that packet format is Ethernet, VLAN, IP, UDP header followed by UDP payload where users can define their own custom headers.
 
 We have a simple indicator to check whether the packet is a `module configuraton` packet. Basically, we have a in-hardware cookie to match against the field in the packet, and a specific destination UDP port (i.e., h'f1f2) for those `module configuraton` packets.
+
+Also, to ensure every data packet will not be processed by partitial configurations, we will drop every data packet if its VLANID matches the specific user ID.
 
 ------
 
@@ -44,14 +48,20 @@ After parsing, the pipeline works on the PHV generated. In our design, the PHV c
 Above is the format of PHV in our design  ```|8x6B|8x4B|8x2B|256b|```. Basically, we have 3 types of PHV containers of different sizes (i.e., 6B, 4B, 2B) and one giant container for metadata, which is in total 256b:
 
   * `768b`:  the packet header value container. It contains 8x 6B, 4B and 2B to store values that will be used in the match-action stage.
-  * `256b`:  the metadata attached to the packet. The lower 128b, namely `[127:0]`, is for the NetFPGA's `tuser` so that it follows the specifications (e.g., SRC, DST ports, etc.) of NetFPGA. The 128th bit is termed as drop mark, where 1 means dropping.
+  * `256b`:  the metadata attached to the packet. The lower 128b, namely `[127:0]`, is for the NetFPGA's `tuser` so that it follows the [NetFPGA's specifications](https://www.cl.cam.ac.uk/research/srg/netos/projects/netfpga/workshop/technion-august-2015/material/slides/2015_Summer_Camp_Day_1.pdf) (e.g., SRC, DST ports, etc.). The 128th bit is termed as the drop mark, where 1 means dropping.
 
-> * `[127:0]` is for the NetFPGA's `tuser` data.
-> * `[128]` is the discard flag where 1 means to drop the packet.
+> * `[255:141]` is reserved for other use.
 > * `[140:129]` is the `VLAN ID`.
-> * `[255:141]` is reserved for other usage.
+> * `[128]` is the discard flag where 1 means to drop the packet.
+> * `[127:0]` is for the NetFPGA's `tuser` data.
 
 ---
+
+#### Notes on Match-Action Table
+
+The most important abstraction of [RMT](https://web.stanford.edu/class/cs244/papers/sdn-chip-sigcomm-2013.pdf) is match-action table. In each stage of RMT, multiple match-action tables can be placed. For simplicity, we only place one in each stage.
+
+------
 
   #### Key Extractor
 
@@ -143,7 +153,7 @@ In order to support VLIW (very long instruction word) in the action engine, ther
     | 1       | 12     | 0x00      |
     | ...     | ...    | ...       |
 
-    where `VLAN ID` is the key, `base_addr` (8b) and `length` (8b) is the entry content. During a `laod/loadd/store` operation, only operations whose `addr` is within the `length` can be executed. Otherwise, the request will be dropped.
+    where `VLAN ID` is the key, `base_addr` (8b) and `length` (8b) is the entry content. During a `load/loadd/store` operation, only operations whose `addr` is within the `length` can be executed. Otherwise, the request will be dropped.
 
     
 
@@ -166,9 +176,9 @@ In order to support VLIW (very long instruction word) in the action engine, ther
 
   ![control_method](./imgs/control_method.png)
 
-We designed a stateless method to modify the table enties in the pipeline. Specifically, we use a specialized group of packets (i.e., `module configuration` packets) to modify the table entries. The packet can be generated from the SW side and contains the info about which table and how the table will be modified.
+We designed a stateless method to modify the table enties in the pipeline. Specifically, we use a specialized group of packets (i.e., `module configuration` packets) to modify the table entries. The packet can be generated from the software side and contains the info about which table and how the table will be modified.
 
-In the packet header field, there are fields indicating which module (using module ID) the packets is targetting. the content of the table entry is contained in the payload field. when the packet is received by the RMT pipeline, it will recgnized by the modules and will travel all the way through the pipeline.
+In the packet header field, there are fields indicating which module (using module ID) the configuration packets are targetting. The content of the table entry is contained in the payload field. when the packet is received by the pipeline, it will be recognized by the modules and will travel all the way through the pipeline.
 
 Each module will check whether it is the target of the packet: if so, the module will read out the payload and modify the table entry accordingly. Otherwise, it will pass the packet to the next module. If no former module matches the packet's target, before the packet comes out of the pipeline, the deparser module will drop it no matter it matches or not.
 
@@ -181,8 +191,8 @@ Each module will check whether it is the target of the packet: if so, the module
   3. **Mask Table**: This is a ***193x16 RAM*** that masks certain bits in the key field. It is also in **Key Extractor**. 
   4. **Lookup Table** (TCAM): This is a ***205x16 TCAM*** that serves as the lookup engine in the RMT pipeline. It is in **Lookup Engine**.
   5. **Action Table**: This is a ***625x16 RAM*** that stores VLIW instruction sets. It is also in **Lookup Engine**.
-    6. **Segment Table**: This is a **16x16 RAM** that get the allocated range of stateful memory of each user. It is in the **Action Engine**.
-    7. **Key-Value Table**: This is a ***32x32 RAM*** that supports the key-value store in RMT pipeline. It is in **Action Engine**.
+  6. **Segment Table**: This is a **16x16 RAM** that get the allocated range of stateful memory of each user. It is in the **Action Engine**.
+  7. **Key-Value Table**: This is a ***32x32 RAM*** that supports the key-value store in RMT pipeline. It is in **Action Engine**.
 
   #### Data Structures
 
@@ -196,8 +206,8 @@ Each module will check whether it is the target of the packet: if so, the module
 
       ![control_format](./imgs/ctrl_pkt_format.png)
 
-      1. `resv`: reserve field, can be used when there are multiple tables in a module.
-      
+      1. `resource ID (|5b|3b|4b|)`: the first 5b is the stage number, the next 3b is the module ID. 
+      2. `resv`: reserve field, can be used when there are multiple tables in a module.
       2. `index`: the index of the table entry.
       3. `padding`: used to make sure the payload starts in **the 2nd 512b** of the packet (for easier engineering).
       4. `payload`: the content of the table entry, its flexible in length.
@@ -216,22 +226,22 @@ Each module will check whether it is the target of the packet: if so, the module
 
   2. The 2nd layer index (lowest 3b) of the Module ID is: **0x0** for Parser, **0x1** for Key Extractor, **0x2** for Lookup Engine, **0x3** for Action Engine, **0x5** for Deparser.
 
-  3. In order to have better isolation between control and data path, we **added a module (pkt_filter) in front of the RMT pipeline to filter out control packets**, and feed the control packets to the pipeline using a different AXIS channel.
+  3. In order to have better isolation between control and data path, we **added a module (pkt_filter) in front of the  pipeline to filter out control packets**, and feed the control packets to the pipeline using a different AXIS channel.
 
-  #### Security Concern
+  #### Security Concern (Deprecated)
 
-One of the security threat that must take into consideration is "attackers may send malicious control packets". To avoid this, the control path leverages a cookie mechanism to ensure only privileged user (i.e., service provider) who know the cookie value are able to configure the hardware.
+One of the security threat that must take into consideration is "attackers may send malicious control packets". To avoid this, the control path leverages a cookie mechanism to ensure only privileged user (i.e., service provider) who knows the cookie value are able to configure the hardware.
 
 Specifically, the cookie is a 4B width value put before the padding field in control packets, and is verified in `pkt_filter`. The cookie is updated every 400 seconds (8min). In order to issue a table update, the CPU needs to firstly read out the cookie via PCIe (using AXIL) and patch the cookie in the padding field. Once the control packets reach the pipeline, `pkt_filter` checks whether the cookie value matches: if so, the table reconfiguration will be issued successfully; otherwise, the control packet will be treated as illegal and will be dropped.
 
 Two key points regarding cookie implementation:
 
-1. **Cookie register:** Cookie register is 32b-wide and is put in the `rmt_pipeline` top module. The cookie value is updated using a hash method in every 480s (8min, using a self-managed timer). The method is shown as `cookie = cookie ^ (key>>16) ^ key`, where the `key` is the lowest 32b of the self-managed timer.
-2. **Read cookie from CPU:** While the cookie is updated on the FPGA part, it can be read out using software via PCIe. We use AXIL for this purpose. For corundum platform specifically, we connect the `rmt_pipeline` with the `axil_interconnect` module as a slave node and feed `cookie register` as the sole input. On the software side, `io_read32()` will be provided to read out the cookie value in real time. The hw_addr for cookie is set as `0xf1f2`. **The NetFPGA design will be added after timing issue is fixed.**
+1. **Cookie register:** Cookie register is 32b-wide. The cookie value is updated using a hash method in every 480s (8min, using a self-managed timer). The method is shown as `cookie = cookie ^ (key>>16) ^ key`, where the `key` is the lowest 32b of the self-managed timer.
+2. **Read cookie from CPU:** While the cookie is updated on the FPGA part, it can be read out using software via PCIe. We use AXIL for this purpose.
 
 
 ---
-  #### Note 
+  #### Random notes 
 
     1. According to RMT, which match table the packet is going through is determined by the result (action) of the last match. In this way it forms a TTP (see TTP in OpenFlow).
     
